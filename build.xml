@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2006, ITBS LLC. All Rights Reserved.
+  ~
+  ~     This file is part of JClaim.
+  ~
+  ~     JClaim is free software; you can redistribute it and/or modify
+  ~     it under the terms of the GNU General Public License as published by
+  ~     the Free Software Foundation; version 2 of the License.
+  ~
+  ~     JClaim is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU General Public License
+  ~     along with JClaim; if not, find it at gnu.org or write to the Free Software
+  ~     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  ~
+  -->
+
+<project basedir="." default="run" name="TS">
+    <property name="dir.dist" value="dist"/>
+    <property name="dir.lib" value="lib"/>
+    <property name="dir.java" value="java"/>
+    <property name="dir.classes" value="${dir.java}/classes"/>
+    <property name="dir.classes.source" value="${dir.java}/classes/source"/>
+    <property name="dir.ui" value="${dir.java}/ui"/>
+    <property name="dir.core" value="${dir.java}/core"/>
+    <property name="dir.servlet" value="${dir.java}/servlet"/>
+    <property name="file.count" value="11"/>
+
+    <property name="file.ts.jar" value="${dir.dist}/file1of${file.count}.jar"/>
+    <property name="file.ts.o.jar" value="${dir.dist}/jclaim.o.jar"/>
+    
+    <property name="file.jaim.jar" value="${dir.dist}/file2of${file.count}.jar"/>
+    <property name="file.jaim.o.jar" value="${dir.dist}/jaimlib.o.jar"/>
+    <property name="file.jaim.lib.jar" value="${dir.lib}/jaimlib.jar"/>
+    
+    <property name="file.joscar.jar" value="${dir.dist}/file3of${file.count}.jar"/>
+    <property name="file.joscar.o.jar" value="${dir.dist}/joscar.jar"/>
+    <property name="file.joscar.lib.jar" value="${dir.lib}/joscar.jar"/>
+    
+    <property name="file.oscar.jar" value="${dir.dist}/file4of${file.count}.jar"/>
+    <property name="file.oscar.o.jar" value="${dir.dist}/oscar.jar"/>
+    <property name="file.oscar.lib.jar" value="${dir.lib}/oscar.jar"/>
+
+    <property name="file.jazzy.jar" value="${dir.dist}/file5of${file.count}.jar"/>
+    <property name="file.jazzy.o.jar" value="${dir.dist}/jazzy.jar"/>
+    <property name="file.jazzy.lib.jar" value="${dir.lib}/jazzy-core.eng.jar"/>
+
+    <property name="file.smack.jar" value="${dir.dist}/file6of${file.count}.jar"/>
+    <property name="file.smack.o.jar" value="${dir.dist}/smack.jar"/>
+    <property name="file.smack.lib.jar" value="${dir.lib}/smack.jar"/>
+
+    <property name="file.yahoo.jar" value="${dir.dist}/file7of${file.count}.jar"/>
+    <property name="file.yahoo.o.jar" value="${dir.dist}/ymsg_network_v0_6.jar"/>
+    <property name="file.yahoo.lib.jar" value="${dir.lib}/ymsg_network_v0_6.jar"/>
+
+    <property name="file.jdic.jar" value="${dir.dist}/file8of${file.count}.jar"/>
+    <property name="file.jdic.o.jar" value="${dir.dist}/jdic.jar"/>
+    <property name="file.jdic.lib.jar" value="${dir.lib}/jdic.jar"/>
+
+    <property name="file.msn.jar" value="${dir.dist}/file9of${file.count}.jar"/>
+    <property name="file.msn.o.jar" value="${dir.dist}/msnm.jar"/>
+    <property name="file.msn.lib.jar" value="${dir.lib}/msnm.jar"/>
+
+    <property name="file.cos.jar" value="${dir.dist}/file10of${file.count}.jar"/>
+    <property name="file.cos.o.jar" value="${dir.dist}/cos.jar"/>
+    <property name="file.cos.lib.jar" value="${dir.lib}/cos.jar"/>
+
+    <property name="file.socks.jar" value="${dir.dist}/file11of${file.count}.jar"/>
+    <property name="file.socks.o.jar" value="${dir.dist}/jsocks.jar"/>
+    <property name="file.socks.lib.jar" value="${dir.lib}/jsocks-klea.jar"/>
+
+    <property name="class.main" value="com.itbs.aimcer.gui.Main"/>
+
+    <taskdef name="pack200" classname="com.sun.tools.apache.ant.pack200.Pack200Task" classpath="Pack200Task.jar"/>
+    <!-- Create our unpacker task -->
+    <taskdef name="unpack200" classname="com.sun.tools.apache.ant.pack200.Unpack200Task" classpath="Pack200Task.jar"/>
+
+    <!-- =====================   INCLUDES    =============================-->
+    <patternset id="path.additionalfiles">
+        <include name="**/*.xml"/>
+        <include name="**/*.html"/>
+        <include name="**/*.gif"/>
+        <exclude name="**/package.html"/>
+    </patternset>
+
+    <path id="path.compile">
+        <fileset dir="${dir.lib}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <path id="path.compile.noui">
+        <fileset dir="${dir.lib}">
+            <include name="*.jar"/>
+            <exclude name="jdic*.jar"/>
+            <exclude name="jazz*.jar"/>
+            <exclude name="jni*.jar"/>
+            <!--<exclude name="cos.jar"/>-->
+            <exclude name="mysql*.jar"/>
+        </fileset>
+    </path>
+
+    <!-- =====================   INIT    =============================-->
+    <target name="init"
+        description="Do initialization tasks">
+        <mkdir dir="${dir.classes}"/>
+        <mkdir dir="${dir.classes.source}"/>
+    </target>
+
+    <!-- =====================   CLEAN    =============================-->
+    <target name="clean" depends="init"
+            description="Deletes all files that can be regenerated">
+
+        <delete includeEmptyDirs="true">
+            <fileset dir="${dir.classes.source}" includes="**/*"/>
+        </delete>
+
+        <delete file="${file.ts.jar}"/>
+        <delete file="${file.ts.o.jar}"/>
+        <delete file="${file.jaim.jar}"/>
+        <delete file="${file.jaim.o.jar}"/>
+        <delete file="${file.oscar.jar}"/>
+        <delete file="${file.oscar.o.jar}"/>
+        <delete file="${file.joscar.jar}"/>
+        <delete file="${file.joscar.o.jar}"/>
+        <delete file="${file.jazzy.jar}"/>
+        <delete file="${file.jazzy.o.jar}"/>
+        <delete file="${file.smack.jar}"/>
+        <delete file="${file.smack.o.jar}"/>
+        <delete file="${file.jdic.jar}"/>
+        <delete file="${file.jdic.o.jar}"/>
+        <delete file="${file.yahoo.jar}"/>
+        <delete file="${file.yahoo.o.jar}"/>
+        <delete file="${file.msn.jar}"/>
+        <delete file="${file.msn.o.jar}"/>
+        <delete file="${file.cos.jar}"/>
+        <delete file="${file.cos.o.jar}"/>
+        <delete file="${file.socks.jar}"/>
+        <delete file="${file.socks.o.jar}"/>
+    </target>
+
+    <!-- =====================   COPY    =============================-->
+    <!-- copy required non-class files to the classes directory -->
+    <target name="copy" depends="init">
+        <copy todir="${dir.classes.source}">
+            <fileset dir="${dir.ui}">
+                <patternset refid="path.additionalfiles"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <!-- =====================   COMPILE    =============================-->
+    <target name="compile" depends="copy" description="Compiles all classes">
+        <!--First - do model -->
+        <javac srcdir="${dir.servlet}"
+                destdir="${dir.classes.source}"
+                debug="off"
+                deprecation="on"
+                optimize="on"
+                target="1.5"
+                source="1.5"
+            >
+            <classpath refid="path.compile.noui"/>
+            <include name="**/*.java"/>
+        </javac>
+        <javac srcdir="${dir.core}"
+                destdir="${dir.classes.source}"
+                debug="off"
+                deprecation="on"
+                optimize="on"
+                target="1.5"
+                source="1.5"
+            >
+            <classpath refid="path.compile.noui"/>
+            <include name="**/*.java"/>
+        </javac>
+        <javac srcdir="${dir.ui}"
+                destdir="${dir.classes.source}"
+                debug="off"
+                deprecation="on"
+                optimize="on"
+                target="1.5"
+                source="1.5"
+            >
+            <classpath refid="path.compile"/>
+            <include name="**/*.java"/>
+        </javac>
+
+        <!--antcall target="checkstyle_plain"/-->
+    </target>
+
+    <!-- =====================   JAR    =============================-->
+    <target name="jar"
+        description="Jars all"
+        depends="compile">
+        <jar destfile="${file.ts.jar}"
+            basedir="${dir.classes.source}"
+            includes="**/*"
+            excludes="**/server/**/*"
+            />
+    </target>
+
+    <!-- =====================   OBFUSCATE    =============================-->
+    <!-- target name="obfuscate"
+        description="Secure All"
+        depends="jar">
+            <inoutpair in="${file.joscar.lib.jar}" out="${file.joscar.o.jar}"/>
+            <inoutpair in="${file.oscar.lib.jar}" out="${file.oscar.o.jar}"/>
+            <inoutpair in="${file.jaim.lib.jar}" out="${file.jaim.o.jar}"/>
+            <inoutpair in="${file.ts.jar}" out="${file.ts.o.jar}"/>
+            <inoutpair in="${file.socks.lib.jar}" out="${file.socks.o.jar}"/>
+            <inoutpair in="${file.jazzy.lib.jar}" out="${file.jazzy.o.jar}"/>
+            <inoutpair in="${file.yahoo.lib.jar}" out="${file.yahoo.o.jar}"/>
+            <inoutpair in="${file.cos.lib.jar}" out="${file.cos.o.jar}"/>
+        </obfuscate>
+        <pack200 src="${file.msn.lib.jar}" 	destfile="${file.msn.o.jar}"	repack="true"/>
+        <pack200 src="${file.jdic.lib.jar}" destfile="${file.jdic.o.jar}"	repack="true"/>
+        <pack200 src="${file.smack.lib.jar}" destfile="${file.smack.o.jar}"	repack="true"/>
+    </target-->
+
+
+    <target name="sign" depends="jar">
+        <signjar jar="${file.ts.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <move file="${file.ts.o.jar}" tofile="${file.ts.jar}"/>
+
+        <!--copy file="${file.jaim.l.jar}" tofile="${file.jaim.o.jar}"/-->
+        <signjar jar="${file.jaim.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <move file="${file.jaim.o.jar}" tofile="${file.jaim.jar}"/>
+
+        <!--copy file="${file.joscar.lib.jar}" tofile="${file.joscar.jar}"/-->
+        <signjar jar="${file.joscar.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <move file="${file.joscar.o.jar}" tofile="${file.joscar.jar}"/>
+        <!--copy file="${file.oscar.lib.jar}" tofile="${file.oscar.jar}"/-->
+        <signjar jar="${file.oscar.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <move file="${file.oscar.o.jar}" tofile="${file.oscar.jar}"/>
+
+        <signjar jar="${file.smack.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <move file="${file.smack.o.jar}" tofile="${file.smack.jar}"/>
+
+        <signjar jar="${file.yahoo.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <move file="${file.yahoo.o.jar}" tofile="${file.yahoo.jar}"/>
+
+        <signjar jar="${file.jdic.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <move file="${file.jdic.o.jar}" tofile="${file.jdic.jar}"/>
+
+        <signjar jar="${file.msn.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <move file="${file.msn.o.jar}" tofile="${file.msn.jar}"/>
+
+        <signjar jar="${file.cos.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <move file="${file.cos.o.jar}" tofile="${file.cos.jar}"/>
+
+        <signjar jar="${file.socks.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <move file="${file.socks.o.jar}" tofile="${file.socks.jar}"/>
+
+        <jar destfile="${file.jazzy.o.jar}"
+            basedir="${dir.lib}"
+            includes="english.0, README"
+            update="true"
+            />
+        <signjar jar="${file.jazzy.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <move file="${file.jazzy.o.jar}" tofile="${file.jazzy.jar}"/>
+    </target>
+
+    <target name="signnative" description="Signs native files" >
+        <signjar jar="${dir.dist}/lib/linux/jdic_stub.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/linux/native.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/win32/jdic_stub.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/win32/jdic_misc.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/win32/native.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/mac/jdic_misc.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/sunos/jdic_stub.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/sunos/nativex86.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/sunos/nativesparc.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+    </target>
+
+    <!-- =====================   RUN    =============================-->
+    <path id="run.classpath">
+        <fileset dir="${dir.dist}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+    <property name="classpath" value="run.classpath"/>
+    
+    <target name="run"
+        description="Starts client">
+
+        <java fork="yes" classname="com.itbs.aimcer.gui.Main">
+            <classpath refid="${classpath}"/>
+
+        </java>
+    </target>
+
+    <!-- =====================   USAGE   ============================= -->
+    <target name="usage"
+        description="Describes targets">
+
+        <java classname="org.apache.tools.ant.Main">
+            <arg value="-projecthelp" />
+        </java>
+    </target>
+ </project>
