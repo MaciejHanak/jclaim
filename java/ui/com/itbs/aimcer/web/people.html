@@ -1,0 +1,32 @@
+<HTML>
+<HEAD>
+<title>JClaim</title>
+<%refresh%>
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+<style type="text/css">
+<!--
+.styleYellow {color: #FFFF00}
+-->
+</style>
+</HEAD>
+<body>
+
+<CENTER><a href="<%page%>">Refresh<FONT size=1><br>( <%date%> )</FONT></a></CENTER>
+<FORM method="post" name="form" action="<%page%>">
+<table border="0">
+  <tr>
+    <th bgcolor="#666666" scope="col"><span class="styleYellow"><%messagetitle%></span></th>
+    <th bgcolor="#666666" scope="col"><span class="styleYellow">JClaim:</span></th>
+  </tr>
+  <tr>
+    <td><fieldset><FONT size=2><%message%></FONT></fieldset></td>
+    <td valign="top"><FONT size=2><%contactlist%></FONT></td>
+  </tr>
+</table>
+</FORM>
+<CENTER><a href="<%page%>"><FONT size=1>( <%date%> )</FONT><br>Refresh</a></CENTER>
+[<a href="<%logoffpage%>"><FONT size=1>Logoff</FONT></a>] [<a href="<%optionspage%>"><FONT size=1>Options</FONT></a>] [<a href="<%helppage%>"><FONT size=1>Help</FONT></a>]
+<%scroll%>
+</body>
+</HTML>

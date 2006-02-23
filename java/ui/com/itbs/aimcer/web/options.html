@@ -1,0 +1,47 @@
+<HTML>
+<HEAD>
+<title>JClaim</title>
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+<style type="text/css">
+<!--
+.styleYellow {color: #FFFF00}
+-->
+</style>
+</HEAD>
+<body>
+
+<CENTER><a href="<%page%>">Refresh<FONT size=1><br>( <%date%> )</FONT></a></CENTER>
+<FORM method="post">
+<fieldset>
+<table border="0">
+  <tr>
+    <th colspan="2" bgcolor="#666666" scope="col"><span class="styleYellow">JClaim:</span></th>
+    </tr>
+  <tr>
+    <td>Hide offline contacts: </td>
+    <td><input name="hideoffline" type="checkbox" <%hideoffline%>></td>
+  </tr>
+  <tr>
+    <td>Away from pc: </td>
+    <td><input name="away" type="checkbox" <%away%>></td>
+  </tr>
+  <tr>
+    <td>Show pictures: </td>
+    <td><input name="showpictures" type="checkbox" <%showpictures%>></td>
+  </tr>
+  <tr>
+    <td>Web Server: </td>
+    <td><input name="server" type="checkbox" <%server%>></td>
+  </tr>
+</table>
+</fieldset>
+<input name="submit" type="submit" value="Set">
+<input name="reset" type="reset">
+<input name="cancel" type="submit" value="Cancel">
+</FORM>
+<%loginform%>
+<CENTER><a name="bottom"/> <a href="<%page%>#bottom"><FONT size=1>( <%date%> )</FONT><br>Refresh</a></CENTER>
+[<a href="<%logoffpage%>"><FONT size=1>Logoff</FONT></a>] [<a href="<%peoplepage%>"><FONT size=1>List</FONT></a>] [<a href="<%helppage%>"><FONT size=1>Help</FONT></a>]
+</body>
+</HTML>
