@@ -20,7 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Alex Rass on Sep 9, 2004
+ * @author Alex Rass
+ * @since Sep 9, 2004
  */
 public class Logger implements ConnectionEventListener {
     File centralPath;
