@@ -1,0 +1,367 @@
+package com.itbs.aimcer.gui;
+
+import com.itbs.aimcer.Logger;
+import com.itbs.aimcer.bean.*;
+import com.itbs.aimcer.commune.Connection;
+import com.itbs.aimcer.commune.ConnectionEventListener;
+import com.itbs.aimcer.commune.GlobalEventHandler;
+import com.itbs.aimcer.commune.MessageSupport;
+import com.itbs.aimcer.commune.weather.WeatherConnection;
+import com.itbs.aimcer.web.ServerStarter;
+import com.itbs.gui.*;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.*;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+
+/**
+ * @author Alex Rass
+ * @since Sep 9, 2004
+ */
+public class Main {
+    static String TITLE = "JCLAIM";
+    public static String VERSION = "Version: 4.4";
+    public static final String URL_FAQ = "http://www.itbsllc.com/jclaim/User%20Documentation.htm";
+    public static final String EMAIL_SUPPORT = "support@itbsllc.com";
+    private static final String LICENSE = System.getProperty("client");
+    public static final String DEBUG_INFO = "JDK: " + System.getProperty("java.version") + "\n"
+                                           + "OS: " + System.getProperty("os.name") + "\n"
+                                            + "Program " + Main.VERSION;
+    public static final String ABOUT_MESSAGE = "Java Compliant Logging & Auditing Instant Messenger.\n" +
+                            DEBUG_INFO + "\n\n" +
+                            "This is a Messaging Client Software.\n" +
+                            "Provides a GUI interface for connecting to AIM.\n" +
+                                                  "Follows logging requirements for financial institutions.\n" +
+                                                  "\nhttp://www.jclaim.com\n" +
+                                                  "\nDeveloped by ITBS LLC, Copyright 2004, 2005.  All rights reserved.\n" +
+                                                  "\nTo request a feature or submit a bug, visit 'Contact Us' section on the web site."+
+                                                  (LICENSE==null?"":"\n\nThis version is licensed to: " + LICENSE);
+
+    /** Settings file */
+    private static final File CONFIG_FILE = new File(System.getProperty("user.home"), "jclaim.ini");
+    /** Backup file */
+    private static final File CONFIG_FILE_SAV = new File(System.getProperty("user.home"), "jclaim.sav");
+
+    public static final Dimension INITIAL_SIZE = new Dimension(260, 600);
+
+    private static JFrame motherFrame;
+    private static java.util.List <Connection> connections = new CopyOnWriteArrayList<Connection>();
+    public static Logger logger;
+    private static Main main;
+
+    private PeopleScreen peopleScreen;
+    private StatusPanel statusBar;
+
+    public static GroupFactory standardGroupFactory = new GroupWrapperFactory();
+    static class GroupWrapperFactory implements GroupFactory {
+        public GroupWrapperFactory() {
+//            new Exception("creating gwf").printStackTrace();
+        }
+
+        public Group create(String group) {
+            return GroupWrapper.create(group);
+        }
+
+        public Group create(Group group) {
+            return GroupWrapper.create(group);
+        }
+    };
+
+    public static ContactFactory standardContactFactory = new ContactWrapperFactory();
+    static class ContactWrapperFactory implements ContactFactory {
+        public Contact create(Nameable buddy, Connection connection) {
+            return ContactWrapper.create(buddy, connection);
+        }
+
+        public Contact create(String name, Connection connection) {
+            return ContactWrapper.create(name, connection);
+        }
+
+        public Contact get(String name, Connection connection) {
+            return ContactWrapper.get( name, connection);
+        }
+    };
+
+//    private final static int SCREEN_PROPERTIES    = 2;
+//    private static final String MENU_ACTION = "Action";
+    /**
+     * Starts the GUI.
+     * Standard main.
+     * @param args not used
+     */
+    public static void main(String[] args) throws Exception
+    {
+        if (System.currentTimeMillis() > new GregorianCalendar(2006, 5, 5).getTimeInMillis()) {
+            JOptionPane.showMessageDialog(null, "This software needs to be updated.  Please contact someone at www.itbsllc.com", "Expired:", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+        }
+        Toolkit.getDefaultToolkit().setDynamicLayout(true);
+        // if all else fails: security manager to null in the first line in you code
+        main  = new Main();
+        System.setProperty("com.apple.macos.useScreenMenuBar", "true");
+        loadProperties();
+        LookAndFeelManager.setLookAndFeel(ClientProperties.INSTANCE.getLookAndFeelIndex());
+        motherFrame = GUIUtils.createFrame(TITLE);
+        motherFrame.setIconImage(ImageCacheUI.ICON_JC.getIcon().getImage());
+        main.createGUI();
+        main.peopleScreen = new PeopleScreen();
+        motherFrame.getContentPane().setLayout(new BorderLayout());
+        motherFrame.getContentPane().add(main.peopleScreen);
+        main.statusBar = new StatusPanel();
+        motherFrame.getContentPane().add(main.statusBar, BorderLayout.SOUTH);
+        motherFrame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(final WindowEvent event) {
+                ClientProperties.INSTANCE.setWindowBounds(motherFrame.getBounds());
+//                System.out.println("Last window: " + motherFrame.getBounds());
+                exit();
+            }
+        });
+        try {
+            // addConnection what you loaded
+            for (Connection connection : connections) {
+                if (connection instanceof MessageSupport)
+                    try {
+                        Main.addConnection((MessageSupport) connection);
+                        if (!connection.isLoggedIn() && connection.isAutoLogin())
+                            connection.connect();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+            }
+        } catch (Exception e) {
+            motherFrame.setVisible(true);
+            Main.complain("Failed to load connection settings.\nPlease restore connections by hand.", e);
+        }
+        motherFrame.setVisible(true);
+        if (ClientProperties.isFirstTimeUse() || connections.size() == 0) {
+            // todo do first time stuff
+            // show disclaimer accept screen
+
+            // show add connection dialog
+            new LoginPanel(null).setVisible(true);
+        }
+    }
+
+    public static PeopleScreen getPeoplePanel() {
+        return main.peopleScreen;
+    }
+    public static StatusPanel getStatusBar() {
+        return main.statusBar;
+    }
+
+    public static List <Connection>getConnections() {
+        return connections;
+    }
+
+    public static JFrame getFrame() {
+        return motherFrame;
+    }
+
+    public static void setTitle(String message) {
+        motherFrame.setTitle(TITLE + " - " + message);
+        showTooltip(message);
+    }
+
+    /**
+     * Creates the guts of the window and populate motherFrame with it.
+     */
+    public void createGUI() {
+        boolean firstRun = motherFrame.getContentPane().getComponentCount() == 0;
+        if (firstRun) {
+            JPanel topPanel = new JPanel(new BorderLayout());
+            motherFrame.getContentPane().add(topPanel);
+            if (ClientProperties.INSTANCE.getWindowBounds() == null)
+                motherFrame.setSize(INITIAL_SIZE);//motherFrame.pack();
+            else
+                motherFrame.setBounds(ClientProperties.INSTANCE.getWindowBounds());
+            motherFrame.setJMenuBar(MenuManager.getMenuBar());
+            TrayAdapter.create(ClientProperties.INSTANCE.isUseTray(), motherFrame, ImageCacheUI.ICON_JC.getIcon(), "JClaim");
+            WindowSnapper.instance().setEnabled(ClientProperties.INSTANCE.isSnapWindows());
+        }
+    }
+
+    public static void addConnection(MessageSupport connection) throws Exception {
+        if (logger == null) { // on 1st addConnection:
+            logger = new Logger(ClientProperties.INSTANCE.getLogPath());
+            final WeatherConnection weather = new WeatherConnection();
+            weather.setProperties(ClientProperties.INSTANCE);
+            weather.assignContactFactory(standardContactFactory);
+            weather.assignGroupFactory(standardGroupFactory);
+            connections.add(weather);
+            if (ClientProperties.INSTANCE.isShowWeather())
+                weather.connect();
+            ServerStarter.update(); // bring the web server up now, if enabled.
+            ContactListModel.setConnection(weather);
+        }
+        connection.addEventListener(new GlobalEventHandler());
+        connection.addEventListener(MessageWindow.getConnectionEventListener());
+        connection.addEventListener(logger); // if logger is before MW, we see it log the incoming msg first
+        JList list = main.peopleScreen.getList();
+        connection.addEventListener((ConnectionEventListener) list.getModel()); // is also self-added
+        MenuManager.addConnection(connection);
+        if (!connections.contains(connection)) {
+            connections.add(connection); // as long as it logged in ok
+        }
+    }
+
+    static void exit() {
+        try {
+            motherFrame.setVisible(false);
+            motherFrame.dispose();
+            if (connections != null)
+                for (Connection connection : connections) {
+                    if (connection != null && connection.isLoggedIn())
+                        connection.disconnect(true);
+                }
+            saveProperties();
+            Thread.yield();
+        } finally {
+            System.exit(0);
+        }
+    }
+
+
+    public static synchronized void loadProperties() {
+        // load data
+        if (CONFIG_FILE.exists() && CONFIG_FILE.isFile() && CONFIG_FILE.length() > 0) {
+            Object data;
+            XMLDecoder d = null;
+            try {
+/*
+                boolean newFormat = true;
+                RandomAccessFile raf = new RandomAccessFile(configFile, "r");
+                if (raf.length()>0) {
+                    newFormat = raf.readChar() != '<';
+                }
+                raf.close();
+                if (newFormat)
+*/
+                d = new XMLDecoder(new GZIPInputStream(new FileInputStream(CONFIG_FILE)));
+/*
+                else
+                    d = new XMLDecoder(new FileInputStream(configFile));
+*/
+                data = d.readObject();
+                ClientProperties.setInstance((ClientProperties)data);
+
+                try {
+                    while (true) {
+                        data = d.readObject();
+                        if (data != null) {
+                            ((Connection) data).setProperties(ClientProperties.INSTANCE);
+                            ((Connection) data).assignGroupFactory(standardGroupFactory);
+                            ((Connection) data).assignContactFactory(standardContactFactory);
+                            getConnections().add((MessageSupport) data);
+                        }
+                    }
+                } catch (ArrayIndexOutOfBoundsException  e) {
+                    // no care
+                }
+            } catch (IOException e) {
+                if (e.getMessage().startsWith("Not in ") && e.getMessage().endsWith(" format")) {
+                    Main.complain("File is corrupt.\n To cure the problem, change a setting.  Your setting will be lost, but the error will be fixed.", e);
+                } else {
+                    Main.complain("Failed to load settings.\n" + e.getMessage(), e);
+                }
+            } catch (Exception e) {
+                Main.complain("Failed to load settings\n" + e.getMessage(), e);
+            } finally {
+                if (d!=null)
+                    d.close();
+            }
+        } else {
+            ClientProperties.setFirstTimeUse(true);
+        }
+    }
+
+    public static synchronized void saveProperties() {
+        try {
+            CONFIG_FILE_SAV.delete();
+            final OutputStream out = new GZIPOutputStream(new FileOutputStream(CONFIG_FILE_SAV));
+            XMLEncoder e = new XMLEncoder(out);
+            e.writeObject(ClientProperties.INSTANCE);
+
+            // addConnection what you loaded
+            if (connections.size() > 1) {
+                for (Connection connection : connections) {
+                    if (connection instanceof MessageSupport) {
+                        if (connection!=null)
+                            e.writeObject(connection);
+                    }
+                }
+            }
+            e.flush();
+            e.close();
+            out.flush();
+            out.close();
+            // save, rename to old.
+            CONFIG_FILE.delete();
+            CONFIG_FILE_SAV.renameTo(CONFIG_FILE);
+        } catch (Exception ex) {
+            Main.complain("Failed to save config file.", ex);
+        }
+    }
+
+    public static ContactWrapper findContact(String talkingTo, String medium, String as) {
+        ContactWrapper wrapper = null;
+        for (int i = 0; i < Main.getConnections().size() && wrapper == null; i++) {
+            if (Main.getConnections().get(i).getServiceName().equals(medium)
+                    && Main.getConnections().get(i).getUser().getName().equals(as))
+            wrapper = ContactWrapper.get(talkingTo, Main.getConnections().get(i));
+        }
+        return wrapper;
+    }
+
+    public static void waitCursor() {
+        if (motherFrame != null)
+            motherFrame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    }
+
+    public static void normalCursor() {
+        if (motherFrame != null)
+            motherFrame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }
+    boolean isDisplayable() {
+        return motherFrame!=null && motherFrame.isDisplayable();
+    }
+
+    public static Logger getLogger() {
+        return logger;
+    }
+
+    public static void complain(String message) {
+        JOptionPane.showMessageDialog(motherFrame, message, "Error:", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public static void complain(String message, Throwable exception) {
+        if (exception == null)
+            complain(message);
+        else
+            ErrorDialog.displayError(motherFrame, message, exception);
+    }
+
+    /**
+     * Shows bubble.
+     * @param caption of the bubble
+     * @param text for the bubble
+     */
+    public static void showTooltip(String caption, String text) {
+        TrayAdapter.showBubble(caption, text);
+    }
+    /**
+     * Shows bubble.
+     * @param text for the bubble
+     */
+    public static void showTooltip(String text) {
+        showTooltip(null, text);
+    }
+}
