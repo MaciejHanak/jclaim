@@ -50,6 +50,9 @@
     <property name="file.smack.o.jar" value="${dir.dist}/smack.jar"/>
     <property name="file.smack.lib.jar" value="${dir.lib}/smack.jar"/>
 
+    <property name="file.smackx.o.jar" value="${dir.dist}/smackx.jar"/>
+    <property name="file.smackx.lib.jar" value="${dir.lib}/smackx.jar"/>
+
     <property name="file.yahoo.o.jar" value="${dir.dist}/ymsg.jar"/>
     <property name="file.yahoo.lib.jar" value="${dir.lib}/ymsg_network_v0_6.jar"/>
 
@@ -117,6 +120,7 @@
         <delete file="${file.joscar.o.jar}"/>
         <delete file="${file.jazzy.o.jar}"/>
         <delete file="${file.smack.o.jar}"/>
+        <delete file="${file.smackx.o.jar}"/>
         <delete file="${file.jdic.o.jar}"/>
         <delete file="${file.yahoo.o.jar}"/>
         <delete file="${file.msn.o.jar}"/>
@@ -204,6 +208,9 @@
 
         <pack200 src="${file.smack.lib.jar}" destfile="${file.smack.o.jar}"	repack="true"/>
         <signjar jar="${file.smack.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+
+        <pack200 src="${file.smackx.lib.jar}" destfile="${file.smackx.o.jar}"	repack="true"/>
+        <signjar jar="${file.smackx.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.yahoo.lib.jar}" destfile="${file.yahoo.o.jar}"	repack="true"/>
         <signjar jar="${file.yahoo.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>

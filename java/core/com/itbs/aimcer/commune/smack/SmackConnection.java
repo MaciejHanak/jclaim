@@ -30,6 +30,7 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
 
 /**
@@ -144,8 +145,21 @@ public class SmackConnection extends AbstractMessageConnection {
 
 
         connection.getRoster().addRosterListener(new RosterListener() {
-            public void rosterModified() {
+            public void entriesAdded(Collection addresses) {
                 // Ignore event for now
+                addresses = null;   // todo remove breakpoint helper.
+            }
+
+            public void entriesUpdated(Collection addresses) {
+                // Ignore event for now
+            }
+
+            public void entriesDeleted(Collection addresses) {
+                // Ignore event for now
+            }
+
+            /** keep for compatibility with earlier versions. */
+            public void rosterModified() {
             }
 
             public void presenceChanged(String user) {
