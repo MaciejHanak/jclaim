@@ -225,7 +225,7 @@ public class PeopleListServlet extends HttpServlet {
             GroupList glist = connection.get(0).getGroupList();
             for (int i = 0; i < glist.size(); i++) {
                 Group group = glist.get(i);
-                if (group instanceof GroupFactory)
+                if (group instanceof GroupWrapper)
                     groupWrapper = (GroupWrapper) group;
                 else
                     groupWrapper = (GroupWrapper) connection.get(0).getGroupFactory().create(group);
