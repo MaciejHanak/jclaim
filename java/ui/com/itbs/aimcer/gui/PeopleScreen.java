@@ -22,7 +22,6 @@ package com.itbs.aimcer.gui;
 
 import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.aimcer.bean.ContactWrapper;
-import com.itbs.aimcer.bean.GroupFactory;
 import com.itbs.aimcer.bean.GroupWrapper;
 import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.commune.weather.WeatherConnection;
@@ -119,7 +118,7 @@ final public class PeopleScreen extends GradientPanel  {
                         }
                     }
                 }
-                else if (item instanceof GroupFactory) {
+                else if (item instanceof GroupWrapper) {
                     ((GroupWrapper)item).swapShrunk();
                     ((ContactListModel)list.getModel()).runActionDataChanged();
                 }
@@ -137,7 +136,7 @@ final public class PeopleScreen extends GradientPanel  {
                 }
                 if (evt.isPopupTrigger() && list.getSelectedIndex() > -1) { // show menus
                     final Object[] items = list.getSelectedValues();
-                    boolean multiple = items.length > 1 || list.getSelectedValue() instanceof GroupFactory;
+                    boolean multiple = items.length > 1 || list.getSelectedValue() instanceof GroupWrapper;
 
                     final JPopupMenu menu = new JPopupMenu();
                     JMenuItem item = new JMenuItem(multiple?"Message all...":"Message");
@@ -152,7 +151,7 @@ final public class PeopleScreen extends GradientPanel  {
                             for (Object selected : items) {
                                 if (selected instanceof ContactWrapper) {
                                     allContacts.add((ContactWrapper) selected);
-                                } else if (selected instanceof GroupFactory) {
+                                } else if (selected instanceof GroupWrapper) {
                                     GroupWrapper group = (GroupWrapper) selected;
                                     for (int j = 0; j < group.size(); j++) {
                                         if (group.get(j) instanceof ContactWrapper)
