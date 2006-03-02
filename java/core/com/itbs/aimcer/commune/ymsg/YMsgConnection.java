@@ -37,7 +37,6 @@ import java.util.Vector;
 public class YMsgConnection extends AbstractMessageConnection {//implements FileTransferSupport {
     // -----The session object - our way into the Yahoo API
     private Session session;
-    private Nameable user;
     /** remembers last state. */
     private boolean disconnect;
     private static String EMPTY_EMAIL_STATE = "Unread Email Count: 0";
@@ -127,7 +126,6 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
 
 // todo see about this               currentIdentity=null;
                 notifyConnectionEstablished();
-                user = getContactFactory().create(getUserName(), this);
                 disconnect = false;
             } else {
                 for (ConnectionEventListener eventHandler : eventHandlers) {
@@ -227,10 +225,6 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
                 e.printStackTrace();  //Todo change?
             }
         }
-    }
-
-    public Nameable getUser() {
-        return user;
     }
 
     public void disconnect(boolean intentional) {

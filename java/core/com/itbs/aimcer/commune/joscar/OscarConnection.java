@@ -99,14 +99,6 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         super.setAway(away);
     }
 
-    /**
-     * Username for this connection.
-     * @return name
-     */
-    public Nameable getUser() {
-        return getContactFactory().create(getUserName(), this);
-    }
-
     private void turnOnLogging() {
         ConsoleHandler handler = new ConsoleHandler();
         handler.setFormatter(new java.util.logging.Formatter() {

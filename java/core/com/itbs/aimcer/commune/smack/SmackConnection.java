@@ -147,7 +147,6 @@ public class SmackConnection extends AbstractMessageConnection {
         connection.getRoster().addRosterListener(new RosterListener() {
             public void entriesAdded(Collection addresses) {
                 // Ignore event for now
-                addresses = null;   // todo remove breakpoint helper.
             }
 
             public void entriesUpdated(Collection addresses) {
@@ -190,14 +189,6 @@ public class SmackConnection extends AbstractMessageConnection {
             return userName.substring(0, index);
         }
         return userName;
-    }
-
-    /**
-     * Username for this connection.
-     * @return name
-     */
-    public Nameable getUser() {
-        return getContactFactory().create(connection.getUser(), this);
     }
 
     public void disconnect(boolean intentional) {

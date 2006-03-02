@@ -316,14 +316,6 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
     } // class ConnectionListener
 
 
-    /**
-     * Username for this connection.
-     * @return name
-     */
-    public Nameable getUser() {
-        return getContactFactory().create(getUserName(), this);
-    }
-
     public void disconnect(boolean intentional) {
         sessions.clear();
         if (connection!=null)

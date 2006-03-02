@@ -36,7 +36,6 @@ import java.util.Enumeration;
  */
 public class JAIMConnection extends AbstractMessageConnection implements JaimEventListener {
     private JaimConnection connection;
-    private Nameable user;
     /** remembers last state. */
     private boolean disconnect;
     private int timeout = 30000;
@@ -67,7 +66,6 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
             e.printStackTrace();
             throw new SecurityException(e.getMessage());
         }
-        user = getContactFactory().create(getUserName(), this);
         Thread.sleep(100);
         connection.addBlock("");     // Set Deny None
         connection.setInfo("This client is using <a href=\"http://www.itbsllc.com/software/aimcer.htm\"> JClaim </a>.");
@@ -129,10 +127,6 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
         for (ConnectionEventListener eventHandler : eventHandlers) {
             eventHandler.statusChanged(this);
         }
-    }
-
-    public Nameable getUser() {
-        return user;
     }
 
     public void disconnect(boolean intentional) {
@@ -245,7 +239,7 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
         }
         synchronized(connection) {
             try {
-                if (connection.isLoginComplete() || user == null || disconnect) // recovered or quit
+                if (connection.isLoginComplete() || getUser() == null || disconnect) // recovered or quit
                     return;
                 connection.disconnect();
                 System.out.println("Attempting a reconnect.");
