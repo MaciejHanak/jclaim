@@ -21,6 +21,7 @@
 package com.itbs.aimcer.commune;
 
 import com.itbs.aimcer.bean.Message;
+import com.itbs.aimcer.bean.Nameable;
 
 import javax.swing.text.html.HTMLEditorKit;
 import java.io.IOException;
@@ -35,6 +36,8 @@ import java.util.concurrent.Executors;
  */
 abstract public class AbstractMessageConnection extends AbstractConnection implements MessageSupport {
     private String userName, password;
+    private Nameable user;
+
     private boolean away;
     private Executor executor = Executors.newSingleThreadScheduledExecutor();
 
@@ -46,6 +49,10 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
 
     public void setUserName(String userName) {
         this.userName = userName;
+        if (userName == null)
+            user = null;
+        else
+            user = getContactFactory().create(getUserName(), this);
     }
 
     public String getPassword() {
@@ -54,6 +61,14 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    /**
+     * Username for this connection.
+     * @return name
+     */
+    public Nameable getUser() {
+        return user;
     }
 
     /**
