@@ -150,6 +150,8 @@ public class GeneralUtils {
     /**
      * Makes a name unique.
      * Trims any spaces.  Lowercases it.
+     * Precondition: not null!
+     * 
      * @param in string to trim
      * @return result
      */
