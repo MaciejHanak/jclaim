@@ -119,6 +119,7 @@ public class FileTransferAdapter extends JDialog implements FileTransferListener
         if (contact.getConnection().getProperties().isAutoDismissDialogs())
             dispose();
         else {
+            progressBar.setValue(progressBar.getMaximum()); // max it out in case it was a small file
             done.setEnabled(true);
             cancel.setEnabled(false);
             status.setText("Transfer finished.");
