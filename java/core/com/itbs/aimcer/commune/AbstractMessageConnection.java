@@ -51,8 +51,19 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
         this.userName = userName;
         if (userName == null)
             user = null;
-        else
+        else if (getContactFactory() != null) // update user.  But it doesn't make sense to do it before connect.
             user = getContactFactory().create(getUserName(), this);
+    }
+
+    /**
+     * Most of the time, one would overwrite it.
+     * Make sure you call super, if need the coverage.
+     *
+     * @throws SecurityException exception
+     * @throws Exception exception
+     */
+    public void connect() throws SecurityException, Exception {
+        setUserName(getUserName()); // update user 
     }
 
     public String getPassword() {
