@@ -161,8 +161,11 @@ public class ContactWrapper implements Contact, Renderable {
      * @param displayName Name that should be displayed.
      */
     public void setDisplayName(String displayName) {
+        // it's ok to just set it.  getDisplayName doesn't use it straight.
         this.displayName = displayName;
-        updateDisplayComponent();
+        if (!preferences.isUseDisplayName()) { //no point wasting cycles if we are not using it.
+            updateDisplayComponent();
+        }
     }
 
     public String toString() {
