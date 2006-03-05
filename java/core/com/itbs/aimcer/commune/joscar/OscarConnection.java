@@ -66,12 +66,20 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 /**
- * @author Created by Alex Rass on Sep 22, 2004
+ * Manages AIM connectivity.  Singlehandedly.
+ *
+ * @author Alex Rass
+ * @since Sep 22, 2004
  */
 public class OscarConnection extends AbstractMessageConnection implements FileTransferSupport, IconSupport {
     AimConnection connection;
     private AimConnectionProperties connectionProperties; // use to hold on connection settings
     RvProcessor rvProcessor;
+    /**
+     * Handle buddy alias changes.
+     * Could be static, but for some implementation it may be a problem.  Leaving non-static
+     */
+    private AliasBuddyListener aliasBuddyListener = new AliasBuddyListener();
 //    BasicConnection iconConnection;
 //    Map<Contact,FullUserInfo> fullUserInfoCache = Collections.synchronizedMap(new HashMap<Contact, FullUserInfo>(50));
 
@@ -258,7 +266,10 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
                             public void buddyAdded(BuddyList list, net.kano.joustsim.oscar.oscar.service.ssi.Group group, List<? extends Buddy> oldItems, List<? extends Buddy> newItems, Buddy buddy) {
                                 Group bGroup = getGroupFactory().create(group.getName());
-                                bGroup.add(getContactFactory().create(buddy.getScreenname().getNormal(), OscarConnection.this));
+                                Contact contact = getContactFactory().create(buddy.getScreenname().getNormal(), OscarConnection.this);
+                                contact.setDisplayName(buddy.getAlias());
+                                buddy.addBuddyListener(aliasBuddyListener);
+                                bGroup.add(contact);
                                 notifyListeners();
                             }
 
@@ -1174,4 +1185,28 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         }
     }
   */
+    private class AliasBuddyListener implements BuddyListener {
+        public void screennameChanged(Buddy buddy, Screenname oldScreenname, Screenname newScreenname) {
+            // some day perhaps allow that.
+        }
+
+        public void aliasChanged(Buddy buddy, String oldAlias, String newAlias) {
+            Contact contact = getContactFactory().get(oldAlias, OscarConnection.this);
+            if (contact!=null) {
+                contact.setDisplayName(newAlias);
+            }
+        }
+
+        public void buddyCommentChanged(Buddy buddy, String oldComment, String newComment) {
+        }
+
+        public void alertActionChanged(Buddy buddy, int oldAlertAction, int newAlertAction) {
+        }
+
+        public void alertTimeChanged(Buddy buddy, int oldAlertEvent, int newAlertEvent) {
+        }
+
+        public void alertSoundChanged(Buddy buddy, String oldAlertSound, String newAlertSound) {
+        }
+    }
 } // class OscarConnection
