@@ -47,11 +47,30 @@ public interface Contact extends Nameable {
     Icon getPicture();
     void setPicture(Icon icon);
 
+    /**
+     * Displayname is what the UI should display.
+     * It is often not the same as what getName() returns.
+     * @return name to display.
+     */
     String getDisplayName();
+
+    /**
+     * Displayname is what the UI should display.
+     * It is often not the same as what getName() returns.
+     * @param name to display.
+     */
     void setDisplayName(String name);
 
+    /**
+     * Status support.
+     * @return status
+     */
     Status createStatus();
     Status getStatus();
 
+    /**
+     * Connection that this contact belongs to.
+     * @return connection.
+     */
     Connection getConnection();
 }
