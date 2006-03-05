@@ -80,6 +80,21 @@ public class SmackConnection extends AbstractMessageConnection {
     }
 
     private void fireConnect() {
+        connection.addConnectionListener(new ConnectionListener() {
+            public void connectionClosed() {
+                Iterator <ConnectionEventListener >iter = getEventListenerIterator();
+                while (iter.hasNext()) {
+                    iter.next().connectionLost(SmackConnection.this);
+                }
+            }
+
+            public void connectionClosedOnError(Exception e) {
+                Iterator <ConnectionEventListener >iter = getEventListenerIterator();
+                while (iter.hasNext()) {
+                    iter.next().connectionFailed(SmackConnection.this, e.getMessage());
+                }
+            }
+        });
           //////////////////////
          // Allow All to Add //
         /////////////////////
