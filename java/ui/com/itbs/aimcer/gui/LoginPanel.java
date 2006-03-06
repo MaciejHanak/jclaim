@@ -48,7 +48,8 @@ public final class LoginPanel extends JDialog implements ActionListener {
     JCheckBox autoLogin;
     public static final String DISPLAYED_TEXT = "<HTML><FONT SIZE=2>Use login credential for selected service.<p>" +
                     "Only proceed to use this software if you have<br>read and agreed with our disclaimers and notes.<p><p>" +
-                    "Note: All actions are logged.<p><p>" +
+                    "Note: Communications are logged locally.<p><p>" +
+/*
                     "Disclaimer:<p>" +
                     "We advise that all the issues regarding the<br>" +
                     "legal and compliance adherence should be<br>" +
@@ -56,6 +57,7 @@ public final class LoginPanel extends JDialog implements ActionListener {
                     "the appropriate parties.<br>" +
                     "We would be happy to provide them with any<br>" +
                     "pertaining information.<p><p>" +
+*/
                     "For reporting problems or requesting features<br>" +
                     "use contact information from the website.<p><p>" +
                     Main.VERSION + "</FONT></HTML>";
