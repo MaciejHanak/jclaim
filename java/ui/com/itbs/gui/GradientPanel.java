@@ -24,7 +24,11 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * @author Created by Alex Rass on May 28, 2004
+ * Provides an easy panel to do a nice gradient background.
+ * Allows several directions for gradient fill.
+ * 
+ * @author Alex Rass
+ * @since May 28, 2004
  */
 public class GradientPanel extends JPanel {
     public static final int ALIGN_LEFT_RIGHT = 0;
