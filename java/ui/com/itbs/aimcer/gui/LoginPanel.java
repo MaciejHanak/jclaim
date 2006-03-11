@@ -35,7 +35,11 @@ import java.awt.event.ActionListener;
 import java.net.ConnectException;
 
 /**
- * Created by: ARass  on  Date: Mar 25, 2004
+ * This is a JDialog which is used to prompt for login information.
+ * Provides a place to pick username, password, medium type and autologin property. 
+ *
+ * @author Alex Rass
+ * @since Mar 25, 2004
  */
 public final class LoginPanel extends JDialog implements ActionListener {
     private static final String NAME = "Name: ";
@@ -44,8 +48,11 @@ public final class LoginPanel extends JDialog implements ActionListener {
     private static final String SAVE = "Save";
     private final JTextField name, password;
     private JComboBox service;
+    /** Login button */
     private JButton login;
+    /** Auto-Login checkbox */
     JCheckBox autoLogin;
+    /** Comment displayed on the login panel. */
     public static final String DISPLAYED_TEXT = "<HTML><FONT SIZE=2>Use login credential for selected service.<p>" +
                     "Only proceed to use this software if you have<br>read and agreed with our disclaimers and notes.<p><p>" +
                     "Note: Communications are logged locally.<p><p>" +
