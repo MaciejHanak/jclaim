@@ -30,7 +30,8 @@ import java.util.Map;
 /**
  * Saved as a whole to maintain all preferences.
  *
- * @author Created by Alex Rass on Sep 11, 2004
+ * @author Alex Rass
+ * @since Sep 11, 2004
  */
 public class ClientProperties implements ConnectionProperties {
     /** Property field names. */
@@ -41,7 +42,7 @@ public class ClientProperties implements ConnectionProperties {
     /** Idle delay in seconds before setting away */
     private int away;
     private int serviceIndex;
-/*
+/*  This was used to manage TOC - when it was very unstable.
     private String aimServer[] = {
         "",
         "205.188.248.193",
