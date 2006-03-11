@@ -33,7 +33,11 @@ import java.awt.event.ActionListener;
 import java.io.File;
 
 /**
- * @author Created by Alex Rass on Oct 8, 2004
+ * Used to display the file transfer dialog.
+ * Handles basic file transfer requirements.
+ * 
+ * @author Alex Rass
+ * @since  Oct 8, 2004
  */
 public class FileTransferAdapter extends JDialog implements FileTransferListener{
     private String descr;

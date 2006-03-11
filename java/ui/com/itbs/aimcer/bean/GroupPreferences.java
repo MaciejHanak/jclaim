@@ -22,8 +22,9 @@ package com.itbs.aimcer.bean;
 
 /**
  * Preferences per group.
- * Things you may want to save.
- * @author Created by Alex Rass on Sep 11, 2004
+ * Things you may want to save pertaining to a single group.
+ * @author Alex Rass
+ * @since Sep 11, 2004
  */
 public class GroupPreferences {
     /** UID for a given provider. */

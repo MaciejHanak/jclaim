@@ -31,7 +31,14 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * @author Created by Alex Rass on Sep 9, 2004
+ * Managed things related to a Group.
+ *
+ * This class takes care of both - model and view (JLabel).
+ * If you want to enchance the behavior, either inherit this class or write your own, but then don't
+ * forget to change the group factory.
+ *
+ * @author Alex Rass
+ * @since Sep 9, 2004
  */
 public class GroupWrapper implements Group, Renderable {
     private static Map<String,GroupWrapper> wrappers = new HashMap<String, GroupWrapper>(10);

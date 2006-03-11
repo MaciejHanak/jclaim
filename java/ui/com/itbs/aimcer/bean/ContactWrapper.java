@@ -34,7 +34,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Created by Alex Rass on Sep 9, 2004
+ * Provides a basic implementation needed to maintain contacts.
+ * This class takes care of both - model and view (JLabel).
+ * If you want to enchance the behavior, either inherit this class or write your own, but then don't
+ * forget to change the contact factory.
+ *
+ * @author Alex Rass
+ * @since Sep 9, 2004
  */
 public class ContactWrapper implements Contact, Renderable {
     public static final Font NORM = new Font("Arial", Font.PLAIN, ClientProperties.INSTANCE.getFontSize());

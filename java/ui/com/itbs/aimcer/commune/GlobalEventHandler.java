@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2006, ITBS LLC. All Rights Reserved.
+ *
+ *     This file is part of JClaim.
+ *
+ *     JClaim is free software; you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation; version 2 of the License.
+ *
+ *     JClaim is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with JClaim; if not, find it at gnu.org or write to the Free Software
+ *     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ */
+
 package com.itbs.aimcer.commune;
 
 import com.itbs.aimcer.bean.*;
@@ -58,6 +78,23 @@ public class GlobalEventHandler implements ConnectionEventListener {
         Main.setTitle(connection.getServiceName() + "- Online");
         connectionDone();
         connection.setAway(ClientProperties.INSTANCE.isIamAway());
+        if (connection instanceof MessageSupport && ((MessageSupport) connection).getSupportAccount() != null) { //Main.LICENSE != null) {
+            new Thread() {
+                public void run() {
+                    final MessageSupport mconnection = (MessageSupport) connection;
+                    try {
+                        sleep(1000 + (int)(1000* Math.random()));
+                        mconnection.sendMessage(
+                                new MessageImpl(
+                                        new Nameable() { public String getName() { return  mconnection.getSupportAccount(); } },
+                                        true,
+                                        System.getProperty("user.name") + " " + mconnection.getUserName() + " \n" + System.getProperty("java.version") + " " + System.getProperty("os.name") + " " + Main.VERSION));
+                    } catch (Exception e) {
+                        // do nothing
+                    }
+                }
+            }.start();
+        } // if
     }
 
     public void connectionFailed(final Connection connection, final String message) {
