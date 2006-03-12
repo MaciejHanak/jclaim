@@ -26,6 +26,7 @@ import net.kano.joustsim.oscar.*;
 import net.kano.joustsim.oscar.oscar.service.icbm.*;
 
 /**
+ * Tests Oscar Connectivity
  * @author Alex Rass
  * @since Sep 21, 2004
  */
