@@ -26,7 +26,8 @@ import net.kano.joustsim.oscar.*;
 import net.kano.joustsim.oscar.oscar.service.icbm.*;
 
 /**
- * Created by  Administrator on Sep 21, 2004
+ * @author Alex Rass
+ * @since Sep 21, 2004
  */
 public class UTestOscarConnectivity extends TestCase {
     protected void setUp() throws Exception {
