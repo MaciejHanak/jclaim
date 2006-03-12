@@ -36,7 +36,8 @@ import java.util.Iterator;
 /**
  * Provides connection to Jabber.
  *
- * @author Created by Alex Rass on Dec 24, 2004
+ * @author Alex Rass
+ * @since Dec 24, 2004
  */
 public class SmackConnection extends AbstractMessageConnection {
     public static final String DEFAULT_HOST = "jabber.org";
@@ -91,7 +92,7 @@ public class SmackConnection extends AbstractMessageConnection {
             public void connectionClosedOnError(Exception e) {
                 Iterator <ConnectionEventListener >iter = getEventListenerIterator();
                 while (iter.hasNext()) {
-                    iter.next().connectionFailed(SmackConnection.this, e.getMessage());
+                    iter.next().connectionLost(SmackConnection.this);
                 }
             }
         });
