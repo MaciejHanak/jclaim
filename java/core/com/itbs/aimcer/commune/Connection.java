@@ -27,7 +27,7 @@ import java.util.Iterator;
 /**
  * This is the main interface for all Connections.
  *
- * @author Created by Alex Rass
+ * @author Alex Rass
  * @since Sep 22, 2004
  */
 public interface Connection {
