@@ -24,7 +24,6 @@ import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.bean.Group;
 import com.itbs.aimcer.bean.Message;
 import com.itbs.aimcer.commune.*;
-import com.itbs.aimcer.commune.FileTransferListener;
 import com.itbs.util.GeneralUtils;
 import net.kano.joscar.ByteBlock;
 import net.kano.joscar.FileWritable;
@@ -422,7 +421,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                             eventHandler.fileReceiveRequested(
                                     OscarConnection.this,
                                     getContactFactory().create(transfer.getBuddyScreenname().getFormatted(), OscarConnection.this),
-                                    fileTransfer.getFileInfo().getFilename(),
+                                    fileTransfer.getRequestFileInfo().getFilename(),
                                     fileTransfer.getInvitationMessage().getMessage(),
                                     transfer);
                         } catch (Exception e) {
@@ -921,7 +920,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         });
 
 
-        oft.setFile(ftl.getFile());
+        oft.setSingleFile(ftl.getFile());
         oft.sendRequest(new InvitationMessage(ftl.getFileDescription()));
     }
 
