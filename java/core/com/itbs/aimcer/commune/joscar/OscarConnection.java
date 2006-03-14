@@ -266,7 +266,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                             public void buddyAdded(BuddyList list, net.kano.joustsim.oscar.oscar.service.ssi.Group group, List<? extends Buddy> oldItems, List<? extends Buddy> newItems, Buddy buddy) {
                                 Group bGroup = getGroupFactory().create(group.getName());
                                 Contact contact = getContactFactory().create(buddy.getScreenname().getNormal(), OscarConnection.this);
-                                contact.setDisplayName(buddy.getAlias());
+//                                if (buddy.getAlias()==null) System.out.println("!! Alias was null for " + buddy.getScreenname().getNormal() + " !!");
+                                // all offline ppl will have null aliases.
+                                contact.setDisplayName(buddy.getAlias()!=null?buddy.getAlias():buddy.getScreenname().getFormatted());
                                 buddy.addBuddyListener(aliasBuddyListener);
                                 bGroup.add(contact);
                                 notifyListeners();
