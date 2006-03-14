@@ -27,14 +27,17 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * @author Created by Alex Rass
+ * Implements basic things one needs to support a connection.
+ * Most of these will be useful to pretty much everyone.
+ *
+ * @author Alex Rass
  * @since Oct 10, 2004
  */
 abstract public class AbstractConnection implements Connection {
     protected List<ConnectionEventListener> eventHandlers = new  CopyOnWriteArrayList<ConnectionEventListener>();
     private boolean autoLogin;
     protected boolean disconnectIntentional;
-    protected int disconnectCount;
+    private int disconnectCount;
     private ConnectionProperties properties;
     private ContactFactory contactFactory;
     private GroupFactory groupFactory;
@@ -69,26 +72,29 @@ abstract public class AbstractConnection implements Connection {
         this.autoLogin = autoLogin;
     }
 
+    public boolean isDisconnectIntentional() {
+        return disconnectIntentional;
+    }
+
+    public int getDisconnectCount() {
+        return disconnectCount;
+    }
+
+    public void incDisconnectCount() {
+        disconnectCount ++;
+    }
+
+    public void resetDisconnectInfo() {
+        disconnectCount = 0;
+        disconnectIntentional = false;
+    }
+
     public void disconnect(boolean intentional) {
         if (intentional)
             disconnectIntentional = true; // one way switch b/c we'll get called by finalization stuff
-        disconnectCount++;
+
         for (ConnectionEventListener connectionEventListener : eventHandlers) {
             connectionEventListener.connectionLost(this);
-        }
-        if (!disconnectIntentional && disconnectCount < getProperties().getDisconnectCount()) {
-            new Thread("Reconnect") {
-                public void run() {
-                    try {
-                        sleep(60*1000);
-                        if (!disconnectIntentional && disconnectCount < getProperties().getDisconnectCount() && !isLoggedIn()) {
-                            System.out.println("Trying to reconnecting " + getServiceName() + " for " + disconnectCount + " time.");
-                            reconnect();
-                        }
-                    } catch (InterruptedException e) { //
-                    }
-                }
-            }.start();
         }
     }
 
@@ -163,8 +169,6 @@ abstract public class AbstractConnection implements Connection {
         }
     }
     protected void notifyConnectionEstablished() {
-        disconnectCount = 0;
-        disconnectIntentional = false;
         Iterator <ConnectionEventListener >iter = getEventListenerIterator();
         while (iter.hasNext()) {
             iter.next().connectionEstablished(this);

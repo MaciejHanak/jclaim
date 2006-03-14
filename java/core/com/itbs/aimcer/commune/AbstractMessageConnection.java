@@ -20,6 +20,7 @@
 
 package com.itbs.aimcer.commune;
 
+import com.itbs.aimcer.bean.ContactFactory;
 import com.itbs.aimcer.bean.Message;
 import com.itbs.aimcer.bean.Nameable;
 
@@ -45,6 +46,12 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
 
     public String getUserName() {
         return userName;
+    }
+
+    public void assignContactFactory(ContactFactory factory) {
+        super.assignContactFactory(factory);
+        // this will make sure the User is up to date in case order got reversed in calling assignnments.
+        setUserName(getUserName());
     }
 
     public void setUserName(String userName) {
