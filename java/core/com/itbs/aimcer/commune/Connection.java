@@ -59,7 +59,22 @@ public interface Connection {
      * @return true if match
      */
     public boolean isLoginInfoGood(String name, String pass);
+
+    /**
+     * Drop connection.
+     * @param intentional was intentional (by user) or as a result of a problem.
+     */
     void disconnect(boolean intentional);
+
+    /**
+     * Used to determine if last disconnect was intentional (by user) or as a result of a problem.
+     * @return true if intentional
+     */
+    boolean isDisconnectIntentional();
+    int getDisconnectCount();
+    void incDisconnectCount();
+    void resetDisconnectInfo();
+
     void reconnect();
     boolean isLoggedIn();
     boolean isAutoLogin();
@@ -102,4 +117,5 @@ public interface Connection {
      * Away flag.
      */
     boolean isAway();
+
 }
