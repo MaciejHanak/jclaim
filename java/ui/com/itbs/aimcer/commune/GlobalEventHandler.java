@@ -26,7 +26,9 @@ import com.itbs.aimcer.gui.Main;
 import javax.swing.*;
 
 /**
- * @author Created by Alex Rass
+ * Handles basic connection maintenance.
+ * Reconnects, refreshing lists  etc.
+ * @author Alex Rass
  * Date: Sep 9, 2004
  */
 public class GlobalEventHandler implements ConnectionEventListener {
@@ -78,23 +80,7 @@ public class GlobalEventHandler implements ConnectionEventListener {
         Main.setTitle(connection.getServiceName() + "- Online");
         connectionDone();
         connection.setAway(ClientProperties.INSTANCE.isIamAway());
-        if (connection instanceof MessageSupport && ((MessageSupport) connection).getSupportAccount() != null) { //Main.LICENSE != null) {
-            new Thread() {
-                public void run() {
-                    final MessageSupport mconnection = (MessageSupport) connection;
-                    try {
-                        sleep(1000 + (int)(1000* Math.random()));
-                        mconnection.sendMessage(
-                                new MessageImpl(
-                                        new Nameable() { public String getName() { return  mconnection.getSupportAccount(); } },
-                                        true,
-                                        System.getProperty("user.name") + " " + mconnection.getUserName() + " \n" + System.getProperty("java.version") + " " + System.getProperty("os.name") + " " + Main.VERSION));
-                    } catch (Exception e) {
-                        // do nothing
-                    }
-                }
-            }.start();
-        } // if
+        connection.resetDisconnectInfo();
     }
 
     public void connectionFailed(final Connection connection, final String message) {
@@ -107,13 +93,27 @@ public class GlobalEventHandler implements ConnectionEventListener {
     }
 
     int connectionLostTimes;
-    public void connectionLost(Connection connection) {
+    public void connectionLost(final Connection connection) {
         System.out.println("Connection to " + connection.getServiceName() + " lost " + ++connectionLostTimes + " time(s).");
         connectionDone();
         Main.setTitle(connection.getServiceName() + " Offline");
         handleDisconnect(connection);
-//        if (Main.getFrame().isDisplayable())
-//            connection.reconnect();
+        // this takes care of reconnects.
+        if (Main.getFrame().isDisplayable() && !connection.isDisconnectIntentional() && connection.getDisconnectCount() < ClientProperties.INSTANCE.getDisconnectCount()) {
+            connection.incDisconnectCount();
+            new Thread("Reconnect for " + connection.getServiceName()) {
+                public void run() {
+                    try {
+                        sleep(60*1000);
+                        if (Main.getFrame().isDisplayable() && !connection.isDisconnectIntentional() && connection.getDisconnectCount() < ClientProperties.INSTANCE.getDisconnectCount() && !connection.isLoggedIn()) {
+                            System.out.println("Trying to reconnect " + connection.getServiceName() + " attempt no. " + connection.getDisconnectCount());
+                            connection.reconnect();
+                        }
+                    } catch (InterruptedException e) { //
+                    }
+                }
+            }.start();
+        }
     }
 
     /**
