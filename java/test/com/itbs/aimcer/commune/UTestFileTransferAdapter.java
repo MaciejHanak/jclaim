@@ -26,7 +26,10 @@ import com.itbs.aimcer.gui.UTestFrameTest;
 import java.io.File;
 
 /**
- * @author Created by  Administrator on Oct 8, 2004
+ * Used to test file transfers.
+ *
+ * @author Alex Rass
+ * @since Oct 8, 2004
  */
 public class UTestFileTransferAdapter extends UTestFrameTest {
     boolean failed;
