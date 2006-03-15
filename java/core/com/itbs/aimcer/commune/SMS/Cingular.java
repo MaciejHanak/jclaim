@@ -26,7 +26,10 @@ import java.io.IOException;
 import java.net.URLEncoder;
 
 /**
- * @author Created by Alex Rass on Apr 24, 2005
+ * Provides a way to page cingular users (US).
+ *
+ * @author Alex Rass
+ * @since Apr 24, 2005
  */
 public class Cingular implements SMSMessage {
 
