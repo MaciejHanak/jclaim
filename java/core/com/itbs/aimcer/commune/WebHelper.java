@@ -27,7 +27,11 @@ import java.net.URL;
 import java.net.URLConnection;
 
 /**
- * @author Created by Alex Rass on Oct 10, 2004
+ * Utility class to help with Web Sites.
+ * Has helper functions to get/post pages.
+ *
+ * @author Alex Rass
+ * @since Oct 10, 2004
  */
 public class WebHelper {
 
