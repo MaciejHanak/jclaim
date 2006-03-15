@@ -23,7 +23,10 @@ package com.itbs.aimcer.commune;
 import java.io.File;
 
 /**
- * @author Created by Alex Rass
+ * Listener of a file transfer event.
+ * Used during the actual transfer.
+ * 
+ * @author Alex Rass
  * @since Oct 8, 2004
  */
 public interface FileTransferListener {
