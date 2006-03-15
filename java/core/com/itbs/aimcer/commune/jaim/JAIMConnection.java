@@ -32,7 +32,11 @@ import java.util.Enumeration;
 
 /**
  * TOC AIM.
- * @author Created by Alex Rass on Sep 25, 2004
+ * Uses the TOC protocol.
+ * Rather unreliable and featureless.
+ *
+ * @author Alex Rass
+ * @since Sep 25, 2004
  */
 public class JAIMConnection extends AbstractMessageConnection implements JaimEventListener {
     private JaimConnection connection;
