@@ -23,7 +23,10 @@ package com.itbs.aimcer.commune;
 import java.net.InetAddress;
 
 /**
- * @author Created by Alex Rass on Dec 19, 2004
+ * Used in file transfers.
+ * 
+ * @author Alex Rass
+ * @since Dec 19, 2004
  */
 public class ConnectionInfo {
     InetAddress ip;
