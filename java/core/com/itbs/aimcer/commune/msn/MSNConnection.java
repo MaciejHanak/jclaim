@@ -43,7 +43,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Provides connection to MSN.
  *
- * @author Created by Alex Rass on Dec 24, 2004
+ * @author Alex Rass
+ * @since Dec 24, 2004
  */
 public class MSNConnection extends AbstractMessageConnection { //implements FileTransferSupport {
     MSNMessenger connection = null;
