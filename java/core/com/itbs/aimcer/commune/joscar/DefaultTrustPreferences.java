@@ -27,7 +27,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 /**
- * @author Created by Alex Rass on Oct 6, 2004
+ * This will be needed for secure IM support.
+ *
+ * @author Alex Rass
+ * @since Oct 6, 2004
  */
 public class DefaultTrustPreferences implements TrustPreferences{
     Screenname screenname;
