@@ -26,7 +26,11 @@ import java.io.IOException;
 import java.net.URLEncoder;
 
 /**
- * @author Created by Alex Rass on Apr 24, 2005
+ * Sends messages to Verizon users.
+ * They change the site often, so this has to be periorically updated
+ *
+ * @author Alex Rass
+ * @since Apr 24, 2005
  */
 public class Verizon implements SMSMessage {
 
