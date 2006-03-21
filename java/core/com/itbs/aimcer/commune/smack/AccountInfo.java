@@ -21,7 +21,9 @@
 package com.itbs.aimcer.commune.smack;
 
 /**
- * @author Created by Alex Rass on Dec 31, 2004
+ * Manages Account information in an easy maner.
+ * @author Alex Rass
+ * @since Dec 31, 2004
  */
 public class AccountInfo {
     private String userName, password;
