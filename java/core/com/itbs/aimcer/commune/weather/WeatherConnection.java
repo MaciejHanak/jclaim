@@ -37,7 +37,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * @author Created by Alex Rass on Oct 10, 2004
+ * Provides access to weather information.
+ * Done via web page scraping.
+ * 
+ * @author Alex Rass
+ * @since Oct 10, 2004
  */
 public class WeatherConnection extends AbstractConnection {
     private Group weather;
