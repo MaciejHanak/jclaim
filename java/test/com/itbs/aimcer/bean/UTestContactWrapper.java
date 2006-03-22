@@ -24,7 +24,10 @@ import com.itbs.aimcer.commune.joscar.OscarConnection;
 import junit.framework.TestCase;
 
 /**
- * Created by: ARass  on  Date: Sep 24, 2004
+ * Tests the bean class.
+ *
+ * @author ARass
+ * @since Date: Sep 24, 2004
  */
 public class UTestContactWrapper extends TestCase {
     String nameGood = "good";
