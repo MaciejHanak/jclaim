@@ -23,7 +23,9 @@ package com.itbs.aimcer.commune.SMS;
 import junit.framework.TestCase;
 
 /**
- * @author Created by  Administrator on Apr 24, 2005
+ * Tests SMS.
+ * @author Administrator
+ * @since Apr 24, 2005
  */
 public class UTestSMSMessage extends TestCase {
     public void testPost() throws Exception {
