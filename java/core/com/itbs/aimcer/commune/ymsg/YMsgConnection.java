@@ -32,7 +32,10 @@ import java.io.InterruptedIOException;
 import java.util.Vector;
 
 /**
- * @author Created by Alex Rass on Mar 26, 2005
+ * Support for Yahoo medium.
+ *
+ * @author Alex Rass
+ * @since Mar 26, 2005
  */
 public class YMsgConnection extends AbstractMessageConnection {//implements FileTransferSupport {
     // -----The session object - our way into the Yahoo API
