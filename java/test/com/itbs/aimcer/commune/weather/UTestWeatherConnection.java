@@ -24,7 +24,9 @@ import com.itbs.aimcer.bean.ContactWrapper;
 import com.itbs.aimcer.gui.UTestFrameTest;
 
 /**
- * @author Created by  Administrator on Oct 10, 2004
+ * Test class.
+ * @author Alex Rass
+ * @since Oct 10, 2004
  */
 public class UTestWeatherConnection extends UTestFrameTest {
     final static String zipCode[] = {"08837", "10001"};
