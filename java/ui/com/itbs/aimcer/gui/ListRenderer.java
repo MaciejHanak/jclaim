@@ -27,7 +27,11 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * @author Created by Alex Rass on Sep 9, 2004
+ * Provides mechanism for drawing items in a list.
+ * Handles selection for list items.
+ *
+ * @author Alex Rass
+ * @since Sep 9, 2004
  */
 public class ListRenderer implements ListCellRenderer {
     public static final Color SELECTED = Color.BLUE;
