@@ -32,6 +32,12 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.Socket;
 
+/**
+ * Not used!
+ * Was used in the previous implementation for AIM.
+ * But since then the library includes the trasfer support.
+ * @author Alex Rass
+ */
 public class GetFileThread extends Thread implements FileTransferService {
     private Socket socket;
     FileTransferListener listener;
