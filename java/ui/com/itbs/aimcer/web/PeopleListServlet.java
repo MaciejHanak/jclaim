@@ -48,8 +48,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** TODO make it less reliant on MessageWindow
- * @author Created by Alex Rass on Mar 19, 2005
+/**
+ * Displays the list of contacts.
+ * Main window for the web interface.
+ *
+ * TODO when hiding contacts, display people who are not connect, but have swing windows open.
+ * TODO make it less reliant on MessageWindow
+ *
+ * @author Alex Rass
+ * @since Mar 19, 2005
  */
 public class PeopleListServlet extends HttpServlet {
     private static String screen;
