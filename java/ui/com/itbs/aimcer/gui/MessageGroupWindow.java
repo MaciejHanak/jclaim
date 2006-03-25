@@ -39,7 +39,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * @author Created by Alex Rass on Sep 9, 2004
+ * Provies a way to mass message people.
+ * TODO stop this cut and paste mess and start using regular message window.
+ *
+ * @author Alex Rass 
+ * @since Sep 9, 2004
  */
 public class MessageGroupWindow  {
     /** Size of the message box. */
