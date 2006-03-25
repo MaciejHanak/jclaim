@@ -38,7 +38,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Created by Alex Rass on Mar 19, 2005
+ * Provides login functionality.
+ * 
+ * @author Alex Rass
+ * @since Mar 19, 2005
  */
 public class LoginServlet extends HttpServlet {
     private static String loginScreen;
