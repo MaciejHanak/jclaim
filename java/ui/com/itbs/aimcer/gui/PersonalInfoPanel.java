@@ -34,6 +34,8 @@ import java.awt.*;
 /**
  * Hosts the additional user info.
  * <p>
+ * Displayed in Message Window at the moment. 
+ * <p>
  * todo make an object:
  * Fields:
  *   Forced DisplayName
@@ -46,9 +48,8 @@ import java.awt.*;
  *   Address (addConnection with mappoint?)
  *   LastWindowBounds
  *
- * @author Created by Alex Rass on Oct 21, 2004
- * @since Jan, 2004
- * Copyright 2004.
+ * @author Alex Rass
+ * @since Oct 21, 2004
  */
 public class PersonalInfoPanel extends JPanel {
     ContactPreferences preferences;
