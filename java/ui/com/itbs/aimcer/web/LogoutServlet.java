@@ -28,7 +28,10 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 /**
- * @author Created by Alex Rass on Mar 19, 2005
+ * Performs the logout.
+ * Dumps the session.
+ * @author Alex Rass
+ * @since Mar 19, 2005
  */
 public class LogoutServlet extends HttpServlet {
     static final String servletName = "/logoff";
