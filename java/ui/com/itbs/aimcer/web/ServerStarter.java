@@ -24,7 +24,11 @@ import Acme.Serve.Serve;
 import com.itbs.aimcer.bean.ClientProperties;
 
 /**
- * @author Created by Alex Rass on Mar 19, 2005
+ * Provides an easy way to start/stop the server.
+ * Also a Security feature.
+ *
+ * @author Alex Rass 
+ * @since Mar 19, 2005
  */
 public class ServerStarter {
     private static Serve server;
