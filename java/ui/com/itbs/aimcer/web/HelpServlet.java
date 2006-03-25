@@ -36,7 +36,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Created by Alex Rass on Mar 19, 2005
+ * Shows the help page.
+ * 
+ * @author Alex Rass
+ * @since Mar 19, 2005
  */
 public class HelpServlet extends HttpServlet {
     private static String helpScreen;
