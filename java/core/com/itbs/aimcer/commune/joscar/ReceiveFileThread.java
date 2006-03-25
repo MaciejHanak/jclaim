@@ -31,6 +31,12 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.Socket;
 
+/**
+ * Not used.
+ * Was used by the old AIM file transfer, but the new library includes this code.
+ * Leaving in case someone wants this as a reference, or if I have to switch to it b/c library code isn't working.
+ * Or if some aim library comes w/o file tranfer code and a reference is needed.
+ */
 public class ReceiveFileThread extends Thread implements FileTransferService {
     private Socket socket;
     FileTransferListener listener;
