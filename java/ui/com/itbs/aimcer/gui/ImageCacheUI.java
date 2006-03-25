@@ -35,7 +35,11 @@ import java.io.IOException;
 
 
 /**
- * @author Created by Alex Rass on Mar 27, 2004
+ * Provides an easy and simple cache mechanism for images.
+ * All static assignments.
+ *
+ * @author Alex Rass
+ * @since Mar 27, 2004
  */
 public class ImageCacheUI extends ImageCache {
     public static ImagePair ICON_DELETE;
