@@ -26,7 +26,8 @@ import com.itbs.aimcer.bean.GroupWrapper;
 import java.awt.*;
 
 /**
- * Created by  Administrator on Sep 11, 2004
+ * @author Alex Rass
+ * @since Sep 11, 2004
  */
 public class UTestListRenderer extends UTestFrameTest {
 
