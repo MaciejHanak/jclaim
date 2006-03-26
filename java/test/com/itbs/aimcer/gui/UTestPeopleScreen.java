@@ -31,7 +31,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * @author Created by  Administrator on Sep 26, 2004
+ * Tests the main people list screen.
+ * 
+ * @author Alex Rass
+ * @since Sep 26, 2004
  */
 public class UTestPeopleScreen extends UTestFrameTest {
 
