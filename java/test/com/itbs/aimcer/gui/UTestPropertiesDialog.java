@@ -23,7 +23,8 @@ package com.itbs.aimcer.gui;
 import javax.swing.*;
 
 /**
- * Created by: ARass  on  Date: Sep 24, 2004
+ * @author ARass
+ * @since Date: Sep 24, 2004
  */
 public class UTestPropertiesDialog extends UTestFrameTest {
     JFrame frame;
