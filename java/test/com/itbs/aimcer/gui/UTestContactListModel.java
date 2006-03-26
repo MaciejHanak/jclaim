@@ -31,7 +31,10 @@ import java.awt.*;
 import java.util.ArrayList;
 
 /**
- * Created by  Administrator on Sep 11, 2004
+ * Stress Test for Conltact List.
+ * 
+ * @author Alex Rass
+ * @since Sep 11, 2004
  */
 public class UTestContactListModel extends UTestFrameTest {
     Connection connection = new UTestFakeConnection();
