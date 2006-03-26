@@ -1007,16 +1007,22 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                     ftl.notifyFail();
                 else if (state==FileTransferState.TRANSFERRING) {
                     ftl.notifyTransfer();
-                    ProgressStatusProvider psp = ((TransferringFileEvent)event).getProgressProvider();
-                    ftl.setProgress((int) Math.max(
-                            Math.abs(psp.getLength() - psp.getStartPosition() / psp.getPosition()),
-                            100));
-//                    ftl.setProgress();
+                    if (event instanceof TransferringFileEvent) {
+                        ProgressStatusProvider psp = ((TransferringFileEvent)event).getProgressProvider();
+                        ftl.setProgress((int) Math.max(
+                                Math.abs(psp.getLength() - psp.getStartPosition() / psp.getPosition()),
+                                100));
+                    }
                 }
             }
 
             public void handleEvent(RvConnection transfer, RvConnectionEvent event) {
-                //Todo change
+                if (event instanceof TransferringFileEvent) {
+                    ProgressStatusProvider psp = ((TransferringFileEvent)event).getProgressProvider();
+                    ftl.setProgress((int) Math.max(
+                            Math.abs(psp.getLength() - psp.getStartPosition() / psp.getPosition()),
+                            100));
+                }
             }
         });
         transfer.accept();
