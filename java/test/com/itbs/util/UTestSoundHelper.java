@@ -23,7 +23,8 @@ package com.itbs.util;
 import junit.framework.TestCase;
 
 /**
- * @author Created by  Administrator on Apr 25, 2005
+ * @author Alex Rass
+ * @since Apr 25, 2005
  */
 public class UTestSoundHelper extends TestCase {
     public void testPlay() throws Exception {
