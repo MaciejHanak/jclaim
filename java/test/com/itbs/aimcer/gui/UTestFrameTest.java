@@ -26,7 +26,10 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * @author Created by  Administrator on Oct 8, 2004
+ * Tests frame creation.
+ * 
+ * @author Alex Rass
+ * @since Oct 8, 2004
  */
 public class UTestFrameTest extends TestCase {
     public JFrame window;
