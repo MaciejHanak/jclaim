@@ -29,7 +29,10 @@ import junit.framework.TestCase;
 import java.awt.*;
 
 /**
- * @author Created by  Administrator on Oct 6, 2004
+ * Tests Message Window.
+ * 
+ * @author Alex Rass
+ * @since Oct 6, 2004
  */
 public class UTestMessageWindow extends TestCase {
     MessageWindow messageWindow;
