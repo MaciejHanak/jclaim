@@ -26,7 +26,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * @author Created by  Administrator on Apr 25, 2005
+ * Tests delayed actions.
+ * 
+ * @author Alex Rass
+ * @since Apr 25, 2005
  */
 public class UTestDelayedThread extends TestCase {
 //    private Logger logger = Logger.getLogger(DelayedThread.class.getPackage().getName());
