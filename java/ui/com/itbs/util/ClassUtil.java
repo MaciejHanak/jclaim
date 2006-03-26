@@ -24,8 +24,10 @@ import java.io.*;
 import java.net.URL;
 
 /**
- * All rights reserved.
- * Created by: ARass  on  Date: Apr 21, 2004
+ * General utilites related to class manipulations.
+ *  
+ * @author Alex Rass
+ * @since Date: Apr 21, 2004
  */
 public class ClassUtil {
 
