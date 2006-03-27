@@ -312,9 +312,14 @@ public class SmackConnection extends AbstractMessageConnection {
      * @param away true if so
      */
     public void setAway(boolean away) {
-        Presence presence = new Presence(away?Presence.Type.UNAVAILABLE:Presence.Type.AVAILABLE);
-        presence.setStatus(away ? getProperties().getIamAwayMessage() : null);
-        connection.sendPacket(presence);
+        if (connection != null) {
+            Presence presence = new Presence(Presence.Type.AVAILABLE);
+            if (away) {
+                presence.setMode(Presence.Mode.AWAY);
+                presence.setStatus(getProperties().getIamAwayMessage());
+            }
+            connection.sendPacket(presence);
+        }
         super.setAway(away);
     }
 
