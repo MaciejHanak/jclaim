@@ -26,7 +26,9 @@ import java.awt.event.KeyEvent;
 
 /**
  * Listens to Enter for clicking.
- * Created by: ARass  on  Date: Mar 25, 2004
+ * No big deal, but convenient.
+ * @author Ales Rass  
+ * @since Date: Mar 25, 2004
  */
 public class BetterButton extends JButton {
     Insets insets;
