@@ -23,7 +23,8 @@ package com.itbs.gui;
 import com.itbs.aimcer.gui.UTestFrameTest;
 
 /**
- * @author Created by  Administrator on Oct 8, 2004
+ * @author Alex Rass
+ * @since Oct 8, 2004
  */
 public class UTestFileChooserButton extends UTestFrameTest {
 
