@@ -27,7 +27,10 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * @author Created by  Administrator on Nov 7, 2004
+ * Tests Tray adapter.
+ * 
+ * @author Alex Rass
+ * @since Nov 7, 2004
  */
 public class UTestTrayAdapter extends UTestFrameTest {
     JTextArea comp = new JTextArea(5, 20);
