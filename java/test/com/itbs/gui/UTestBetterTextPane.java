@@ -27,7 +27,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /**
- * Created by  Administrator on Sep 12, 2004
+ * @author  Alex Rass
+ * @since Sep 12, 2004
  */
 public class UTestBetterTextPane extends UTestFrameTest {
     boolean trigger;
