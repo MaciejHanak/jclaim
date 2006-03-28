@@ -25,12 +25,14 @@ import java.awt.*;
 
 /**
  * Simple highlight painter that can underline a highlighted area with red color.
+ * Used by the spell checker.
  * todo make an wavy underline (use the shape to paint with)
  * To use:
  * Create the DefaultHighlighter and then use
  * public Object addHighlight(int p0, int p1, Highlighter.HighlightPainter p) throws BadLocationException {
  *
- * @author created by Alex Rass,  Nov 7, 2004
+ * @author Alex Rass
+ * @since Nov 7, 2004
  */
 public class SpellHighlightPainter extends DefaultHighlighter.DefaultHighlightPainter {
     Color color = Color.RED;
