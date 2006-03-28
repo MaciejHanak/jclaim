@@ -37,7 +37,15 @@ import java.awt.event.MouseEvent;
 import java.io.Serializable;
 
 /**
- * Created by: ARass  on  Date: Mar 25, 2004
+ * Provides a richness of a windows-like component.
+ * Provides:
+ *   length limitor
+ *   copy/paste shortcuts
+ *   select word shortcute
+ *   built in undo functionality
+ *   automatic copy on select in read only mode
+ * @author Alex Rass
+ * @since Date: Mar 25, 2004
  */
 public class BetterTextField extends JTextField {
     CaretListener autoCopy;
