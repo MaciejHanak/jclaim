@@ -26,7 +26,8 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * @author Created by  Administrator on Nov 7, 2004
+ * @author Administrator
+ * @since Nov 7, 2004
  */
 public class UTestJazzyInterface extends UTestFrameTest {
     JTextArea comp = new JTextArea(5, 20);
