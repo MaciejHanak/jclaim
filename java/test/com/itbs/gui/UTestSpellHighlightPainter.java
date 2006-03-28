@@ -32,7 +32,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * @author Created by  Administrator on Nov 7, 2004
+ * @author Alex Rass
+ * @since Nov 7, 2004
  */
 public class UTestSpellHighlightPainter extends UTestFrameTest implements ActionListener {
     JTextArea comp = new JTextArea(5, 20);
