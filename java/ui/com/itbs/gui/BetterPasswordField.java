@@ -24,7 +24,9 @@ import javax.swing.*;
 import java.awt.event.KeyEvent;
 
 /**
- * Created by: ARass  on  Date: Mar 25, 2004
+ * Gives password field all the same benefits of a {@link BetterTextField}.
+ * @author Alex Rass
+ * @since Date: Mar 25, 2004
  */
 public class BetterPasswordField extends JPasswordField {
     public BetterPasswordField(int columns) {
