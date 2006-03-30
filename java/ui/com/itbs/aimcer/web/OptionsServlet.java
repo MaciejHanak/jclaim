@@ -41,7 +41,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Created by Alex Rass on Mar 19, 2005
+ * Handles some display and connection options.
+ *
+ * @author Alex Rass
+ * @since Mar 19, 2005
  */
 public class OptionsServlet extends HttpServlet {
     private static String optionsScreen;
@@ -59,6 +62,7 @@ public class OptionsServlet extends HttpServlet {
 
     private static final String paramSet = "submit";
     private static final String paramLogin = "login";
+    private static final String paramLogout = "logout";
     private static final String paramCancel = "cancel";
 
     static {
@@ -104,10 +108,23 @@ public class OptionsServlet extends HttpServlet {
                     }
                 } // if
             } // for
+        } else if (req.getParameter(paramLogout) != null) { // login
+            for (Connection conn : Main.getConnections()) {
+                if (conn instanceof MessageSupport && conn.isLoggedIn()
+                        && conn.getServiceName().equals(req.getParameter(PeopleListServlet.paramMedium))
+                        && ((MessageSupport)conn).getUserName().equals(req.getParameter(PeopleListServlet.paramAs))) {
+                    try {
+                        conn.disconnect(true);
+                    } catch (Exception e) {
+                        e.printStackTrace();  // don't really care.
+                    }
+                } // if
+            } // for
         }
         if (req.getParameter(paramSet) != null
                 || req.getParameter(paramCancel) != null
                 || req.getParameter(paramLogin) != null
+                || req.getParameter(paramLogout) != null
                 ) { // ok or cancel
             new PeopleListServlet().service(req, res);
             return;
@@ -122,14 +139,13 @@ public class OptionsServlet extends HttpServlet {
         Map <String, String> params = new HashMap<String, String>(); // used for parameters to the template\
 
         // vvv Display all relogin boxes vvv
-        String rows = "";
+        String rows = "\n<p>";
         for (Connection conn : Main.getConnections()) {
             if (conn instanceof MessageSupport) {
-                if (!conn.isLoggedIn()) {
-                   rows += getRow(conn.getServiceName(), ((MessageSupport)conn).getUserName());
-                }
+               rows += getRow(conn.getServiceName(), ((MessageSupport)conn).getUserName(), conn.isLoggedIn());
             }
         }
+        rows += "</p>\n";
         params.put(paramLoginForms, rows);
         // ^^^ relogin boxes ^^^
 
@@ -150,13 +166,30 @@ public class OptionsServlet extends HttpServlet {
         pw.close();
     }
 
-    private static String getRow(String connName, String as) {
-        return "<FORM method=\"post\">" +
-                "<input name=\"login\" type=\"submit\" value=\"Login\"> " +
-                connName + " as " + as +
-                "<input type=\"hidden\" name=\""+PeopleListServlet.paramMedium+"\" value=\""+connName+"\">" +
-                "<input type=\"hidden\" name=\""+PeopleListServlet.paramAs+"\" value=\""+as+"\">" +
-                "</form>";
+    private static String getRow(String connName, String as, boolean loggedIn) {
+//        return "<p><FORM method=\"post\">" + "<table align=left width=400>" +
+        return "<FORM method=\"post\">" + "<table width=350>" +
+                    "<tr>" +
+                    "<td width=15%>" +
+                    (loggedIn?"&nbsp;":
+                    "<input name=\"" + paramLogin + "\" " +
+                           "type=\"submit\" " +
+                           "value=\"" + "Login" + "\"> ") +
+                    "</td><td>" +
+                    connName + " as " + as +
+                    "<input type=\"hidden\" name=\""+PeopleListServlet.paramMedium+"\" value=\""+connName+"\">" +
+                    "<input type=\"hidden\" name=\""+PeopleListServlet.paramAs+"\" value=\""+as+"\">" +
+                    "</td><td align=right>" +
+                    (loggedIn?
+                       "<input name=\"" + paramLogout + "\" " +
+                       "type=\"submit\" " +
+                       "value=\"" + "Logoff" + "\"> ":
+                        "&nbsp;") +
+                    "</td>" +
+                    "</tr>" +
+                "</table><br/>" +
+                "</FORM>";
+//                "</FORM></p>";
     }
 
 }
