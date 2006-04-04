@@ -65,7 +65,6 @@ public interface Contact extends Nameable {
      * Status support.
      * @return status
      */
-    Status createStatus();
     Status getStatus();
 
     /**
