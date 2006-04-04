@@ -48,7 +48,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public class Main {
     static String TITLE = "JCLAIM";
-    public static String VERSION = "Version: 4.4";
+    public static String VERSION = "Version: 4.4.7";
     public static final String URL_FAQ = "http://www.itbsllc.com/jclaim/User%20Documentation.htm";
     public static final String EMAIL_SUPPORT = "support@itbsllc.com";
     private static final String LICENSE = System.getProperty("client");
@@ -75,6 +75,7 @@ public class Main {
     private static JFrame motherFrame;
     private static java.util.List <Connection> connections = new CopyOnWriteArrayList<Connection>();
     public static Logger logger;
+    private GlobalEventHandler globalEventHandler;
     private static Main main;
 
     private PeopleScreen peopleScreen;
@@ -93,7 +94,7 @@ public class Main {
         public Group create(Group group) {
             return GroupWrapper.create(group);
         }
-    };
+    }
 
     public static ContactFactory standardContactFactory = new ContactWrapperFactory();
     static class ContactWrapperFactory implements ContactFactory {
@@ -108,7 +109,7 @@ public class Main {
         public Contact get(String name, Connection connection) {
             return ContactWrapper.get( name, connection);
         }
-    };
+    }
 
 //    private final static int SCREEN_PROPERTIES    = 2;
 //    private static final String MENU_ACTION = "Action";
@@ -140,6 +141,8 @@ public class Main {
                 exit();
             }
         });
+        main.globalEventHandler = new GlobalEventHandler();
+
         try {
             // addConnection what you loaded
             for (Connection connection : connections) {
@@ -217,7 +220,7 @@ public class Main {
             ServerStarter.update(); // bring the web server up now, if enabled.
             ContactListModel.setConnection(weather);
         }
-        connection.addEventListener(new GlobalEventHandler());
+        connection.addEventListener(main.globalEventHandler);
         connection.addEventListener(MessageWindow.getConnectionEventListener());
         connection.addEventListener(logger); // if logger is before MW, we see it log the incoming msg first
         JList list = main.peopleScreen.getList();
@@ -326,12 +329,23 @@ public class Main {
         }
     }
 
+    public static boolean isMyself(String talkingTo, String medium, String as) {
+        for (Connection connection: Main.getConnections()) {
+            if (connection.getServiceName().equals(medium)
+                    && connection  instanceof MessageSupport
+                    && ((MessageSupport) connection).getUserName().equals(talkingTo)) {
+                return true;
+            }
+        }
+        return false;
+    }
     public static ContactWrapper findContact(String talkingTo, String medium, String as) {
         ContactWrapper wrapper = null;
         for (int i = 0; i < Main.getConnections().size() && wrapper == null; i++) {
             if (Main.getConnections().get(i).getServiceName().equals(medium)
-                    && Main.getConnections().get(i).getUser().getName().equals(as))
-            wrapper = ContactWrapper.get(talkingTo, Main.getConnections().get(i));
+                    && Main.getConnections().get(i).getUser().getName().equals(as)) {
+                wrapper = ContactWrapper.get(talkingTo, Main.getConnections().get(i));
+            }
         }
         return wrapper;
     }
