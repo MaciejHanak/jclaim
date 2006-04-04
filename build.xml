@@ -68,8 +68,8 @@
     <property name="file.socks.o.jar" value="${dir.dist}/jsocks.jar"/>
     <property name="file.socks.lib.jar" value="${dir.lib}/jsocks-klea.jar"/>
 
-    <!-- Create our packer task, if you get an error here, go get the jar file from web and add it to your ant's lib folder.
-     Another way is to replace all pack tags with move. -->
+    <!-- Create our packer task, if you get an error here, go get the jar file from web or the included tools/pack200 folder.
+     Another way is to replace all pack tags with move (if you are building for JDK 1.4 or below. -->
     <taskdef name="pack200" classname="com.sun.tools.apache.ant.pack200.Pack200Task" classpath="Pack200Task.jar"/>
     <!-- Create our unpacker task -->
     <taskdef name="unpack200" classname="com.sun.tools.apache.ant.pack200.Unpack200Task" classpath="Pack200Task.jar"/>
@@ -193,6 +193,7 @@
     <target name="sign" depends="jar">
 
         <pack200 src="${file.jclaim.o.jar}" destfile="${file.jclaim.o.jar}"	repack="true"/>
+        <!-- Getting an error here means you did not create your own cert file.  Please do so using createcert target. -->
         <signjar jar="${file.jclaim.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
         <!--<move file="${file.jclaim.o.jar}" tofile="${file.jclaim.o.jar}"/>-->
 
