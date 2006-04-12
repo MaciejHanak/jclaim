@@ -21,7 +21,6 @@
 package com.itbs.gui;
 
 import com.itbs.aimcer.gui.UTestFrameTest;
-import com.itbs.util.JNIHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,8 +45,6 @@ public class UTestTrayAdapter extends UTestFrameTest {
         window.setSize(500, 400);
         window.setVisible(true);
         Thread.sleep(1000);
-        System.out.println("" + JNIHelper.setForegroundWindow("Visual Slick"));
-        Thread.sleep(200);
         TrayAdapter.alert(window);
         waitForMe(70000);
     }
