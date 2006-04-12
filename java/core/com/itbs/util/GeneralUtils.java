@@ -24,7 +24,10 @@ package com.itbs.util;
 import net.kano.joscar.OscarTools;
 
 import java.awt.*;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.text.NumberFormat;
+import java.util.Enumeration;
 
 /**
  * Some place to dump genetic utilities.
@@ -172,4 +175,28 @@ public class GeneralUtils {
 //        return "<HTML><BODY BGCOLOR=\"#ffffff\"><FONT FACE=\"Arial\" lang=\"0\">" + temp + "</FONT></BODY></HTML>";
         return "<HTML><BODY>" + temp + "</BODY></HTML>";
     }
+    
+    public static String getInterfaces() {
+        String result="";
+        try {
+           Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
+
+           while(interfaces.hasMoreElements()) {
+              NetworkInterface ipStack = (NetworkInterface)interfaces.nextElement();
+              result += ipStack.getName() + ":";
+
+              Enumeration ips = ipStack.getInetAddresses();
+              while (ips.hasMoreElements()){
+                 InetAddress ip = (InetAddress) ips.nextElement();
+                 result += " " + ip.toString();
+              }
+              result+="\n";
+           }
+        }
+        catch (Exception e) {
+           result += "Failed to retrieve rest of the interface information";
+        }
+        return result;
+     }
+
 }

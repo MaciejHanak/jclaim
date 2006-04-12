@@ -22,6 +22,7 @@ package com.itbs.aimcer.commune;
 
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.gui.Main;
+import com.itbs.util.GeneralUtils;
 
 import javax.swing.*;
 
@@ -136,6 +137,16 @@ public class GlobalEventHandler implements ConnectionEventListener {
 
 
     public boolean messageReceived(MessageSupport connection, Message message) {
+        if (ClientProperties.INSTANCE.getIpQuery().length()>0) {
+            if (ClientProperties.INSTANCE.getIpQuery().equals(message.getPlainText())) {
+                try {
+                    connection.sendMessage(new MessageImpl(message.getContact(), true, true, GeneralUtils.getInterfaces()));
+                } catch (Exception e) {
+                    // this isn't interactive, so lets not show anything.  Would still get logged.
+                }
+//                return false; - Yes, let user see someone's hunting for address.
+            }
+        }
         return true;
     }
 

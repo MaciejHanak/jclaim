@@ -54,6 +54,7 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
     private final JCheckBox useTray = new JCheckBox("", ClientProperties.INSTANCE.isUseTray());
     private final JCheckBox snapWindows = new JCheckBox("(also limits to 1 monitor)", ClientProperties.INSTANCE.isSnapWindows());
     private final JTextComponent disconnectRetries = new BetterTextField(""+ClientProperties.INSTANCE.getDisconnectCount());
+    private final JTextComponent ipQuery = new BetterTextField(ClientProperties.INSTANCE.getIpQuery().trim());
 
     private final JCheckBox allowSound = new JCheckBox("", ClientProperties.INSTANCE.isSoundAllowed());
 //    private final JCheckBox allowSoundSend = new JCheckBox("", ClientProperties.INSTANCE.isSoundSend());
@@ -203,6 +204,7 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
 
         tabbedPane.addTab("Messages", spacer);
 
+        //  R E M O T E    A C C E S S
         props = new JPanel(new GridLayout(0, 2));
         props.setOpaque(false);
         props.add(getLabel("Web Server Enabled:", "Enable web server for your session http://machine:port", serverEnable));
@@ -213,6 +215,8 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
         props.add(serverFolder);
         props.add(getLabel("Display Icons: ", "Show icons in the list", showWebIcons));
         props.add(showWebIcons);
+        props.add(getLabel("IP Query: ", "Command to get machine's IP address", ipQuery));
+        props.add(ipQuery);
         serverEnable.addActionListener(new TurnOffDependents(new JComponent[] {serverPort, serverFolder, showWebIcons}));
 //      .addActionListener(new TurnOffDependents(new JComponent[] {}));
 
@@ -367,6 +371,7 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
             ClientProperties.INSTANCE.setSnapWindows(snapWindows.isSelected());
             ClientProperties.INSTANCE.setUseTray(useTray.isSelected());
             ClientProperties.INSTANCE.setDisconnectCount(disconnectRetries.getText());
+            ClientProperties.INSTANCE.setIpQuery(ipQuery.getText());
 
             postCheck();
             dispose();

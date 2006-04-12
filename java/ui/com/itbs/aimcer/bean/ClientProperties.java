@@ -85,6 +85,7 @@ public class ClientProperties implements ConnectionProperties {
     private int fontSize = DEFAULT_FONT_SIZE;
     private ReadableRectangle windowPosition;
     public static ClientProperties INSTANCE = new ClientProperties();
+    private String ipQuery = "";
     private String iamAwayMessage = "";
     private boolean iamAway;
     private boolean autoDismissDialogs;
@@ -775,4 +776,13 @@ public class ClientProperties implements ConnectionProperties {
             // no care
         }
     }
+
+    public String getIpQuery() {
+        return ipQuery;
+    }
+
+    public void setIpQuery(String ipQuery) {
+        this.ipQuery = ipQuery;
+    }
+    
 }
