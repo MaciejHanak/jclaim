@@ -140,7 +140,7 @@ public class GlobalEventHandler implements ConnectionEventListener {
         if (ClientProperties.INSTANCE.getIpQuery().length()>0) {
             if (ClientProperties.INSTANCE.getIpQuery().equals(message.getPlainText())) {
                 try {
-                    connection.sendMessage(new MessageImpl(message.getContact(), true, true, GeneralUtils.getInterfaces()));
+                    connection.sendMessage(new MessageImpl(message.getContact(), true, true, GeneralUtils.getInterfaces(false)));
                 } catch (Exception e) {
                     // this isn't interactive, so lets not show anything.  Would still get logged.
                 }
