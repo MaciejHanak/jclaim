@@ -176,13 +176,15 @@ public class GeneralUtils {
         return "<HTML><BODY>" + temp + "</BODY></HTML>";
     }
     
-    public static String getInterfaces() {
+    public static String getInterfaces(boolean showInterfaceNames) {
         String result="";
         try {
            Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
 
            while(interfaces.hasMoreElements()) {
               NetworkInterface ipStack = (NetworkInterface)interfaces.nextElement();
+              if ("lo".equals(ipStack.getName())) continue; // noone cares about that one.
+              if (showInterfaceNames)
               result += ipStack.getName() + ":";
 
               Enumeration ips = ipStack.getInetAddresses();
