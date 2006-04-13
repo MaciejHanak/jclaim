@@ -29,6 +29,9 @@ import java.util.StringTokenizer;
  * @since Sep 16, 2004
  */
 public class ReadableRectangle extends Rectangle {
+    public ReadableRectangle() {
+    }
+    
     public ReadableRectangle(Point xy, Dimension size) {
         super(xy, size);
     }
