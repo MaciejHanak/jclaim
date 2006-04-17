@@ -74,6 +74,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     AimConnection connection;
     private AimConnectionProperties connectionProperties; // use to hold on connection settings
     RvProcessor rvProcessor;
+    /** Conversation support */
+    IcbmListener lastIcbmListener;
+
     /**
      * Handle buddy alias changes.
      * Could be static, but for some implementation it may be a problem.  Leaving non-static
@@ -219,7 +222,6 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     }
 */
 
-    IcbmListener lastIcbmListener;
     /**
      * Manage a list of ppl.
      */
