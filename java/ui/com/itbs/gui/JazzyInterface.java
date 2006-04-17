@@ -138,7 +138,13 @@ public class JazzyInterface {
     private synchronized  SpellChecker getSpellChecker() {
         return spellCheck;
     }
-
+    
+    public List getSuggestions(String word) {
+        if (word!=null && word.trim().length()>0)
+            return spellCheck.getSuggestions(word, 10);
+        return new ArrayList();
+    }
+    
     static class UserSpellDictionary implements SpellDictionary {
         List<String> words = new ArrayList<String>();
         final static List emptyList = new ArrayList(0);
