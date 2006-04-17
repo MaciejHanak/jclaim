@@ -421,6 +421,7 @@ public class MessageWindow  {
     private Component getMessage() {
         textPane = new BetterTextPane(ACTION_SEND);
         addDNDSupport(textPane);
+//        EditorTools.addSuggestionPopup(textPane); // TODO finish
 //        textPane.setContentType("text/html");
         if (!ClientProperties.INSTANCE.isEnterSends()) {
             textPane.addModifier(KeyEvent.SHIFT_DOWN_MASK);
