@@ -20,6 +20,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
+import javax.swing.MenuElement;
+import javax.swing.MenuSelectionManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
@@ -59,31 +61,43 @@ public class EditorTools {
                     }
             }
         });
-        
-        // TODO replace this with a short menu only!
-        keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, Event.CTRL_MASK, true);
-        textField.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() instanceof JTextComponent) {
-                    JTextComponent tc = (JTextComponent) e.getSource();
-                    int dotPosition = tc.getCaretPosition();
-                    try {
-                        Rectangle popupLocation = textField.modelToView(dotPosition);
-                        popup.show(textField, popupLocation.x, popupLocation.y, textField, dotPosition);
-                    } catch (BadLocationException badLocationException) {
-                        System.err.println("Oops, bad location");
-                    }
-
-                }
-            }
-        }, keystroke, JComponent.WHEN_FOCUSED);
-
-
     }
     
     public static void addStandardMenuOptions(JMenuItem menuItem) {
         popup.add(menuItem);
     }
+
+    /**
+     * Generic function which returns the word around the carret.
+     * 
+     * @param parent text component
+     * @param carret position
+     * @return word, never null.
+     * @throws BadLocationException
+     */
+    public static String getWord(JTextComponent parent, int carret) throws BadLocationException {
+        Document doc = parent.getDocument();
+        String word="";
+        int lastPos = carret;
+        while (lastPos>=0 && lastPos<doc.getLength()) {
+            String  res = doc.getText(lastPos, 1);
+            if (" ".equals(res)) 
+                break;
+            word +=res;
+            lastPos++;
+        }
+        lastPos = carret-1;
+        while (lastPos>=0 && lastPos<doc.getLength()) {
+            String  res = doc.getText(lastPos, 1);
+            if (" ".equals(res)) 
+                break;
+            word =res + word;
+            lastPos--;
+        }
+//        System.out.println("R:" + word + "<");
+        return word;
+    }
+
     
     /**
      * Provides a standard action for replacing words.
@@ -142,28 +156,6 @@ public class EditorTools {
             super.show(invoker, x, y);
         }
         
-        protected String getWord(JTextComponent parent, int carret) throws BadLocationException {
-            Document doc = parent.getDocument();
-            String word="";
-            int lastPos = carret;
-            while (lastPos>=0 && lastPos<doc.getLength()) {
-                String  res = doc.getText(lastPos, 1);
-                if (" ".equals(res)) 
-                    break;
-                word +=res;
-                lastPos++;
-            }
-            lastPos = carret-1;
-            while (lastPos>=0 && lastPos<doc.getLength()) {
-                String  res = doc.getText(lastPos, 1);
-                if (" ".equals(res)) 
-                    break;
-                word =res + word;
-                lastPos--;
-            }
-//            System.out.println("R:" + word + "<");
-            return word;
-        }
         
         protected List getSuggestions(String word) {
             try {
@@ -186,6 +178,42 @@ public class EditorTools {
         Object getSource() {
             return source;
         }
+        
+        @Override
+        public void processKeyEvent(KeyEvent e, MenuElement[] path, MenuSelectionManager manager) {
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE
+                    && e.getID() == KeyEvent.KEY_PRESSED
+                && (e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK & KeyEvent.CTRL_DOWN_MASK & KeyEvent.ALT_DOWN_MASK) == 0) {
+                    setVisible(false);
+                    e.consume();
+            } else {
+                super.processKeyEvent(e, path, manager);
+            }
+        }
     }
+    
+    static class WordPopup extends SpecialPopup {
+        private void addReplaceWords(JTextComponent parent, List words) {
+            removeAll();
+            Iterator iter = words.iterator();
+            while (iter.hasNext()) {
+                Object word = iter.next();
+                add(new ReplaceWordAction(parent, word.toString()));
+            }
+        }
+        
+        public void show(Component invoker, int x, int y, JTextComponent parent, int carret) throws BadLocationException {
+            this.carret = carret;
+            source = parent;
+            String word = getWord(parent, carret);
+            List returnedSuggestions;
+            if (word.length()>0 && (returnedSuggestions = getSuggestions(word)).size()>0) {
+                addReplaceWords(parent, returnedSuggestions);
+                super.show(invoker, x, y);
+            }
+        }
+
+    }
+
 
 }

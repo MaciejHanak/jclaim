@@ -20,6 +20,23 @@
 
 package com.itbs.gui;
 
+import java.awt.Event;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Highlighter;
+import javax.swing.text.JTextComponent;
+
 import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.util.ClassUtil;
 import com.itbs.util.DelayedThread;
@@ -28,15 +45,6 @@ import com.swabunga.spell.engine.SpellDictionaryHashMap;
 import com.swabunga.spell.event.DocumentWordTokenizer;
 import com.swabunga.spell.event.SpellCheckEvent;
 import com.swabunga.spell.event.SpellChecker;
-
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Highlighter;
-import javax.swing.text.JTextComponent;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Alex Rass on Nov 7, 2004
@@ -141,7 +149,7 @@ public class JazzyInterface {
     
     public List getSuggestions(String word) {
         if (word!=null && word.trim().length()>0)
-            return spellCheck.getSuggestions(word, 10);
+            return spellCheck.getSuggestions(word, 2);
         return new ArrayList();
     }
     
@@ -177,6 +185,22 @@ public class JazzyInterface {
     public synchronized void addSpellCheckComponent(final JTextComponent textComp) {
         SpellCheckingDocumentListener spellCheckingDocumentListener = new SpellCheckingDocumentListener(textComp);
         textComp.getDocument().addDocumentListener(spellCheckingDocumentListener);
+        
+        KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, Event.CTRL_MASK, true);
+        textComp.registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JTextComponent tc = (JTextComponent) e.getSource();
+                int dotPosition = tc.getCaretPosition();
+                try {
+                    Rectangle popupLocation = textComp.modelToView(dotPosition);
+                    EditorTools.WordPopup popup = new EditorTools.WordPopup();
+                    popup.show(textComp, popupLocation.x, popupLocation.y, textComp, dotPosition);
+                } catch (BadLocationException badLocationException) {
+                    System.err.println("Oops, bad location");
+                }
+            }
+        }, keystroke, JComponent.WHEN_FOCUSED);
+
     }
 
     private class SpellCheckingDocumentListener implements DocumentListener {
