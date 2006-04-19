@@ -99,6 +99,10 @@ abstract public class AbstractConnection implements Connection {
     }
 
     public void connect() throws SecurityException, Exception {
+        if (groupFactory == null)
+            throw new NullPointerException("Programmer, you forgot to assign the groupFactory for the connection.");
+        if (contactFactory == null)
+            throw new NullPointerException("Programmer, you forgot to assign the contactFactory for the connection.");
 //        disconnectIntentional = false; // seems more appropriate in the notify on connection this way menu disconnect will stop it
     }
     // ********************   Group List   ********************
