@@ -20,23 +20,6 @@
 
 package com.itbs.gui;
 
-import java.awt.Event;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Highlighter;
-import javax.swing.text.JTextComponent;
-
 import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.util.ClassUtil;
 import com.itbs.util.DelayedThread;
@@ -46,13 +29,29 @@ import com.swabunga.spell.event.DocumentWordTokenizer;
 import com.swabunga.spell.event.SpellCheckEvent;
 import com.swabunga.spell.event.SpellChecker;
 
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Highlighter;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
+ * Provides a set of utilities to provide a rich spell checking support to an app.
+ *
  * @author Alex Rass on Nov 7, 2004
  *         Based on examples from Robert Gustavsson (robert@lindesign.se)
  */
 public class JazzyInterface {
     private static final String englishDictionary = "/english.0";
-    private static final String englishPhonetic = "/phonet.en";
+//    private static final String englishPhonetic = "/phonet.en";
     private static final String wordsEnglish []= {
             "Alex",
             "cancelled",
@@ -193,7 +192,7 @@ public class JazzyInterface {
                 int dotPosition = tc.getCaretPosition();
                 try {
                     Rectangle popupLocation = textComp.modelToView(dotPosition);
-                    EditorTools.WordPopup popup = new EditorTools.WordPopup();
+                    WordPopupMenu popup = new WordPopupMenu();
                     popup.show(textComp, popupLocation.x, popupLocation.y, textComp, dotPosition);
                 } catch (BadLocationException badLocationException) {
                     System.err.println("Oops, bad location");
@@ -201,6 +200,16 @@ public class JazzyInterface {
             }
         }, keystroke, JComponent.WHEN_FOCUSED);
 
+        // Swap the text menues:
+        // Yes, this is cheating, but what the heck.  It lets me keep BetterText* components independenet of the spell stuff
+        if (!(BetterTextField.getPopupMenu() instanceof SpecialPopupMenu)) {
+            SpecialPopupMenu menu = new SpecialPopupMenu();
+            // copy other menu over
+            while (BetterTextField.getPopupMenu().getComponentCount() > 0) {
+                menu.add(BetterTextField.getPopupMenu().getComponent(0));
+            }
+            BetterTextField.setPopupMenu(menu);
+        }
     }
 
     private class SpellCheckingDocumentListener implements DocumentListener {
@@ -269,4 +278,60 @@ public class JazzyInterface {
         } // spellingError
 
     } // class SpellCheckingDocument
+
+    /**
+     * Singleton Popup class.
+     * Allows one to maintain a dictionary based popup thingie.
+     *
+     * @since  Apr 3, 2006
+     * @author Alex Rass
+     *
+     */
+    class SpecialPopupMenu extends BetterTextPopupMenu {
+        JMenu suggestions;
+
+        public SpecialPopupMenu() {
+            suggestions = new JMenu("Suggestions");
+            add(suggestions);
+            addSeparator();
+        }
+
+
+        public void show(Component invoker, int x, int y, JTextComponent parent, int carret) throws BadLocationException {
+            super.show(invoker, x, y, parent, carret);
+            addReplaceWords(parent, suggestions, getSuggestions(ReplaceWordAction.getWord(parent, carret)));
+            super.show(invoker, x, y);
+        }
+
+        private void addReplaceWords(JTextComponent parent, JMenu menu, List words) {
+            menu.removeAll();
+            for (Object word : words) {
+                menu.add(new ReplaceWordAction(parent, word.toString()));
+            }
+        }
+
+    }
+
+    /**
+     * This version simply adds words straight to the JPopupMenu.
+     */
+    class WordPopupMenu extends BetterTextPopupMenu {
+        private void addReplaceWords(JTextComponent parent, List words) {
+            removeAll();
+            for (Object word : words) {
+                add(new ReplaceWordAction(parent, word.toString()));
+            }
+        }
+
+        public void show(Component invoker, int x, int y, JTextComponent parent, int carret) throws BadLocationException {
+            super.show(invoker, x, y, parent, carret);
+            String word = ReplaceWordAction.getWord(parent, carret);
+            List returnedSuggestions;
+            if (word.length()>0 && (returnedSuggestions = getSuggestions(word)).size()>0) {
+                addReplaceWords(parent, returnedSuggestions);
+                super.show(invoker, x, y);
+            }
+        }
+
+    }
 } // class JazzyInterface

@@ -30,10 +30,7 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.Serializable;
 
 /**
@@ -49,16 +46,17 @@ import java.io.Serializable;
  */
 public class BetterTextField extends JTextField {
     CaretListener autoCopy;
-    private static final JPopupMenu pmenu;
+    private static BetterTextPopupMenu pmenu;
 
     static {
-        pmenu = new JPopupMenu();
+        pmenu = new BetterTextPopupMenu();
         JMenuItem menu;
         menu = ActionAdapter.createMenuItem("Copy", new DefaultEditorKit.CopyAction(), 'C');
         pmenu.add(menu);
         menu = ActionAdapter.createMenuItem("Paste", new DefaultEditorKit.PasteAction(), 'P');
         pmenu.add(menu);
     }
+
     public BetterTextField(int columns) {
         super(columns);
         init();
@@ -113,7 +111,7 @@ public class BetterTextField extends JTextField {
         }
     };
 
-    static void typicalInit(JTextComponent textComp) {
+    static void typicalInit(final JTextComponent textComp) {
         textComp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK), DefaultEditorKit.pasteAction);
         textComp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.pasteAction);
 
@@ -163,18 +161,46 @@ public class BetterTextField extends JTextField {
         addAction(textComp, KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, redoAction);
         addAction(textComp, KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK, redoAction);
 
-        textComp.addMouseListener( new MouseAdapter() {
-               public void mousePressed(MouseEvent evt) {
-                      if (SwingUtilities.isRightMouseButton(evt)) {
-                           pmenu.show((Component)evt.getSource(), evt.getX(), evt.getY());
-                  }
-               }
+        // Register for the Menu clicks
+        textComp.addMouseListener(new MouseAdapter() {
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger())
+                    try {
+                        int dotPosition = textComp.viewToModel(e.getPoint());
+                        Rectangle popupLocation = textComp.modelToView(dotPosition);
+                        pmenu.show(textComp, popupLocation.x, popupLocation.y, textComp, dotPosition);
+                    } catch (BadLocationException badLocationException) {
+                        System.err.println("Oops - bad location");
+                    }
+            }
         });
+
+        // Register for the Menu keystrokes
+        ActionListener actionListener = new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    int dotPosition = textComp.getCaretPosition();
+                    Rectangle popupLocation = textComp.modelToView(dotPosition);
+                    pmenu.show(textComp, popupLocation.x, popupLocation.y, textComp, dotPosition);
+                } catch (BadLocationException badLocationException) {
+                    System.err.println("Oops, bad location");
+                }
+            }
+        };
+        // Does the shift-F10 (windows)
+        KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F10, Event.SHIFT_MASK, true);
+        textComp.registerKeyboardAction(actionListener, keystroke, JComponent.WHEN_FOCUSED);
     } // typicalInit
 
-    static JPopupMenu getPopupMenu() {
+    static BetterTextPopupMenu getPopupMenu() {
         return pmenu;
     }
+
+    static void setPopupMenu(BetterTextPopupMenu menu) {
+        pmenu = menu;
+    }
+
+
     static void addAction(JTextComponent textComp, int keyCode, int modifiers, Action action) {
         textComp.getInputMap().put(KeyStroke.getKeyStroke(keyCode, modifiers), action.getValue(Action.NAME));
         textComp.getActionMap().put(action.getValue(Action.NAME), action);
