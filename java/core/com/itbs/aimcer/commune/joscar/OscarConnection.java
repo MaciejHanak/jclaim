@@ -904,24 +904,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
     public void initiateFileTransfer(final FileTransferListener ftl) throws IOException {
         OutgoingFileTransfer oft = connection.getIcbmService().getRvConnectionManager().createOutgoingFileTransfer(new Screenname(ftl.getContactName()));
-        oft.addEventListener(new RvConnectionEventListener() {
-            public void handleEventWithStateChange(RvConnection transfer, RvConnectionState state, RvConnectionEvent event) {
-                System.out.println("handleEventWithStateChange");
-                if (state==FileTransferState.CONNECTING)
-                    ftl.notifyNegotiation();
-                else if (state==FileTransferState.FINISHED)
-                    ftl.notifyDone();
-                else if (state==FileTransferState.FAILED)
-                    ftl.notifyFail();
-                else if (state==FileTransferState.TRANSFERRING)
-                    ftl.notifyTransfer();
-            }
-
-            public void handleEvent(RvConnection transfer, RvConnectionEvent event) {
-                //Todo change
-                System.out.println("handleEvent");
-            }
-        });
+        oft.addEventListener(new FileTransferEventListener(ftl));
 
 
         oft.setSingleFile(ftl.getFile());
@@ -985,6 +968,52 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         ((IncomingFileTransfer) connectionInfo).close();
     }
 
+    /**
+     * Provides support for files sent and received.
+     */
+    static class FileTransferEventListener implements RvConnectionEventListener {
+        FileTransferListener ftl;
+        public FileTransferEventListener(FileTransferListener ftl) {
+            this.ftl = ftl;
+        }
+
+        public void handleEventWithStateChange(final RvConnection transfer, RvConnectionState state, RvConnectionEvent event) {
+            System.out.println("handleEventWithStateChange " + event.getClass() + ": " + event);
+            if (state==FileTransferState.CONNECTING)
+                ftl.notifyNegotiation();
+            else if (state==FileTransferState.FINISHED) {
+                ftl.notifyDone();
+                ftl.setProgress(100);
+            } else if (state==FileTransferState.FAILED)
+                ftl.notifyFail();
+            else if (state==FileTransferState.TRANSFERRING) {
+                ftl.notifyTransfer();
+                if (event instanceof TransferringFileEvent) {
+                    final ProgressStatusProvider psp = ((TransferringFileEvent)event).getProgressProvider();
+                    System.out.println("TFEWSC: Starting thread for file progress.");
+                    new Thread("Transfer for " + transfer.getBuddyScreenname()) {
+                        public void run() {
+                            System.out.println("TFEWSC: Starting with isOpen " + transfer.isOpen());
+                            while (transfer.isOpen()) {
+                                System.out.println("TFEWSC: " + psp.getLength() + " " + psp.getStartPosition() + " " + psp.getPosition());
+                                ftl.setProgress((int) Math.max(
+                                    Math.abs(psp.getPosition() / (psp.getLength() - psp.getStartPosition()) * 100),
+                                    100));
+                                GeneralUtils.sleep(700);
+                            }
+                        }
+                    }.start();
+                } else {
+                    System.out.println("Got a transferring event and it wasn't TransferringFileEvent! " + event);
+                }
+            }
+        }
+
+        public void handleEvent(RvConnection transfer, RvConnectionEvent event) {
+            System.out.println("FTE: " + event.getClass());
+        }
+    }
+
     public void acceptFileTransfer(final FileTransferListener ftl, Object connectionInfo) {
         IncomingFileTransfer transfer = (IncomingFileTransfer) connectionInfo;
         transfer.setFileMapper(new FileMapper() {
@@ -997,36 +1026,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             }
         });
 
-        transfer.addEventListener(new RvConnectionEventListener() {
-            public void handleEventWithStateChange(RvConnection transfer, RvConnectionState state, RvConnectionEvent event) {
-                System.out.println("handleEventWithStateChange " + event);
-                if (state==FileTransferState.CONNECTING)
-                    ftl.notifyNegotiation();
-                else if (state==FileTransferState.FINISHED) {
-                    ftl.notifyDone();
-                    ftl.setProgress(100);
-                } else if (state==FileTransferState.FAILED)
-                    ftl.notifyFail();
-                else if (state==FileTransferState.TRANSFERRING) {
-                    ftl.notifyTransfer();
-                    if (event instanceof TransferringFileEvent) {
-                        ProgressStatusProvider psp = ((TransferringFileEvent)event).getProgressProvider();
-                        ftl.setProgress((int) Math.max(
-                                Math.abs(psp.getLength() - psp.getStartPosition() / psp.getPosition()),
-                                100));
-                    }
-                }
-            }
-
-            public void handleEvent(RvConnection transfer, RvConnectionEvent event) {
-                if (event instanceof TransferringFileEvent) {
-                    ProgressStatusProvider psp = ((TransferringFileEvent)event).getProgressProvider();
-                    ftl.setProgress((int) Math.max(
-                            Math.abs(psp.getLength() - psp.getStartPosition() / psp.getPosition()),
-                            100));
-                }
-            }
-        });
+        transfer.addEventListener(new FileTransferEventListener(ftl));
         transfer.accept();
 
 /*        ReceiveFileThread service = null;
