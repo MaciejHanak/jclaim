@@ -33,6 +33,10 @@ public interface FileTransferListener {
     String getFileDescription();
     void notifyCancel();
     void notifyFail();
+    /**
+     * Indicate current status.
+     * @param status percent 0-100
+     */
     void setProgress(int status);
     void notifyDone();
     File getFile();
