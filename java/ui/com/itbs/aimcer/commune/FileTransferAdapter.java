@@ -115,6 +115,10 @@ public class FileTransferAdapter extends JDialog implements FileTransferListener
         status.setText("Failed at " + progressBar.getValue() + "%");
     }
 
+    /**
+     * Indicate current status.
+     * @param status percent 0-100
+     */
     public void setProgress(int status) {
         progressBar.setValue(status);
     }
