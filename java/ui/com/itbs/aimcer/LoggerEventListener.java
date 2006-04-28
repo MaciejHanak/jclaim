@@ -43,7 +43,7 @@ import java.util.Map;
  * @author Alex Rass
  * @since Sep 9, 2004
  */
-public class Logger implements ConnectionEventListener {
+public class LoggerEventListener implements ConnectionEventListener {
     File centralPath;
     PreparedStatement statement;
     private static final String CR = System.getProperty("line.separator");
@@ -67,7 +67,7 @@ public class Logger implements ConnectionEventListener {
     }
 
 //    Map<String, RandomAccessFile> cachedHandles = new HashMap<String, RandomAccessFile>();
-    public Logger(File path) throws IOException {
+    public LoggerEventListener(File path) throws IOException {
         centralPath = path;
         if (path.isFile())
             throw new IOException("Logging path should not be a file, please choose a folder instead.");

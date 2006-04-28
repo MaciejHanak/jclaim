@@ -20,7 +20,7 @@
 
 package com.itbs.aimcer.gui;
 
-import com.itbs.aimcer.Logger;
+import com.itbs.aimcer.LoggerEventListener;
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.Connection;
 import com.itbs.aimcer.commune.ConnectionEventListener;
@@ -74,7 +74,7 @@ public class Main {
 
     private static JFrame motherFrame;
     private static java.util.List <Connection> connections = new CopyOnWriteArrayList<Connection>();
-    public static Logger logger;
+    public static LoggerEventListener logger;
     private GlobalEventHandler globalEventHandler;
     private static Main main;
 
@@ -209,7 +209,7 @@ public class Main {
 
     public static void addConnection(MessageSupport connection) throws Exception {
         if (logger == null) { // on 1st addConnection:
-            logger = new Logger(ClientProperties.INSTANCE.getLogPath());
+            logger = new LoggerEventListener(ClientProperties.INSTANCE.getLogPath());
             final WeatherConnection weather = new WeatherConnection();
             weather.setProperties(ClientProperties.INSTANCE);
             weather.assignContactFactory(standardContactFactory);
@@ -363,7 +363,7 @@ public class Main {
         return motherFrame!=null && motherFrame.isDisplayable();
     }
 
-    public static Logger getLogger() {
+    public static LoggerEventListener getLogger() {
         return logger;
     }
 

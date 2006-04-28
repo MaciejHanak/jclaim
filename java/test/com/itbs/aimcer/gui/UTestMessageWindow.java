@@ -20,7 +20,7 @@
 
 package com.itbs.aimcer.gui;
 
-import com.itbs.aimcer.Logger;
+import com.itbs.aimcer.LoggerEventListener;
 import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.aimcer.bean.ContactWrapper;
 import com.itbs.aimcer.bean.MessageImpl;
@@ -64,7 +64,7 @@ public class UTestMessageWindow extends TestCase {
 */
         ClientProperties.INSTANCE.setShowOrderEntry(true);
         ContactWrapper cw = ContactWrapper.create("utest_bob", new UTestFakeConnection());
-        Main.logger = new Logger(ClientProperties.INSTANCE.getLogPath());
+        Main.logger = new LoggerEventListener(ClientProperties.INSTANCE.getLogPath());
         messageWindow = MessageWindow.openWindow(cw, true);
         monitorWindow(messageWindow.frame);
     }
