@@ -20,20 +20,23 @@
 
 package com.itbs.gui;
 
+import javax.swing.*;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.swing.JLabel;
-import javax.swing.ToolTipManager;
-
+/**
+ * Provides a VERY simple implementatin of a clock.
+ * JLabel with a tooltip.
+ */
 public class ClockLabel extends JLabel {
     Timer timer = new Timer("ClockLabel", true); 
     DateFormat timeFormatter = DateFormat.getTimeInstance(DateFormat.SHORT);
     boolean started;
     
     public ClockLabel() {
+        setOpaque(false);
         setVisible(true);
         ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
         toolTipManager.registerComponent(this);
