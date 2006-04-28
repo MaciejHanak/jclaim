@@ -34,6 +34,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Shows the help page.
@@ -42,6 +44,7 @@ import java.util.Map;
  * @since Mar 19, 2005
  */
 public class HelpServlet extends HttpServlet {
+    private static final Logger log = Logger.getLogger(HelpServlet.class.getName());
     private static String helpScreen;
     // global page stuff
     static final String paramPage = "page";
@@ -57,7 +60,7 @@ public class HelpServlet extends HttpServlet {
         try {
             helpScreen = ClassUtil.getFileContentFromCallersClassDirectory("help.html");
         } catch (IOException e) {
-            e.printStackTrace();  //Todo change
+            log.log(Level.SEVERE, "", e);  //Todo change
         }
     }
 

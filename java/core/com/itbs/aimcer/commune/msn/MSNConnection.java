@@ -39,6 +39,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Provides connection to MSN.
@@ -47,6 +49,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since Dec 24, 2004
  */
 public class MSNConnection extends AbstractMessageConnection { //implements FileTransferSupport {
+    private static Logger log = Logger.getLogger(MSNConnection.class.getName());
+    
     MSNMessenger connection = null;
     Map<String, SwitchboardSession> sessions = new ConcurrentHashMap<String, SwitchboardSession>();
 
@@ -108,7 +112,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
                     eventHandler.statusChanged(MSNConnection.this, contact, true, false, 0);
                 }
             } else {
-                System.out.println("got MSN contact status w/o it being in the list");
+                log.fine("got MSN contact status w/o it being in the list");
             }
         }
 
@@ -119,7 +123,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
                     eventHandler.statusChanged(MSNConnection.this, contact, false, true, 0);
                 }
             } else {
-                System.out.println("got MSN contact status w/o it being in the list");
+                log.fine("got MSN contact status w/o it being in the list");
             }
         }
 
@@ -141,7 +145,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
             Contact cw  = getContactFactory().create(friend.getLoginName(), MSNConnection.this);
             cw.getStatus().setOnline(!friend.getStatus().equals(UserStatus.OFFLINE));
             cw.setDisplayName(friend.getFormattedFriendlyName());
-            System.out.println("friend " + friend.getStatus() + " group index " + friend.getGroupIndex());
+            log.fine("friend " + friend.getStatus() + " group index " + friend.getGroupIndex());
             Group gw = getGroupFactory().create(connection.getBuddyGroup().getGroupList().getGroup(friend.getGroupIndex()).getName());
             gw.add(cw);
             getGroupList().add(gw);
@@ -230,7 +234,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
          */
         public void filePosted(SwitchboardSession ss, int cookie, String filename, int filesize) {
             super.filePosted(ss, cookie, filename, filesize);    //Todo change
-            System.out.println("MSNConnection$ConnectionListener.filePosted");
+            log.fine("MSNConnection$ConnectionListener.filePosted");
         }
 
         /**
@@ -244,7 +248,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
          */
         public void fileSendAccepted(SwitchboardSession ss, int cookie) {
             super.fileSendAccepted(ss, cookie);    //Todo change
-            System.out.println("MSNConnection$ConnectionListener.fileSendAccepted");
+            log.fine("MSNConnection$ConnectionListener.fileSendAccepted");
         }
 
         /**
@@ -257,7 +261,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
          */
         public void fileSendRejected(SwitchboardSession ss, int cookie, String reason) {
             super.fileSendRejected(ss, cookie, reason);    //Todo change
-            System.out.println("MSNConnection$ConnectionListener.fileSendRejected");
+            log.fine("MSNConnection$ConnectionListener.fileSendRejected");
         }
 
         /**
@@ -267,7 +271,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
          */
         public void fileSendStarted(VolatileTransferServer server) {
             super.fileSendStarted(server);    //Todo change
-            System.out.println("MSNConnection$ConnectionListener.fileSendStarted");
+            log.fine("MSNConnection$ConnectionListener.fileSendStarted");
         }
 
         /**
@@ -275,7 +279,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
          */
         public void fileSendEnded(VolatileTransferServer server) {
             super.fileSendEnded(server);    //Todo change
-            System.out.println("MSNConnection$ConnectionListener.fileSendEnded");
+            log.fine("MSNConnection$ConnectionListener.fileSendEnded");
         }
 
         /**
@@ -284,7 +288,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
          * @param downloader ?? ???? thread ??.
          */
         public void fileReceiveStarted(VolatileDownloader downloader) {
-            System.out.println("MSNConnection$ConnectionListener.fileReceiveStarted");
+            log.fine("MSNConnection$ConnectionListener.fileReceiveStarted");
             //Todo verify
             Contact contact = getContactFactory().get(downloader.getName(), MSNConnection.this);
             for (ConnectionEventListener eventHandler : eventHandlers) {
@@ -297,7 +301,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
          * ???, ?? ?? thread? ????.
          */
         public void fileSendError(VolatileTransferServer server, Throwable e) {
-            System.out.println("MSNConnection$ConnectionListener.fileSendError");
+            log.fine("MSNConnection$ConnectionListener.fileSendError");
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 eventHandler.errorOccured("ERROR while transfering file: " + server.getFilename() + " " + e.getMessage(), null);
             }
@@ -308,7 +312,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
          * ???, ?? ?? thread? ????.
          */
         public void fileReceiveError(VolatileDownloader downloader, Throwable e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "fileReceiveError", e);
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 eventHandler.errorOccured("ERROR while transfering file: " + downloader.getFilename() + " " + e.getMessage(), null);
             }
@@ -330,7 +334,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
             connect();
         } catch (Exception e) {
 //            GeneralUtils.sleep(1000);
-            e.printStackTrace();
+            log.log(Level.INFO, "Failed to reconnect", e);
         }
     }
 
@@ -382,7 +386,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
                 }
             }
         } else {
-            System.out.println("Never found the index.");
+            log.fine("Never found the index.");
         }
 
     }// addContact()
@@ -453,7 +457,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
             try {
                 connection.setMyStatus(away?UserStatus.AWAY_FROM_COMPUTER:UserStatus.ONLINE);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.log(Level.SEVERE, "Failed to set status", e);
             }
         super.setAway(away);
     }
@@ -529,7 +533,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
         if (connectionInfo instanceof VolatileDownloader)
             connection.fireFileReceiveStartedEvent((VolatileDownloader) connectionInfo);
         else
-            System.out.println("MSNConnection.acceptFileTransfer not the right class " + connectionInfo.getClass().getName());
+            log.fine("MSNConnection.acceptFileTransfer not the right class " + connectionInfo.getClass().getName());
     }
 
     /**

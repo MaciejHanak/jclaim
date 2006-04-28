@@ -47,6 +47,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Displays the list of contacts.
@@ -59,6 +61,7 @@ import java.util.Map;
  * @since Mar 19, 2005
  */
 public class PeopleListServlet extends HttpServlet {
+    private static final Logger log = Logger.getLogger(PeopleListServlet.class.getName());
     private static String screen;
     private static final String paramMsgTitle = "messagetitle";
     private static final String paramClose = "close";
@@ -106,7 +109,7 @@ public class PeopleListServlet extends HttpServlet {
         try {
             screen = ClassUtil.getFileContentFromCallersClassDirectory("people.html");
         } catch (IOException e) {
-            e.printStackTrace();  //Todo change
+            log.log(Level.SEVERE, "", e);  //Todo change
         }
     }
 
@@ -128,21 +131,20 @@ public class PeopleListServlet extends HttpServlet {
                     + "\" title=\"" + realName + " on " + contact.getConnection().getServiceName() + " via " + contact.getConnection().getUser().getName() + (contact.getStatus().isOnline()?"":"&nbsp; Last seen: " + contact.getPreferences().getLastConnected()) + "\">";
             if (!ClientProperties.INSTANCE.isShowWebIcons()) {
                 return href + display + "</a>";
-            } else {
-                return "<tr>\n" +
-                        "    <td width=\"26\">"
-                        +       href
+            } 
+            return "<tr>\n" +
+                    "    <td width=\"26\">"
+                    +       href
 //                        +       href.substring(0, 2) + " style=\"text-decoration:none\" " + href.substring(2)
-                        +      "<img border=\"0\" src=\"/image?path=" + ImageCacheUI.getImageName(contact.getConnection().getClass()) + "\" height=\"18\" width=\"18\"/>"
-                        +      "</a>"
-                        +    "</td>\n"
-                        + "   <td >"
-                        +       href + display + "</a>"
-                        +    "</td>"
-                        + "</tr>\n";
-            }
-        } else
-            return display;
+                    +      "<img border=\"0\" src=\"/image?path=" + ImageCacheUI.getImageName(contact.getConnection().getClass()) + "\" height=\"18\" width=\"18\"/>"
+                    +      "</a>"
+                    +    "</td>\n"
+                    + "   <td >"
+                    +       href + display + "</a>"
+                    +    "</td>"
+                    + "</tr>\n";
+        } 
+        return display;
     }
 
     String group(String name) {
@@ -240,7 +242,7 @@ public class PeopleListServlet extends HttpServlet {
                     continue;
                 }
                 buddyList += "<fieldset><legend>" + group(group.getName()) + " - " + groupWrapper.sizeOnline() + " / " + group.size() + "</legend>";
-//              System.out.println("Group: "+group.getName());
+//              log.fine("Group: "+group.getName());
                 if (groupWrapper.isShrunk()) {
                     buddyList +="</fieldset>\n";
                     continue;

@@ -33,6 +33,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Provides basic support for file transfer.
@@ -41,6 +43,7 @@ import java.util.List;
  * @since Jul 15, 2005
  */
 public abstract class AbstractFileTransferHandler extends TransferHandler  {
+    private static final Logger log = Logger.getLogger(AbstractFileTransferHandler.class.getName());
     protected AbstractFileTransferHandler() {
     }
 
@@ -84,9 +87,9 @@ public abstract class AbstractFileTransferHandler extends TransferHandler  {
             }
             return false;
         } catch (UnsupportedFlavorException ufe) {
-            System.out.println("importData: unsupported data flavor " + ufe.getMessage());
+            log.severe("importData: unsupported data flavor " + ufe.getMessage());
         } catch (IOException ieo) {
-            System.out.println("importData: I/O exception " + ieo.getMessage());
+            log.severe("importData: I/O exception " + ieo.getMessage());
         }
         return false;
     }
@@ -118,7 +121,7 @@ public abstract class AbstractFileTransferHandler extends TransferHandler  {
                             try {
                                 doc.remove(p0, p1 - p0);
                             } catch (BadLocationException e) {
-                                e.printStackTrace(); // should not happen
+                                log.log(Level.SEVERE, "", e); // should not happen
                             }
                         }
                 } // if doc != null

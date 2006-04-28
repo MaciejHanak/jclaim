@@ -35,6 +35,8 @@ import java.util.Date;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Provides access to weather information.
@@ -44,6 +46,8 @@ import java.util.TimerTask;
  * @since Oct 10, 2004
  */
 public class WeatherConnection extends AbstractConnection {
+    private static Logger log = Logger.getLogger(WeatherConnection.class.getName());
+    
     private Group weather;
     private Timer timer;
     private static final String TOKEN_PLACE = "View the Forecast Center for ";//"Weather Forecast for ";
@@ -89,9 +93,9 @@ public class WeatherConnection extends AbstractConnection {
 //                page = WebHelper.getPage(new URL("http://www.w2.weather.com/weather/local/"+zip+"?lswe="+zip+"&lwsa=WeatherLocalUndeclared"));
                 weather = getWeather(page);
                 icon = getWeatherIcon(page);
-//                System.out.println("Set " + zip.getName() + " to " + zip.getDisplayName() + " " + zip.oldToString());
+//                log.info("Set " + zip.getName() + " to " + zip.getDisplayName() + " " + zip.oldToString());
             } catch (Exception e) {
-                e.printStackTrace();
+                log.log(Level.SEVERE, "Failed to get a page", e);
             }
             if (weather != null && weather.length() < 100)
                 zip.setDisplayName(weather);
@@ -122,8 +126,7 @@ public class WeatherConnection extends AbstractConnection {
             }
             return scaledInstance;
         } catch (MalformedURLException e) {
-            System.out.println("Icon URL failed: "+result);
-            e.printStackTrace();
+            log.log(Level.SEVERE, "Icon URL failed: "+result, e);
             return null;
         }
     }
@@ -157,7 +160,7 @@ public class WeatherConnection extends AbstractConnection {
     }
 
     public void disconnect(boolean intentional) {
-        System.out.println("Disconnected weather.");
+        log.info("Disconnected weather.");
         if (timer != null)
             timer.cancel();
         weather.clear(this);
@@ -174,11 +177,11 @@ public class WeatherConnection extends AbstractConnection {
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 if (DEBUG)
-                    System.out.println("Updating weather..." + new Date());
+                    log.fine("Updating weather..." + new Date());
                 try {
                     updateList();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.log(Level.SEVERE, "Failed to update list", e);
                 }
             }
         }, 2000, 30*60*1000); // each half-hour
@@ -189,7 +192,7 @@ public class WeatherConnection extends AbstractConnection {
     }
 
     public void cancel() {
-        System.out.println("Cancelled weather.");
+        log.fine("Cancelled weather.");
         if (timer != null)
             timer.cancel();
     }

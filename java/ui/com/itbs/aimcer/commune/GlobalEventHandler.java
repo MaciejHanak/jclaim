@@ -20,6 +20,8 @@
 
 package com.itbs.aimcer.commune;
 
+import java.util.logging.Logger;
+
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.gui.Main;
 import com.itbs.util.GeneralUtils;
@@ -33,6 +35,7 @@ import javax.swing.*;
  * Date: Sep 9, 2004
  */
 public class GlobalEventHandler implements ConnectionEventListener {
+    private static final Logger log = Logger.getLogger(GlobalEventHandler.class.getName());   
     private int connectionsInProgress;
 
     public GlobalEventHandler() {
@@ -95,7 +98,7 @@ public class GlobalEventHandler implements ConnectionEventListener {
 
     int connectionLostTimes;
     public void connectionLost(final Connection connection) {
-        System.out.println("Connection to " + connection.getServiceName() + " lost " + ++connectionLostTimes + " time(s).");
+        log.info("Connection to " + connection.getServiceName() + " lost " + ++connectionLostTimes + " time(s).");
         connectionDone();
         Main.setTitle(connection.getServiceName() + " Offline");
         handleDisconnect(connection);
@@ -107,7 +110,7 @@ public class GlobalEventHandler implements ConnectionEventListener {
                     try {
                         sleep(60*1000);
                         if (Main.getFrame().isDisplayable() && !connection.isDisconnectIntentional() && connection.getDisconnectCount() < ClientProperties.INSTANCE.getDisconnectCount() && !connection.isLoggedIn()) {
-                            System.out.println("Trying to reconnect " + connection.getServiceName() + " attempt no. " + connection.getDisconnectCount());
+                            log.info("Trying to reconnect " + connection.getServiceName() + " attempt no. " + connection.getDisconnectCount());
                             connection.reconnect();
                         }
                     } catch (InterruptedException e) { //

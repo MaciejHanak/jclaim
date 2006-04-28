@@ -18,13 +18,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * @author Alex Rass
  * @since May 18, 2005
  */
 public class MenuManager {
-
+    private static final Logger log = Logger.getLogger(MenuManager.class.getName());
     /** Menu */
     private static final String MENU_FILE   = "General";
     private static final String COMMAND_EXIT = "Exit";
@@ -428,7 +429,7 @@ public class MenuManager {
                     JOptionPane.showMessageDialog(Main.getFrame(), Main.ABOUT_MESSAGE, "About:", JOptionPane.INFORMATION_MESSAGE);
                 }
             } else if (COMMAND_HELP_ABOUT.equals(command)) {
-                System.out.println("Mem: " + Runtime.getRuntime().freeMemory() + "/" + Runtime.getRuntime().totalMemory());
+                log.info("Mem: " + Runtime.getRuntime().freeMemory() + "/" + Runtime.getRuntime().totalMemory());
                 JOptionPane.showMessageDialog(Main.getFrame(), Main.ABOUT_MESSAGE, "About:", JOptionPane.INFORMATION_MESSAGE);
             }
         }

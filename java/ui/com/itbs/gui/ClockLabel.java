@@ -20,7 +20,6 @@
 
 package com.itbs.gui;
 
-import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Timer;
@@ -48,7 +47,6 @@ public class ClockLabel extends JLabel {
                 @Override
                 public void run() {
                     setText(timeFormatter.format(new Date()));
-                    System.out.println(".run()");
                 }
             }, 500, 60 * 1000);
         } else {

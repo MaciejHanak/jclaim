@@ -144,8 +144,7 @@ public class ContactPreferences {
     public String getEmailAddressAsURL() throws UnsupportedEncodingException {
         if (GeneralUtils.isNotEmpty(emailAddress))
             return "<a href=\"mailto:"+URLEncoder.encode(emailAddress, "UTF-8")+ "\">Email</a>";
-        else
-            return "";
+        return "";
     }
 
     public void setEmailAddress(String emailAddress) {

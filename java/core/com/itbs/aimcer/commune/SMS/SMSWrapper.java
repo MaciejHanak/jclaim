@@ -57,8 +57,7 @@ public class SMSWrapper {
                 }
             }
             return true;
-        } else {
-            throw new InvalidDataException("Missing required parameter.");
-        }
+        } 
+        throw new InvalidDataException("Missing required parameter.");
     }
 }

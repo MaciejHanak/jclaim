@@ -30,6 +30,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Provides a simple implementation of Tray Icon services for an application.
@@ -42,6 +44,7 @@ import java.awt.event.WindowEvent;
  * @since Mar 25, 2005
  */
 public class TrayAdapter {
+    private static final Logger log = Logger.getLogger(TrayAdapter.class.getName());
     private static TrayIcon trayIcon;
     private static boolean lastState;
     private static Alerter alerter;
@@ -50,8 +53,7 @@ public class TrayAdapter {
         try {
             alerter = Alerter.newInstance();
         } catch (Throwable e) {
-            System.out.println("Failed to load alerter");
-            e.printStackTrace();
+            log.log(Level.SEVERE, "Failed to load alerter", e);
         }
 
     }
@@ -94,7 +96,7 @@ public class TrayAdapter {
         } catch (NoClassDefFoundError e) {
             // failed to load libs, no big deal
             trayIcon = null;
-            e.printStackTrace();
+            log.log(Level.SEVERE, "", e);
         }
 
     }
@@ -122,7 +124,7 @@ public class TrayAdapter {
                 }
                 lastState = useTray;
             } catch (UnsatisfiedLinkError e) {
-                e.printStackTrace();
+                log.log(Level.SEVERE, "", e);
                 trayIcon = null;
             }
         }
@@ -143,7 +145,7 @@ public class TrayAdapter {
             } catch (NullPointerException e) {
                 // both strings are null
             } catch (UnsatisfiedLinkError e) {
-                e.printStackTrace();
+                log.log(Level.SEVERE, "", e);
                 trayIcon = null;
             }
         }
@@ -156,7 +158,7 @@ public class TrayAdapter {
                     alerter.alert(frame);
                 }
             } catch (Throwable e) { // takes care of not found, no dlls etc
-                e.printStackTrace();
+                log.log(Level.SEVERE, "", e);
             }
         } // if alerter loaded
 //            WinAlerter wal = new WinAlerter();

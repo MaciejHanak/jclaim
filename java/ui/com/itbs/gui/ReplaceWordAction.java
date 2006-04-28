@@ -79,7 +79,7 @@ class ReplaceWordAction extends AbstractAction {
             word =res + word;
             lastPos--;
         }
-//        System.out.println("R:" + word + "<");
+//        log.fine("R:" + word + "<");
         return word;
     }
 }

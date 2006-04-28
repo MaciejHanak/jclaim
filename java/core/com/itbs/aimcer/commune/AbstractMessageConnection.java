@@ -28,6 +28,8 @@ import javax.swing.text.html.HTMLEditorKit;
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Support for Sending and receiving messages.
@@ -36,6 +38,8 @@ import java.util.concurrent.Executors;
  * @since Apr 24, 2005
  */
 abstract public class AbstractMessageConnection extends AbstractConnection implements MessageSupport {
+    private static Logger log = Logger.getLogger(AbstractMessageConnection.class.getName());
+    
     private String userName, password;
     private Nameable user;
 
@@ -123,7 +127,7 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
             try {
                 connectionEventListener.statusChanged(this);
             } catch (Exception e) {
-                e.printStackTrace(); // shhh.  keep this quiet for now. no biggie
+                log.log(Level.SEVERE, "Failed to set Away", e); // shhh.  keep this quiet for now. no biggie
             }
         }
     }

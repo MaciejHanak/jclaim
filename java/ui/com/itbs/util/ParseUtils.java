@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * <p>Title: Provides some parsing methods</p>
@@ -36,6 +37,7 @@ import java.util.Map;
  */
 
 public final class ParseUtils {
+    private static final Logger log = Logger.getLogger(ParseUtils.class.getName());
     public static final String SPECIAL_CHAR_START = "<%";
     public static final String SPECIAL_CHAR_END = "%>";
 
@@ -80,7 +82,7 @@ public final class ParseUtils {
             } else { // abandoned start char
                 // todo blow up, or something.  for now, just loose the junk
                 source = source.substring(0, keyLocation)+source.substring(keyLocation+1);
-                System.out.println("ParseUtils.replace: Problem in a file.  orphaned start tag");
+                log.info("ParseUtils.replace: Problem in a file.  orphaned start tag");
             }
         }
         return source;

@@ -30,6 +30,8 @@ import ymsg.network.event.*;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Support for Yahoo medium.
@@ -38,6 +40,8 @@ import java.util.Vector;
  * @since Mar 26, 2005
  */
 public class YMsgConnection extends AbstractMessageConnection {//implements FileTransferSupport {
+    private static final Logger log = Logger.getLogger(YMsgConnection.class.getName());
+    
     // -----The session object - our way into the Yahoo API
     private Session session;
     /** remembers last state. */
@@ -79,7 +83,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
             session = new Session();
         // -----Register a listener
         session.addSessionListener(new SessionHandler());
-        System.out.println(session.getConnectionHandler().toString());
+        log.fine(session.getConnectionHandler().toString());
 
 //        todo see about this later
 //        session.addTypingNotification(inputTF,username);
@@ -159,7 +163,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
                 eventHandler.connectionFailed(this, "Timeout during connection.\n" + e.getMessage());
             }
         } catch(IOException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "", e);
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 eventHandler.connectionFailed(this, "Problem connecting.\n" + e.getMessage());
             }
@@ -196,7 +200,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
                     session.removeFriend(contact.getName(), list.get(i).getName());
                 }
             } catch (IOException e) {
-                e.printStackTrace();  //Todo change?
+                log.log(Level.SEVERE, "", e);//Todo change?
             }
         }
         if (found)
@@ -225,7 +229,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
                     return; // just 1 at a time, jik
                 }
             } catch (IOException e) {
-                e.printStackTrace();  //Todo change?
+                log.log(Level.SEVERE, "", e);  //Todo change?
             }
         }
     }
@@ -236,7 +240,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
             if (isLoggedIn())
                 session.logout();
         } catch (Exception e) {
-           // e.printStackTrace();  //We really don't care
+           // log.log(Level.SEVERE, "", e); //We really don't care
         }
         session = null; // clear, gc
         super.disconnect(intentional);
@@ -248,7 +252,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
             try {
                 connect();
             } catch (Exception e) {
-                e.printStackTrace();  //Todo change
+                log.log(Level.SEVERE, "", e);//Todo change
             }
     }
 
@@ -275,7 +279,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
                 else
                     session.setStatus(away?StatusConstants.STATUS_BRB:StatusConstants.STATUS_AVAILABLE);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.log(Level.SEVERE, "", e);
             }
         super.setAway(away);
     }
@@ -393,8 +397,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
             }
             if (ev.getException() instanceof YMSG9BadFormatException) {
                 YMSG9BadFormatException ex = (YMSG9BadFormatException) ev.getException();
-                System.err.println("**Cause:");
-                ex.getCausingThrowable().printStackTrace();
+                log.log(Level.SEVERE, "", ex.getCausingThrowable());
             }
         }
 
@@ -426,7 +429,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
             }
 
 /*
-            System.out.println(ev.getLocation().toString());
+            log.fine(ev.getLocation().toString());
             Contact contact = getContactFactory().get(ev.getFrom(), YMsgConnection.this);
             if (contact == null) return; // ignore random ppl sending files.  leads to no-good
             for (ConnectionEventListener eventHandler : eventHandlers) {
@@ -440,12 +443,12 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
         }
 
         public void listReceived(SessionEvent ev) {
-            System.out.println("list received " + ev);
+            log.fine("list received " + ev);
         }
 
         public void friendsUpdateReceived(SessionFriendEvent ev) {
             for (YahooUser aYu : ev.getFriends()) {
-//                System.out.println("Updated: " + yu[i].toString());
+//                log.fine("Updated: " + yu[i].toString());
                 Contact contact = getContactFactory().create(aYu.getId(), YMsgConnection.this);
                 for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
                     eventHandler.statusChanged(YMsgConnection.this, contact, aYu.isLoggedIn(), isAway(aYu), 0);
@@ -454,14 +457,14 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
         }
 
         public void friendAddedReceived(SessionFriendEvent ev) {
-            System.out.println("friendAddedReceived " + ev.toString());
+            log.fine("friendAddedReceived " + ev.toString());
             Group group = getGroupFactory().create(ev.getGroup());
             group.add(getContactFactory().create(ev.getFriend().getId(), YMsgConnection.this));
             getGroupList().add(group);
         }
 
         public void friendRemovedReceived(SessionFriendEvent ev) {
-            System.out.println("friendRemovedReceived " + ev.toString());
+            log.fine("friendRemovedReceived " + ev.toString());
         }
 
         public void contactRequestReceived(SessionEvent ev) {
@@ -474,13 +477,13 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
                 try {
                     session.rejectContact(ev, "Not now, thanks");
                 } catch (IOException e) {
-                    e.printStackTrace();  //Todo change
+                    log.log(Level.SEVERE, "", e);//Todo change
                 }
 
         }
 
         public void conferenceInviteReceived(SessionConferenceEvent ev) {
-            System.out.println(ev.toString());
+            log.fine(ev.toString());
             try {
                 session.declineConferenceInvite(ev.getRoom(), "Sorry!");
             } catch (IOException e) {
@@ -489,19 +492,19 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
         }
 
         public void conferenceInviteDeclinedReceived(SessionConferenceEvent ev) {
-            System.out.println(ev.toString());
+            log.fine(ev.toString());
         }
 
         public void conferenceLogonReceived(SessionConferenceEvent ev) {
-            System.out.println(ev.toString());
+            log.fine(ev.toString());
         }
 
         public void conferenceLogoffReceived(SessionConferenceEvent ev) {
-            System.out.println(ev.toString());
+            log.fine(ev.toString());
         }
 
         public void conferenceMessageReceived(SessionConferenceEvent ev) {
-            System.out.println("conferenceMessageReceived " + ev.toString());
+            log.fine("conferenceMessageReceived " + ev.toString());
         }
 
         public void chatLogonReceived(SessionChatEvent ev) {
@@ -523,7 +526,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
             String u = ev.getChatUser().getId(), m = ev.getMessage();
             int spam = spamBlock.getViolations(u, m);
             if (spam > 0) {
-                System.out.println("Blocked: " + u + "/" + spam + ": " + m);
+                log.fine("Blocked: " + u + "/" + spam + ": " + m);
             } else {
                 if (ev.isEmote()) m = "<" + m + ">";
                 _appendOutput("[" + ev.getLobby().getNetworkName() + "]  " + u + " : ");
@@ -535,7 +538,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
         }
 
         public void chatConnectionClosed(SessionEvent ev) {
-            System.out.println("**Chat connection closed**");
+            log.fine("**Chat connection closed**");
         }
 
         public void newMailReceived(SessionNewMailEvent event) {

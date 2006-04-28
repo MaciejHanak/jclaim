@@ -157,6 +157,6 @@ public class DelayedThread extends Thread {
         } catch (InterruptedException e) {
             // don't care
         }
-//        System.out.println("Delayed Thread Finished work.");
+//        log.info("Delayed Thread Finished work.");
     }
 } // class FlagThread

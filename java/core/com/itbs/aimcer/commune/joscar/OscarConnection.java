@@ -71,6 +71,7 @@ import java.util.logging.Logger;
  * @since Sep 22, 2004
  */
 public class OscarConnection extends AbstractMessageConnection implements FileTransferSupport, IconSupport {
+    private static Logger log = Logger.getLogger(OscarConnection.class.getName());
     AimConnection connection;
     private AimConnectionProperties connectionProperties; // use to hold on connection settings
     RvProcessor rvProcessor;
@@ -179,8 +180,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                         fireDisconnect();
                     }
                 } catch (Exception e) {
-                    System.out.println("StateListener: " + e.getMessage());
-                    e.printStackTrace();
+                    log.log(Level.SEVERE, "StateListener: ", e);
                 }
             }
         });
@@ -215,7 +215,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             } else if (family == SsiCommand.FAMILY_SSI) {
                 return new SsiService(connection, conn);
             } else {
-                System.out.println("no service for family " + family);
+                log.fine("no service for family " + family);
                 return null;
             }
         }
@@ -268,7 +268,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                             public void buddyAdded(BuddyList list, net.kano.joustsim.oscar.oscar.service.ssi.Group group, List<? extends Buddy> oldItems, List<? extends Buddy> newItems, Buddy buddy) {
                                 Group bGroup = getGroupFactory().create(group.getName());
                                 Contact contact = getContactFactory().create(buddy.getScreenname().getNormal(), OscarConnection.this);
-//                                if (buddy.getAlias()==null) System.out.println("!! Alias was null for " + buddy.getScreenname().getNormal() + " !!");
+//                                if (buddy.getAlias()==null) log.fine("!! Alias was null for " + buddy.getScreenname().getNormal() + " !!");
                                 // all offline ppl will have null aliases.
                                 contact.setDisplayName(buddy.getAlias()!=null?buddy.getAlias():buddy.getScreenname().getFormatted());
                                 buddy.addBuddyListener(aliasBuddyListener);
@@ -321,16 +321,16 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                                 if (!(snac instanceof SsiDataCmd))
                                     return;
                                 try {
-//                System.out.println("DG: " + snac.getClass() + ":" + snac.getCommand() + ":" + snac.getFamily());
+//                log.fine("DG: " + snac.getClass() + ":" + snac.getCommand() + ":" + snac.getFamily());
                                     SsiDataCmd sdc = (SsiDataCmd) snac;
-//                System.out.println("DG2: " + sdc.getItems().length);
+//                log.fine("DG2: " + sdc.getItems().length);
                                     int count=0;
                                     SsiItem ssiItem;
                                     Group lastGroup = null;
                                     for (int i = 0; i < sdc.getItems().size(); i++) {
                                         ssiItem = sdc.getItems().get(i);
                                         if (ssiItem.getItemType() == SsiItem.TYPE_GROUP) {
-//                        System.out.println(" g " + ssiItem.getName());
+//                        log.fine(" g " + ssiItem.getName());
                                             if (ssiItem.getName().length() == 0)
                                                 continue;
                                             getGroupList().add(lastGroup = GroupWrapper.create(ssiItem.getName()));
@@ -340,22 +340,23 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                                                 lastGroup.add(getContactFactory().create(ssiItem.getName(), OscarConnection.this));
                                                 count++;
                                             } else
-                                                System.out.println("Missing a group for " + ssiItem.getName());
+                                                log.fine("Missing a group for " + ssiItem.getName());
                                         } else if (ssiItem.getItemType() == SsiItem.TYPE_ICON_INFO) {
                                             // todo handle icons?
 //                        Contact contact = getContactFactory().create(ssiItem.getName(), OscarConnection.this);
 //                        ImageIcon icon = new ImageIcon(ssiItem.getData().toByteArray());
 //                        contact.setIcon(icon);
                                         } else {
-                                            System.out.println("Ignoring: "+ ssiItem.getItemType() + ":" + ssiItem.getName());
+                                            log.fine("Ignoring: "+ ssiItem.getItemType() + ":" + ssiItem.getName());
                                         }
                                     } // for
-                                    System.out.println("Added "+ count + " buddies.");
+                                    log.fine("Added "+ count + " buddies.");
                                     for (ConnectionEventListener eventHandler : eventHandlers) {
                                         eventHandler.statusChanged(OscarConnection.this);
                                     }
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    log.log(Level.SEVERE, "",e);
+                                    
                                 }
                             }
                         });
@@ -395,12 +396,12 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                             iconConnection.connect();
                         }
                     } catch (Exception e1) {
-                        e1.printStackTrace();
+                        log.log(Level.SEVERE, "",e1);
                     }
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "",e);            
         }
 
 */
@@ -429,7 +430,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                                     fileTransfer.getInvitationMessage().getMessage(),
                                     transfer);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            log.log(Level.SEVERE, "Problem handling file transfers", e);
                         }
                     } // for all eventHandlers
                 } // if
@@ -439,14 +440,14 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 /*  Old Code
         rvProcessor.addListener(new RvProcessorListener() {
             public void handleNewSession(NewRvSessionEvent event) {
-                System.out.println("new session.\n" +
+                log.fine("new session.\n" +
                         "  incoming:"+ NewRvSessionEvent.TYPE_INCOMING.equals(event.getSessionType()) +
                         "  outgoing:"+ NewRvSessionEvent.TYPE_OUTGOING.equals(event.getSessionType()) +
                         "\n  Event:" + event + "|" + event.getSession());
                 if (NewRvSessionEvent.TYPE_INCOMING.equals(event.getSessionType()))
                     event.getSession().addListener(new RvSessionListener() {
                         public void handleRv(RecvRvEvent event) {
-                            System.out.println( "RvSessionListener.handleRv:  " + event + "|" + event.getRvCommand());
+                            log.fine( "RvSessionListener.handleRv:  " + event + "|" + event.getRvCommand());
                             // if it's a FileSendReqRvCmd, start the process
                             if (event.getRvCommand() instanceof FileSendReqRvCmd) {
                                 // determine it's a file transfer, cast what's needed and extract file information
@@ -465,7 +466,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                                                         GeneralUtils.stripHTML(fileSendReqRvCmd.getMessage().getMessage()), // message
                                                 info);
                                     } catch (Exception e) {
-                                        e.printStackTrace();
+                                        log.log(Level.SEVERE, "",e);
                                     }
                                 }
                             }
@@ -473,7 +474,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
                         public void handleSnacResponse(RvSnacResponseEvent event) {
                             //no care
-                            System.out.println("RvSessionListener.handleSnacResponse: incoming snac");
+                            log.fine("RvSessionListener.handleSnacResponse: incoming snac");
                         }
                     });
             }
@@ -488,19 +489,19 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             public void handleResponse(SnacResponseEvent event) {
                 try {
                     SnacCommand snac = event.getSnacCommand();
-//                System.out.println("DG: " +
+//                log.fine("DG: " +
 //                        snac.getClass() +
 //                        ":" + snac.getCommand() +
 //                        ":" + snac.getFamily());
                     SsiDataCmd sdc = (SsiDataCmd) snac;
-//                System.out.println("DG2: " + sdc.getItems().length);
+//                log.fine("DG2: " + sdc.getItems().length);
                     int count=0;
                     SsiItem ssiItem;
                     Group lastGroup = null;
                     for (int i = 0; i < sdc.getItems().length; i++) {
                         ssiItem = sdc.getItems()[i];
                         if (ssiItem.getItemType() == SsiItem.TYPE_GROUP) {
-//                        System.out.println(" g " + ssiItem.getName());
+//                        log.fine(" g " + ssiItem.getName());
                             if (ssiItem.getName().length() == 0)
                                 continue;
                             getGroupList().add(lastGroup = GroupWrapper.create(ssiItem.getName()));
@@ -510,27 +511,28 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                                 lastGroup.add(getContactFactory().create(ssiItem.getName(), OscarConnection.this));
                                 count++;
                             } else
-                                System.out.println("Missing a group for " + ssiItem.getName());
+                                log.fine("Missing a group for " + ssiItem.getName());
                         } else if (ssiItem.getItemType() == SsiItem.TYPE_ICON_INFO) {
                             // todo handle icons?
 //                        Contact contact = getContactFactory().create(ssiItem.getName(), OscarConnection.this);
 //                        ImageIcon icon = new ImageIcon(ssiItem.getData().toByteArray());
 //                        contact.setIcon(icon);
                         } else {
-                            System.out.println("Ignoring: "+ ssiItem.getItemType() + ":" + ssiItem.getName());
+                            log.fine("Ignoring: "+ ssiItem.getItemType() + ":" + ssiItem.getName());
                         }
                     } // for
-                    System.out.println("Added "+ count + " buddies.");
+                    log.fine("Added "+ count + " buddies.");
                     for (int i = 0; i < eventHandlers.size(); i++) {
                         ((ConnectionEventListener) eventHandlers.get(i)).statusChanged(OscarConnection.this);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.log(Level.SEVERE, "",e);
+
                 }
             }
 
             public void handleTimeout(SnacRequestTimeoutEvent event) {
-                System.out.println("Received a timeout for buddy list request. " + OscarConnection.this);
+                log.fine("Received a timeout for buddy list request. " + OscarConnection.this);
             }
         }));
 */
@@ -546,7 +548,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
                 public void buddyInfoUpdated(IcbmService service, Screenname buddy, IcbmBuddyInfo info) {
                     // don't care yet
-                    System.out.println("Buddy Info Updated. - " + buddy.getNormal() + " " + info);
+                    log.fine("Buddy Info Updated. - " + buddy.getNormal() + " " + info);
                 }
             };
             icbmService.addIcbmListener(lastIcbmListener);
@@ -559,7 +561,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         connection.getBuddyService().addBuddyListener(new BuddyServiceListener() {
             public void gotBuddyStatus(BuddyService service, Screenname buddy, FullUserInfo info) {
                 try {
-//                System.out.println("Buddy status update. " + buddy.getFormatted() + " " + buddy.getFormatted());
+//                log.fine("Buddy status update. " + buddy.getFormatted() + " " + buddy.getFormatted());
                     Contact contact = getContactFactory().create(buddy.getNormal(), OscarConnection.this);
                     // update to the latest
                     contact.setDisplayName(buddy.getFormatted());
@@ -570,12 +572,12 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                         eventHandler.statusChanged(OscarConnection.this, contact, true, info.getAwayStatus(), info.getIdleMins());
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.log(Level.SEVERE, "Problem with buddy service", e);
                 }
             } // f-n
 
             public void buddyOffline(BuddyService service, Screenname buddy) {
-//                System.out.println("Buddy went offline. " + buddy.getNormal() + " " + buddy.getFormatted());
+//                log.fine("Buddy went offline. " + buddy.getNormal() + " " + buddy.getFormatted());
                 Contact contact = getContactFactory().create(buddy.getFormatted(), OscarConnection.this);
                 for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
                     eventHandler.statusChanged(OscarConnection.this, contact, false, true, 0);
@@ -616,7 +618,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     }
 
     private void fireDisconnect() {
-        System.out.println("firing Connection lost.");
+        log.fine("firing Connection lost.");
         for (ConnectionEventListener eventHandler : eventHandlers) {
             eventHandler.connectionLost(this);
         }
@@ -628,7 +630,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             try {
                 connect();
             } catch (Exception e) {
-                e.printStackTrace(); // no big deal, but lets see 
+                log.log(Level.INFO, "Failed to reconnect" ,e); // no big deal, but lets see 
             }
     }
 
@@ -745,7 +747,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                 for (int i = 0; i < sdc.getItems().size(); i++) {
                     ssiItem = sdc.getItems().get(i);
                     if (ssiItem.getItemType() == SsiItem.TYPE_GROUP) {
-//                        System.out.println(" g " + ssiItem.getName());
+//                        log.fine(" g " + ssiItem.getName());
                         if (group.getName().equals(ssiItem.getName())) {
                             break;
                         }
@@ -763,7 +765,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                             if (event.getSnacCommand() instanceof SsiDataModResponse) {
                                 SsiDataModResponse response = (SsiDataModResponse) event.getSnacCommand();
                                 if (response.getResults()[0] != SsiDataModResponse.RESULT_SUCCESS) {
-                                    System.out.println("Problem creating a user: " + response.toString());
+                                    log.fine("Problem creating a user: " + response.toString());
                                 } else {
                                     group.add(contact);
                                     for (int i = 0; i < eventHandlers.size(); i++) {
@@ -776,7 +778,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                         }
                     }));
                 } else { // ssItem == null
-                    System.out.println("Problem: couldn't find any groups! " + ssiItem + " | " + group.getName());
+                    log.fine("Problem: couldn't find any groups! " + ssiItem + " | " + group.getName());
                     for (int i = 0; i < eventHandlers.size(); i++) {
                         ((ConnectionEventListener) eventHandlers.get(i)).errorOccured("Could not find any groups!", null);
                     }
@@ -835,7 +837,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                             if (event.getSnacCommand() instanceof SsiDataModResponse) {
                                 SsiDataModResponse response = (SsiDataModResponse) event.getSnacCommand();
                                 if (response.getResults()[0] != SsiDataModResponse.RESULT_SUCCESS) {
-                                    System.out.println("Problem deleting a user: " + response.toString());
+                                    log.fine("Problem deleting a user: " + response.toString());
                                 } else {
                                     GroupList list = getGroupList();
                                     for (int i = 0; i < list.size(); i++) {
@@ -852,7 +854,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                     }));
 
                 } else {
-                    System.out.println("Problem: couldn't find contact! " + contact.getName());
+                    log.fine("Problem: couldn't find contact! " + contact.getName());
                     // todo what to do if group isn't found
                 }
             }
@@ -926,7 +928,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         try {
             socket = new ServerSocket(4477);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "",e);
             ftl.notifyFail();
             return;
         }
@@ -940,11 +942,11 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             InetAddress localHosts[] = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
             session.addListener(new RvSessionListener() {
                 public void handleRv(RecvRvEvent event) {
-                    System.out.println("hr: " + event);
+                    log.fine("hr: " + event);
                 }
 
                 public void handleSnacResponse(RvSnacResponseEvent event) {
-                    System.out.println("hsr: " + event);
+                    log.fine("hsr: " + event);
                 }
             });
 
@@ -959,7 +961,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         } catch (InterruptedException e) {
             service.cancelTransfer();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "",e);
             service.cancelTransfer();
         }
     } // initiateFileTransfer
@@ -978,7 +980,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         }
 
         public void handleEventWithStateChange(final RvConnection transfer, RvConnectionState state, RvConnectionEvent event) {
-            System.out.println("handleEventWithStateChange " + event.getClass() + ": " + event);
+            log.fine("handleEventWithStateChange " + event.getClass() + ": " + event);
             if (state==FileTransferState.CONNECTING)
                 ftl.notifyNegotiation();
             else if (state==FileTransferState.FINISHED) {
@@ -990,12 +992,12 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                 ftl.notifyTransfer();
                 if (event instanceof TransferringFileEvent) {
                     final ProgressStatusProvider psp = ((TransferringFileEvent)event).getProgressProvider();
-                    System.out.println("TFEWSC: Starting thread for file progress.");
+                    log.fine("TFEWSC: Starting thread for file progress.");
                     new Thread("Transfer for " + transfer.getBuddyScreenname()) {
                         public void run() {
-                            System.out.println("TFEWSC: Starting with isOpen " + transfer.isOpen());
+                            log.fine("TFEWSC: Starting with isOpen " + transfer.isOpen());
                             while (transfer.isOpen()) {
-                                System.out.println("TFEWSC: " + psp.getLength() + " " + psp.getStartPosition() + " " + psp.getPosition());
+                                log.fine("TFEWSC: " + psp.getLength() + " " + psp.getStartPosition() + " " + psp.getPosition());
                                 ftl.setProgress((int) Math.max(
                                     Math.abs(psp.getPosition() / (psp.getLength() - psp.getStartPosition()) * 100),
                                     100));
@@ -1004,13 +1006,13 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                         }
                     }.start();
                 } else {
-                    System.out.println("Got a transferring event and it wasn't TransferringFileEvent! " + event);
+                    log.fine("Got a transferring event and it wasn't TransferringFileEvent! " + event);
                 }
             }
         }
 
         public void handleEvent(RvConnection transfer, RvConnectionEvent event) {
-            System.out.println("FTE: " + event.getClass());
+            log.fine("FTE: " + event.getClass());
         }
     }
 
@@ -1035,7 +1037,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             ftl.setTransferService(service);
             service.start();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "",e);
             ftl.notifyFail();
             if (service != null)
                 service.cancelTransfer();
@@ -1046,7 +1048,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 //            session.sendRv(new GetFileReqRvCmd(RvConnectionInfo.createForOutgoingRequest(InetAddress.getLocalHost(),
 //                    socket.getLocalPort())));
 //        } catch (UnknownHostException e) {
-//            e.printStackTrace();
+//            log.log(Level.SEVERE, "",e);
 //        }
 */
     } // getFile
@@ -1056,11 +1058,11 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
         session.addListener(new RvSessionListener() {
             public void handleRv(RecvRvEvent event) {
-                System.out.println("aft: here 1");
+                log.fine("aft: here 1");
             }
 
             public void handleSnacResponse(RvSnacResponseEvent event) {
-                System.out.println("aft: here 2");
+                log.fine("aft: here 2");
             }
         });
 
@@ -1069,7 +1071,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             socket = new ServerSocket(0);
             new GetFileThread(ftl, session, socket).start();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "",e);
 
             return;
         }
@@ -1078,7 +1080,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             session.sendRv(new GetFileReqRvCmd(RvConnectionInfo.createForOutgoingRequest(InetAddress.getLocalHost(),
                     socket.getLocalPort())));
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "",e);
         }
     } // getFile
 */
@@ -1104,7 +1106,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                                         }
                                     }
                                 } catch (Exception e1) {
-                                    e1.printStackTrace();  //Todo change
+                                    log.log(Level.SEVERE, "",e1);
                                 }
                             } // handleResponse
                         });
@@ -1182,13 +1184,13 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         } else {
             // it's time to request a service
             if (!(request.getCommand() instanceof ServiceRequest)) {
-                System.out.println("requesting " + Integer.toHexString(family)
+                log.fine("requesting " + Integer.toHexString(family)
                         + " service.");
                 snacMgr.setPending(family, true);
                 snacMgr.addRequest(request);
                 request(new ServiceRequest(family));
             } else {
-                System.out.println("eep! can't find a service redirector " +
+                log.fine("eep! can't find a service redirector " +
                         "server.");
             }
         }

@@ -39,6 +39,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Handles some display and connection options.
@@ -47,6 +49,7 @@ import java.util.Map;
  * @since Mar 19, 2005
  */
 public class OptionsServlet extends HttpServlet {
+    private static final Logger log = Logger.getLogger(OptionsServlet.class.getName());
     private static String optionsScreen;
     // global page stuff
     static final String paramPage = "page";
@@ -70,7 +73,7 @@ public class OptionsServlet extends HttpServlet {
         try {
             optionsScreen = ClassUtil.getFileContentFromCallersClassDirectory("options.html");
         } catch (IOException e) {
-            e.printStackTrace();  //Todo change
+            log.log(Level.SEVERE, "", e);  //Todo change
         }
     }
 
@@ -104,7 +107,7 @@ public class OptionsServlet extends HttpServlet {
                     try {
                         conn.connect();
                     } catch (Exception e) {
-                        e.printStackTrace();  // don't really care.
+                        log.log(Level.SEVERE, "", e);  // don't really care.
                     }
                 } // if
             } // for
@@ -116,7 +119,7 @@ public class OptionsServlet extends HttpServlet {
                     try {
                         conn.disconnect(true);
                     } catch (Exception e) {
-                        e.printStackTrace();  // don't really care.
+                        log.log(Level.SEVERE, "", e);  // don't really care.
                     }
                 } // if
             } // for

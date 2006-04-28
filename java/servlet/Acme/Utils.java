@@ -60,35 +60,27 @@ public class Utils
     /// Returns a date string formatted in Unix ls style - if it's within
     // six months of now, Mmm dd hh:ss, else Mmm dd  yyyy.
     public static String lsDateStr( Date date )
-        {
-	Calendar cal = new GregorianCalendar();
-	cal.setTime( date );
+    {
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(date);
         long dateTime = date.getTime();
-	if ( dateTime == -1L )
-	    return "------------";
+        if (dateTime == -1L)
+            return "------------";
         long nowTime = (new Date()).getTime();
-        String[] months = {
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-        String part1 =
-	    months[cal.get(Calendar.MONTH)] +
-	    Fmt.fmt( cal.get(Calendar.DATE), 3 );
-        if ( Math.abs( nowTime - dateTime ) < 183L * 24L * 60L * 60L * 1000L )
-            return part1 + Fmt.fmt( cal.get(Calendar.HOUR_OF_DAY), 3 ) + ":" +
-                Fmt.fmt( cal.get(Calendar.MINUTE), 2, Fmt.ZF );
-        else
-            return part1 + Fmt.fmt( cal.get(Calendar.YEAR), 6 );
-        }
+        String[] months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
+                "Dec" };
+        String part1 = months[cal.get(Calendar.MONTH)] + Fmt.fmt(cal.get(Calendar.DATE), 3);
+        if (Math.abs(nowTime - dateTime) < 183L * 24L * 60L * 60L * 1000L)
+            return part1 + Fmt.fmt(cal.get(Calendar.HOUR_OF_DAY), 3) + ":"
+                    + Fmt.fmt(cal.get(Calendar.MINUTE), 2, Fmt.ZF);
+        return part1 + Fmt.fmt(cal.get(Calendar.YEAR), 6);
+    }
 
 
     /// Returns "s" for numbers other than one, and "" for one.
-    public static String pluralStr( long n )
-	{
-	if ( n == 1 )
-	    return "";
-	else
-	    return "s";
-	}
+    public static String pluralStr(long n) {
+        return (n == 1)?"":"s";
+    }
 
 
     // Various interval constants.  Some are only approximate.
@@ -105,85 +97,63 @@ public class Utils
     // @param interval the interval, in milliseconds
     public static String intervalStr( long interval )
 	{
-	long decades, years, months, weeks, days, hours, minutes, seconds, millis;
+        long decades, years, months, weeks, days, hours, minutes, seconds, millis;
 
-	decades = interval / INT_DECADE;
-	interval -= decades * INT_DECADE;
-	years = interval / INT_YEAR;
-	interval -= years * INT_YEAR;
-	months = interval / INT_MONTH;
-	interval -= months * INT_MONTH;
-	weeks = interval / INT_WEEK;
-	interval -= weeks * INT_WEEK;
-	days = interval / INT_DAY;
-	interval -= days * INT_DAY;
-	hours = interval / INT_HOUR;
-	interval -= hours * INT_HOUR;
-	minutes = interval / INT_MINUTE;
-	interval -= minutes * INT_MINUTE;
-	seconds = interval / INT_SECOND;
-	interval -= seconds * INT_SECOND;
-	millis = interval;
+        decades = interval / INT_DECADE;
+        interval -= decades * INT_DECADE;
+        years = interval / INT_YEAR;
+        interval -= years * INT_YEAR;
+        months = interval / INT_MONTH;
+        interval -= months * INT_MONTH;
+        weeks = interval / INT_WEEK;
+        interval -= weeks * INT_WEEK;
+        days = interval / INT_DAY;
+        interval -= days * INT_DAY;
+        hours = interval / INT_HOUR;
+        interval -= hours * INT_HOUR;
+        minutes = interval / INT_MINUTE;
+        interval -= minutes * INT_MINUTE;
+        seconds = interval / INT_SECOND;
+        interval -= seconds * INT_SECOND;
+        millis = interval;
 
-	if ( decades > 0 )
-	    if ( years == 0 )
-		return decades + " decade" + pluralStr( decades );
-	    else
-		return
-		    decades + " decade" + pluralStr( decades ) + ", " +
-		    years + " years" + pluralStr( years );
-	else if ( years > 0 )
-	    if ( months == 0 )
-		return years + " year" + pluralStr( years );
-	    else
-		return
-		    years + " year" + pluralStr( years ) + ", " +
-		    months + " month" + pluralStr( months );
-	else if ( months > 0 )
-	    if ( weeks == 0 )
-		return months + " month" + pluralStr( months );
-	    else
-		return
-		    months + " month" + pluralStr( months ) + ", " +
-		    weeks + " week" + pluralStr( weeks );
-	else if ( weeks > 0 )
-	    if ( days == 0 )
-		return weeks + " week" + pluralStr( weeks );
-	    else
-		return
-		    weeks + " week" + pluralStr( weeks ) + ", " +
-		    days + " day" + pluralStr( days );
-	else if ( days > 0 )
-	    if ( hours == 0 )
-		return days + " day" + pluralStr( days );
-	    else
-		return
-		    days + " day" + pluralStr( days ) + ", " +
-		    hours + " hour" + pluralStr( hours );
-	else if ( hours > 0 )
-	    if ( minutes == 0 )
-		return hours + " hour" + pluralStr( hours );
-	    else
-		return
-		    hours + " hour" + pluralStr( hours ) + ", " +
-		    minutes + " minute" + pluralStr( minutes );
-	else if ( minutes > 0 )
-	    if ( seconds == 0 )
-		return minutes + " minute" + pluralStr( minutes );
-	    else
-		return
-		    minutes + " minute" + pluralStr( minutes ) + ", " +
-		    seconds + " second" + pluralStr( seconds );
-	else if ( seconds > 0 )
-	    if ( millis == 0 )
-		return seconds + " second" + pluralStr( seconds );
-	    else
-		return
-		    seconds + " second" + pluralStr( seconds ) + ", " +
-		    millis + " millisecond" + pluralStr( millis );
-	else
-	    return millis + " millisecond" + pluralStr( millis );
-	}
+        if (decades > 0) {
+            if (years == 0) {
+                return decades + " decade" + pluralStr(decades);
+            }
+            return decades + " decade" + pluralStr(decades) + ", " + years + " years" + pluralStr(years);
+        } else if (years > 0) {
+            if (months == 0)
+                return years + " year" + pluralStr(years);
+            return years + " year" + pluralStr(years) + ", " + months + " month" + pluralStr(months);
+        } else if (months > 0) {
+            if (weeks == 0)
+                return months + " month" + pluralStr(months);
+            return months + " month" + pluralStr(months) + ", " + weeks + " week" + pluralStr(weeks);
+        } else if (weeks > 0) {
+            if (days == 0)
+                return weeks + " week" + pluralStr(weeks);
+            return weeks + " week" + pluralStr(weeks) + ", " + days + " day" + pluralStr(days);
+        } else if (days > 0) {
+            if (hours == 0)
+                return days + " day" + pluralStr(days);
+            return days + " day" + pluralStr(days) + ", " + hours + " hour" + pluralStr(hours);
+        } else if (hours > 0) {
+            if (minutes == 0)
+                return hours + " hour" + pluralStr(hours);
+            return hours + " hour" + pluralStr(hours) + ", " + minutes + " minute" + pluralStr(minutes);
+        } else if (minutes > 0) {
+            if (seconds == 0)
+                return minutes + " minute" + pluralStr(minutes);
+            return minutes + " minute" + pluralStr(minutes) + ", " + seconds + " second" + pluralStr(seconds);
+        } else if (seconds > 0) {
+            if (millis == 0)
+                return seconds + " second" + pluralStr(seconds);
+            return seconds + " second" + pluralStr(seconds) + ", " + millis + " millisecond"
+                    + pluralStr(millis);
+        } else
+            return millis + " millisecond" + pluralStr(millis);
+    }
 
 
     /// Returns the length of the initial segment of str which consists

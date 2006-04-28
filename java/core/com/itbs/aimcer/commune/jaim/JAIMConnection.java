@@ -29,6 +29,8 @@ import com.wilko.jaim.*;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * TOC AIM.
@@ -39,6 +41,7 @@ import java.util.Enumeration;
  * @since Sep 25, 2004
  */
 public class JAIMConnection extends AbstractMessageConnection implements JaimEventListener {
+    private static Logger log = Logger.getLogger(JAIMConnection.class.getName());
     private JaimConnection connection;
     /** remembers last state. */
     private boolean disconnect;
@@ -67,7 +70,7 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
         try {
             connection.logIn(getUserName(), getPassword(), timeout);
         } catch (JaimException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "login error", e);
             throw new SecurityException(e.getMessage());
         }
         Thread.sleep(100);
@@ -123,7 +126,7 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
                 try {
                     connection.watchBuddy(b.getName());
                 } catch (JaimException e1) {
-                    e1.printStackTrace();
+                    log.log(Level.SEVERE, "", e1);
                 }
             }
             getGroupList().add(group);
@@ -156,7 +159,7 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
         try {
             connection.setIdle(1);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "setAway", e);
         }
         super.setAway(away);
     }
@@ -203,7 +206,7 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
         } else if (responseType.equalsIgnoreCase(ConnectionLostTocResponse.RESPONSE_TYPE)) {
             receiveConnectionLost();
         } else {
-            System.out.println("Unknown TOC Response:" + tr.toString());
+            log.severe("Unknown TOC Response:" + tr.toString());
         }
     }
 
@@ -237,7 +240,7 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
     int connectionLostTimes;
     private void receiveConnectionLost() {
 //        main.setTitle("Offline (reconnecting)");
-        System.out.println("Connection lost! "+ ++connectionLostTimes);
+        log.info("Connection lost! "+ ++connectionLostTimes);
         for (ConnectionEventListener cel : eventHandlers) {
             cel.connectionLost(this);
         }
@@ -246,10 +249,10 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
                 if (connection.isLoginComplete() || getUser() == null || disconnect) // recovered or quit
                     return;
                 connection.disconnect();
-                System.out.println("Attempting a reconnect.");
+                log.fine("Attempting a reconnect.");
                 connect();
             } catch (Exception e) {
-                e.printStackTrace();
+                log.log(Level.INFO,"login" ,e);
                 try {
                     Thread.sleep(60*1000);
                 } catch (InterruptedException e1) {  //

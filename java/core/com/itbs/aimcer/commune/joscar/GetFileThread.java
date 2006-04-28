@@ -20,17 +20,20 @@
 
 package com.itbs.aimcer.commune.joscar;
 
-import com.itbs.aimcer.commune.ConnectionInfo;
-import com.itbs.aimcer.commune.FileTransferListener;
-import com.itbs.aimcer.commune.FileTransferService;
-import net.kano.joscar.rvcmd.SegmentedFilename;
-import net.kano.joscar.rvproto.ft.FileTransferHeader;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import net.kano.joscar.rvcmd.SegmentedFilename;
+import net.kano.joscar.rvproto.ft.FileTransferHeader;
+
+import com.itbs.aimcer.commune.ConnectionInfo;
+import com.itbs.aimcer.commune.FileTransferListener;
+import com.itbs.aimcer.commune.FileTransferService;
 
 /**
  * Not used!
@@ -39,6 +42,8 @@ import java.net.Socket;
  * @author Alex Rass
  */
 public class GetFileThread extends Thread implements FileTransferService {
+    private static Logger log = Logger.getLogger(GetFileThread.class.getName());
+    
     private Socket socket;
     FileTransferListener listener;
     boolean goOn = true;
@@ -59,7 +64,7 @@ public class GetFileThread extends Thread implements FileTransferService {
             try {
                 socket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.log(Level.SEVERE, "",e);
             }
     }
 
@@ -67,7 +72,7 @@ public class GetFileThread extends Thread implements FileTransferService {
         RandomAccessFile writer = null;
         try {
             listener.notifyWaiting();
-            System.out.println("Connecting to: "  + listener.getContactName() + "@" + info.getIp() + ":" + info.getPort());
+            log.fine("Connecting to: "  + listener.getContactName() + "@" + info.getIp() + ":" + info.getPort());
             socket = new Socket(info.getIp(), info.getPort());
             listener.notifyNegotiation();
 
@@ -76,7 +81,7 @@ public class GetFileThread extends Thread implements FileTransferService {
 
             FileTransferHeader firstHdr = FileTransferHeader.readHeader(in);
 
-            System.out.println("got header: " + firstHdr);
+            log.fine("got header: " + firstHdr);
 
             if (firstHdr == null) {
                 listener.notifyCancel();
@@ -90,7 +95,7 @@ public class GetFileThread extends Thread implements FileTransferService {
 //            ack.setFlags(FileTransferHeader.FLAG_DEFAULT | FileTransferHeader.FLAG_DONE);
             ack.setFlags(firstHdr.getFlags());// | FileTransferHeader.FLAG_DONE);
 
-            System.out.println("sending ack: " + ack);
+            log.fine("sending ack: " + ack);
 
             ack.write(out);
             listener.notifyTransfer();
@@ -134,10 +139,10 @@ public class GetFileThread extends Thread implements FileTransferService {
 
             FileTransferHeader resp = FileTransferHeader.readHeader(in);
 
-            System.out.println("got response: " + resp);
+            log.fine("got response: " + resp);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "",e);
             listener.notifyFail();
             if (writer != null)
                 try {

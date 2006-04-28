@@ -33,6 +33,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.ConnectException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This is a JDialog which is used to prompt for login information.
@@ -42,6 +44,7 @@ import java.net.ConnectException;
  * @since Mar 25, 2004
  */
 public final class LoginPanel extends JDialog implements ActionListener {
+    private static final Logger log = Logger.getLogger(LoginPanel.class.getName());
     private static final String NAME = "Name: ";
     private static final String PASSWORD = "Password: ";
     private static final String ADD = "Add Connection";
@@ -190,7 +193,7 @@ public final class LoginPanel extends JDialog implements ActionListener {
                         try {
                             connection.disconnect(true);
                         } catch (Exception e) {
-                            e.printStackTrace();  //don't care
+                            log.log(Level.SEVERE, "", e);  //don't care
                         }
                     setControlsEnabled(true);
                     ErrorDialog.displayError(LoginPanel.this, "Failed to add connection. ", ex);

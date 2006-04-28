@@ -42,11 +42,10 @@ public class ListRenderer implements ListCellRenderer {
         if (value instanceof Renderable) {
             Renderable wrapper = (Renderable) value;
             return wrapper.getDisplayComponent(isSelected, cellHasFocus);
-        } else {
-            if (value != null) // complain
-                ErrorDialog.displayError(list, "Fatal error occured.\nPlease email us the trace from details tab.",
-                    new Exception("Found a non-renderable component " + (value.getClass() + "/" + value.toString())));
-            return new JLabel("Component Error ");
-        }
+        } 
+        if (value != null) // complain
+            ErrorDialog.displayError(list, "Fatal error occured.\nPlease email us the trace from details tab.",
+                new Exception("Found a non-renderable component " + (value.getClass() + "/" + value.toString())));
+        return new JLabel("Component Error ");
     }
 }

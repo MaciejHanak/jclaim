@@ -27,12 +27,15 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Alex Rass
  * @since Sep 9, 2004
  */
 public class MessageWindow  {
+    private static final Logger log = Logger.getLogger(MessageWindow.class.getName());
     /** Size of the message box. */
     public static final Rectangle DEFAULT_SIZE = new Rectangle(400, 200, 350, 330);
     /** Where the line is. */
@@ -231,7 +234,7 @@ public class MessageWindow  {
                     if (ClientProperties.INSTANCE.isSpellCheck())
                         JazzyInterface.create().addSpellCheckComponent(textPane);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    log.log(Level.SEVERE, "", e);
                 }
                 delayedShow.start();
                 textPane.requestFocus();

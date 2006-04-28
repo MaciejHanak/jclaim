@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
 /**
  * Managed things related to a Group.
@@ -41,6 +42,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @since Sep 9, 2004
  */
 public class GroupWrapper implements Group, Renderable {
+    private static final Logger log = Logger.getLogger(GroupWrapper.class.getName());
     private static Map<String,GroupWrapper> wrappers = new HashMap<String, GroupWrapper>(10);
 
     private final static Color SELECTED = new Color(127, 127, 240);
@@ -138,7 +140,7 @@ public class GroupWrapper implements Group, Renderable {
     public static GroupWrapper create(String group) {
         GroupWrapper result = wrappers.get(GeneralUtils.getSimplifiedName(group));
         if (result==null) {
-//            System.out.println("creating a new group wrapper for " + group);
+            log.finest("creating a new group wrapper for " + group);
             result = new GroupWrapper(group);
             wrappers.put(GeneralUtils.getSimplifiedName(group), result);
         }

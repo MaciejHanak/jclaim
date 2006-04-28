@@ -28,8 +28,12 @@ import net.kano.joscar.rvproto.ft.FileTransferHeader;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SendFileThread extends Thread implements FileTransferService {
+    private static Logger log = Logger.getLogger(SendFileThread.class.getName());
+    
     private ServerSocket serverSocket;
     FileTransferListener listener;
     boolean goOn = true;
@@ -52,10 +56,10 @@ public class SendFileThread extends Thread implements FileTransferService {
     public void run() {
         RandomAccessFile reader=null;
         try {
-            System.out.println("waiting for connection..");
+            log.fine("waiting for connection..");
             listener.notifyWaiting();
             Socket socket = serverSocket.accept();
-            System.out.println("got connection from " + socket.getInetAddress());
+            log.fine("got connection from " + socket.getInetAddress());
             listener.notifyNegotiation();
 
             final OutputStream out = socket.getOutputStream();
@@ -76,15 +80,15 @@ public class SendFileThread extends Thread implements FileTransferService {
             fsh.setLastmod(file.lastModified() / 1000);
             fsh.setChecksum(100);    // todo see about this, use FileTransferChecksum
 
-            System.out.println("writing: " + fsh);
+            log.fine("writing: " + fsh);
 
             fsh.write(out); // sent out the header
 
-            System.out.println("waiting for ack header..");
+            log.fine("waiting for ack header..");
 
             FileTransferHeader inFsh = FileTransferHeader.readHeader(in);
 
-            System.out.println("got ack:" + inFsh);
+            log.fine("got ack:" + inFsh);
 
             if (inFsh.getHeaderType() == FileTransferHeader.HEADERTYPE_RESUME) {
                 fsh.setHeaderType(FileTransferHeader.HEADERTYPE_RESUME_SENDHEADER);
@@ -92,7 +96,7 @@ public class SendFileThread extends Thread implements FileTransferService {
 
                 inFsh = FileTransferHeader.readHeader(in);
 
-                System.out.println("resumesendresponse: " + inFsh);
+                log.fine("resumesendresponse: " + inFsh);
             }
 
             reader = new RandomAccessFile(file, "r");
@@ -114,19 +118,19 @@ public class SendFileThread extends Thread implements FileTransferService {
                 listener.notifyDone();
 /*
             for (;;) {
-                System.out.println("trying to read..");
+                log.fine("trying to read..");
                 int b = in.read();
 
                 if (b == -1) break;
 
-                System.out.println("got stuff: "
+                log.fine("got stuff: "
                         + BinaryTools.describeData(ByteBlock.wrap(
                                 new byte[] { (byte) b })));
             }
 */
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "",e);
             cancelTransfer();
             listener.notifyFail();
         } finally {

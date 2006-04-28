@@ -25,6 +25,8 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This is really for GUIs, but hey - maybe someone can use it outside...
@@ -33,6 +35,7 @@ import java.io.File;
  * @since Jan 28, 2006
  */
 public class SoundHelper {
+    private static final Logger log = Logger.getLogger(SoundHelper.class.getName());
     public final static FileFilter filter = new FileFilter() {
         public boolean accept(File f) {
             return f.isDirectory() || (f.exists() && checkSoundFile(f.getName())); //!f.isDirectory() &&
@@ -100,7 +103,7 @@ public class SoundHelper {
                     clip.open(stream);
                     clip.start();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.log(Level.SEVERE, "", e);
                     return false;
                 }
             } else {

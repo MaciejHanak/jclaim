@@ -37,6 +37,8 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Provies a way to mass message people.
@@ -46,6 +48,7 @@ import java.util.Date;
  * @since Sep 9, 2004
  */
 public class MessageGroupWindow  {
+    private static final Logger log = Logger.getLogger(MessageGroupWindow.class.getName());
     /** Size of the message box. */
     public static final Rectangle DEFAULT_SIZE = new Rectangle(420, 200, 350, 330);
     /** Where the line is. */
@@ -112,7 +115,7 @@ public class MessageGroupWindow  {
             if (ClientProperties.INSTANCE.isSpellCheck())
                 JazzyInterface.create().addSpellCheckComponent(textPane);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "", e);
         }
     }
 

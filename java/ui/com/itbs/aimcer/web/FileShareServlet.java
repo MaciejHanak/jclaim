@@ -45,6 +45,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Provides a file sharing mechanism.
@@ -52,6 +54,7 @@ import java.util.Map;
  * @author Alex Rass
  */
 public class FileShareServlet extends HttpServlet {
+    private static final Logger log = Logger.getLogger(FileShareServlet.class.getName());
     private static String screen;
     protected static final String servletName = "/FileShare";
 
@@ -67,7 +70,7 @@ public class FileShareServlet extends HttpServlet {
         try {
             screen = ClassUtil.getFileContentFromCallersClassDirectory("fileshare.html");
         } catch (IOException e) {
-            e.printStackTrace();  //Todo change
+            log.log(Level.SEVERE, "", e);  //Todo change
         }
     }
 
@@ -123,8 +126,7 @@ public class FileShareServlet extends HttpServlet {
         }
       }
       catch (IOException lEx) {
-        System.out.println("error reading or saving file");
-        lEx.printStackTrace();
+          log.log(Level.SEVERE, "error reading or saving file", lEx);
       }
     }
 

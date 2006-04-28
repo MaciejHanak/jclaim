@@ -113,37 +113,30 @@ public class WildcardDictionary extends Dictionary
     // element is null.
     public synchronized Object put( Object key, Object element )
 	{
-	int i = keys.indexOf( key );
-	if ( i != -1 )
-	    {
-	    Object oldElement = elements.elementAt( i );
-	    elements.setElementAt( element, i );
-	    return oldElement;
-	    }
-	else
-	    {
-	    keys.addElement( key );
-	    elements.addElement( element );
-	    return null;
-	    }
-	}
+        int i = keys.indexOf(key);
+        if (i != -1) {
+            Object oldElement = elements.elementAt(i);
+            elements.setElementAt(element, i);
+            return oldElement;
+        } 
+        keys.addElement(key);
+        elements.addElement(element);
+        return null;
+    }
 
     /// Removes the element corresponding to the key. Does nothing if the
     // key is not present.
     // @param key the key that needs to be removed
     // @return the value of key, or null if the key was not found.
-    public synchronized Object remove( Object key )
-	{
-	int i = keys.indexOf( key );
-	if ( i != -1 )
-	    {
-	    Object oldElement = elements.elementAt( i );
-	    keys.removeElementAt( i );
-	    elements.removeElementAt( i );
-	    return oldElement;
-	    }
-	else
-	    return null;
-	}
+    public synchronized Object remove(Object key) {
+        int i = keys.indexOf(key);
+        if (i != -1) {
+            Object oldElement = elements.elementAt(i);
+            keys.removeElementAt(i);
+            elements.removeElementAt(i);
+            return oldElement;
+        } 
+        return null;
+    }
 
     }

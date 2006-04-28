@@ -30,12 +30,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Alex Rass
  * @since Feb 12, 2006
  */
 public class ErrorDialog {
+    private static final Logger log = Logger.getLogger(ErrorDialog.class.getName());
     /** stack trace indent */
     static final String INDENT = "        ";
 
@@ -48,7 +51,7 @@ public class ErrorDialog {
      */
     public static void displayError(Component tip, String defaultMessage, Throwable e)
     {
-        e.printStackTrace();
+        log.log(Level.SEVERE, defaultMessage, e);
         // fix messages
         if (e.getCause() != null)
             defaultMessage += " " + e.getCause().getMessage();
@@ -114,7 +117,7 @@ public class ErrorDialog {
                         try {
                             Desktop.mail(msg);
                         } catch (Throwable e1) {
-                            e1.printStackTrace();
+                            log.log(Level.SEVERE, "", e1);
                             JOptionPane.showMessageDialog(dialog, "Failed to create an email.", "Error:", JOptionPane.ERROR_MESSAGE);
                         }
                     }

@@ -39,6 +39,8 @@ import java.net.*;
 import java.security.Principal;
 import java.text.DateFormat;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Minimal Java HTTP server class.
 * <P>
@@ -80,22 +82,18 @@ import java.util.*;
 * @see FileServlet
 */
 public class Serve implements ServletContext {
+    private static final Logger log = Logger.getLogger(Serve.class.getName());
+    
     private int port;
-    private PrintStream logStream;
     Acme.WildcardDictionary registry;
     /** Holds sessions  */
     Map<String,HttpSession> sessionMap = new HashMap<String, HttpSession>();
 
-    /** Constructor. */
-    public Serve(int port, PrintStream logStream) {
-        this.port = port;
-        this.logStream = logStream;
-        registry = new Acme.WildcardDictionary();
-    }
 
     /** Constructor, default log stream. */
     public Serve(int port) {
-        this(port, System.err);
+        this.port = port;
+        registry = new Acme.WildcardDictionary();
     }
 
     /** Constructor, default port and log stream.
@@ -105,7 +103,7 @@ public class Serve implements ServletContext {
     // current default port is 9090.
      */
     public Serve() {
-        this(9090, System.err);
+        this(9090);
     }
     /** Rerturns the port number of the web server */
     public int getPort() {return port;}
@@ -278,16 +276,16 @@ public class Serve implements ServletContext {
     /// Write information to the servlet log.
     // @param message the message to log
     public void log(String message) {
-        logStream.println("[" + new Date() + "] " + message);
+        log.info(message);
     }
 
-    /** Write a stack trace to the servlet log.
-    // @param exception where to get the stack trace
-    // @param message the message to log
-     * @deprecated use msg, exc signature
+    /**
+     * Write a stack trace to the servlet log.
+     * @param exception where to get the stack trace
+     * @param message the message to log
      */
     public void log(Exception exception, String message) {
-        log(message, exception);
+        log.log(Level.SEVERE, message, exception);
     }
 
     /// Applies alias rules to the specified virtual path and returns the
@@ -391,7 +389,7 @@ public class Serve implements ServletContext {
     }
 
     public void log(String message, Throwable throwable) {
-        logStream.println("[" + new Date() + "] " + message + ServletUtils.getStackTraceAsString(throwable));
+        log.log(Level.SEVERE, message, throwable);
     }
 
     public String getInitParameter(String name) {
@@ -417,7 +415,8 @@ public class Serve implements ServletContext {
 
 
 class ServeConfig implements ServletConfig {
-
+    private static final Logger log = Logger.getLogger(ServeConfig.class.getName());
+    
     private ServletContext context;
 
     public ServeConfig(ServletContext context) {
@@ -449,7 +448,8 @@ class ServeConfig implements ServletConfig {
 
 
 class ServeConnection implements Runnable, HttpServletRequest, HttpServletResponse {
-
+    private static final Logger log = Logger.getLogger(ServeConnection.class.getName());
+    
     private Socket socket;
     private Serve serve;
 
@@ -613,7 +613,6 @@ class ServeConnection implements Runnable, HttpServletRequest, HttpServletRespon
 
     private void problem(String logMessage, int resCode, Exception exception) {
         serve.log(logMessage, exception);
-        exception.printStackTrace();
         try {
             sendError(resCode, ServletUtils.getStackTraceAsString(exception));
         } catch (IOException e) { /* ignore */
@@ -804,8 +803,7 @@ class ServeConnection implements Runnable, HttpServletRequest, HttpServletRespon
         int i = queryNames.indexOf(name);
         if (i == -1)
             return null;
-        else
-            return queryValues.elementAt(i);
+        return queryValues.elementAt(i);
     }
 
     /// Returns the values of the specified parameter for the request as an
@@ -994,7 +992,7 @@ class ServeConnection implements Runnable, HttpServletRequest, HttpServletRespon
         if (create && session == null) {
             session = new HttpSessionImpl(getRemoteAddr());
             serve.sessionMap.put(getRemoteAddr(), session);
-            System.out.println("New session with :" + getRemoteAddr());
+            log.info("New session with :" + getRemoteAddr());
         }
         return session;
     }

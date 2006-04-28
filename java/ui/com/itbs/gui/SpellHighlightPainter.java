@@ -22,6 +22,7 @@ package com.itbs.gui;
 
 import javax.swing.text.*;
 import java.awt.*;
+import java.util.logging.Level;
 
 /**
  * Simple highlight painter that can underline a highlighted area with red color.
@@ -83,7 +84,7 @@ public class SpellHighlightPainter extends DefaultHighlighter.DefaultHighlightPa
                 g.drawLine(alloc.x, p1.y + p1.height, alloc.x + (p1.x - alloc.x), p1.y + p1.height);
             }
         } catch (BadLocationException e) {
-            e.printStackTrace(); // can't render
+            log.log(Level.SEVERE, "", e);// can't render
         }
 
 //        return null;

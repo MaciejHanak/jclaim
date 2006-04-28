@@ -30,6 +30,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Not used.
@@ -38,6 +40,7 @@ import java.net.Socket;
  * Or if some aim library comes w/o file tranfer code and a reference is needed.
  */
 public class ReceiveFileThread extends Thread implements FileTransferService {
+    private static Logger log = Logger.getLogger(ReceiveFileThread.class.getName());
     private Socket socket;
     FileTransferListener listener;
     boolean goOn = true;
@@ -58,7 +61,7 @@ public class ReceiveFileThread extends Thread implements FileTransferService {
             try {
                 socket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.log(Level.SEVERE, "",e);
             }
     }
 
@@ -66,7 +69,7 @@ public class ReceiveFileThread extends Thread implements FileTransferService {
         RandomAccessFile writer = null;
         try {
             listener.notifyWaiting();
-            System.out.println("Connecting to: "  + listener.getContactName() + "@" + info.getIp() + ":" + info.getPort());
+            log.info("Connecting to: "  + listener.getContactName() + "@" + info.getIp() + ":" + info.getPort());
             socket = new Socket(info.getIp(), info.getPort());
             listener.notifyNegotiation();
 
@@ -75,7 +78,7 @@ public class ReceiveFileThread extends Thread implements FileTransferService {
 
             FileTransferHeader header = FileTransferHeader.readHeader(in);
 
-            System.out.println("got header: " + header);
+            log.fine("got header: " + header);
 
             if (header == null) {
                 listener.notifyCancel();
@@ -90,7 +93,7 @@ public class ReceiveFileThread extends Thread implements FileTransferService {
 //            ack.setReceivedChecksum(sum);
             ack.setReceivedChecksum(0);
 
-            System.out.println("sending ack: " + ack);
+            log.fine("sending ack: " + ack);
 
             ack.write(out);
             listener.notifyTransfer();
@@ -126,10 +129,10 @@ public class ReceiveFileThread extends Thread implements FileTransferService {
                 socket.close();
 //                break;
             }
-            System.out.println("got response: " + doneHeader);
+            log.fine("got response: " + doneHeader);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "Receiving File" , e);
             listener.notifyFail();
             if (writer != null)
                 try {

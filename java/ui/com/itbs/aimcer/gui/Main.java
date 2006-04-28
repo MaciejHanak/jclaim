@@ -39,6 +39,8 @@ import java.beans.XMLEncoder;
 import java.io.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -65,6 +67,7 @@ public class Main {
                                                   "\nTo request a feature or submit a bug, visit 'Contact Us' section on the web site."+
                                                   (LICENSE==null?"":"\n\nThis version is licensed to: " + LICENSE);
 
+    private static final Logger log = Logger.getLogger(Main.class.getName());
     /** Settings file */
     private static final File CONFIG_FILE = new File(System.getProperty("user.home"), "jclaim.ini");
     /** Backup file */
@@ -137,7 +140,7 @@ public class Main {
         motherFrame.addWindowListener(new WindowAdapter() {
             public void windowClosing(final WindowEvent event) {
                 ClientProperties.INSTANCE.setWindowBounds(motherFrame.getBounds());
-//                System.out.println("Last window: " + motherFrame.getBounds());
+//                log.fine("Last window: " + motherFrame.getBounds());
                 exit();
             }
         });
@@ -152,7 +155,7 @@ public class Main {
                         if (!connection.isLoggedIn() && connection.isAutoLogin())
                             connection.connect();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        log.log(Level.SEVERE, "", e);
                     }
             }
         } catch (Exception e) {

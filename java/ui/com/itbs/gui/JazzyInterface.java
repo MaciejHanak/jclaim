@@ -42,6 +42,8 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Provides a set of utilities to provide a rich spell checking support to an app.
@@ -50,6 +52,7 @@ import java.util.List;
  *         Based on examples from Robert Gustavsson (robert@lindesign.se)
  */
 public class JazzyInterface {
+    private static final Logger log = Logger.getLogger(JazzyInterface.class.getName());
     private static final String englishDictionary = "/english.0";
 //    private static final String englishPhonetic = "/phonet.en";
     private static final String wordsEnglish []= {
@@ -220,7 +223,7 @@ public class JazzyInterface {
             this.textComp = textCompIn;
             flagThread = new DelayedActionThread("SpellingThread", 500, textComp, null, new Runnable() {
                 public void run() {
-//                    System.out.println(textComp.hashCode() + " running scpellcheck.");
+//                    log.fine(textComp.hashCode() + " running scpellcheck.");
                     DocumentWordTokenizer tokenizer = new DocumentWordTokenizer(textComp.getDocument());
                     Highlighter h = textComp.getHighlighter();
                     h.removeAllHighlights();
@@ -228,9 +231,9 @@ public class JazzyInterface {
                     try {
                         errors = getSpellChecker().checkSpellingSilent(tokenizer);
                     } catch (NullPointerException e) {
-                        System.out.println("JI: Cought a NPE trying to check: " + textComp.getText());
+                        log.log(Level.SEVERE, "JI: Cought a NPE trying to check: " + textComp.getText(), e);
                     } catch (Exception e) {
-                        System.out.println("JI: Cought a funny exception: " + textComp.getText());
+                        log.log(Level.SEVERE, "JI: Cought a funny exception: " + textComp.getText(), e);
                     }
                     if (errors != null)
                         for (SpellCheckEvent event : errors) {
@@ -258,14 +261,14 @@ public class JazzyInterface {
         }
 
         public void spellingError(final SpellCheckEvent event) {
-//            System.out.println(textComp.hashCode() + " parsing results for spellcheck.");
+//            log.fine(textComp.hashCode() + " parsing results for spellcheck.");
 //        java.util.List suggestions = event.getSuggestions();
 //            event.getSuggestions();
             if (event.getInvalidWord().length()==1)
                 return;
             int start = event.getWordContextPosition();
             int end = start + event.getInvalidWord().length();
-//            System.out.println("event: " + event.getInvalidWord() + " " + start + " " + end);
+//            log.fine("event: " + event.getInvalidWord() + " " + start + " " + end);
 
             // Mark the invalid word in TextComponent
             Highlighter h = textComp.getHighlighter();
@@ -273,7 +276,7 @@ public class JazzyInterface {
 //                h.addHighlight(start, end, DefaultHighlighter.DefaultPainter);
                 h.addHighlight(start, end, SpellHighlightPainter.singleton);
             } catch (BadLocationException e) {
-                e.printStackTrace(); // don't really care, but lets see them
+                log.log(Level.SEVERE, "", e);; // don't really care, but lets see them
             }
         } // spellingError
 

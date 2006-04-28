@@ -32,6 +32,8 @@ import org.jivesoftware.smack.packet.Presence;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Provides connection to Jabber.
@@ -40,6 +42,7 @@ import java.util.Iterator;
  * @since Dec 24, 2004
  */
 public class SmackConnection extends AbstractMessageConnection {
+    private static final Logger log = Logger.getLogger(SmackConnection.class.getName());
     public static final String DEFAULT_HOST = "jabber.org";
     public static final int DEFAULT_PORT = 5222;
     public static final int DEFAULT_PORT_SSL = 5223;
@@ -71,7 +74,7 @@ public class SmackConnection extends AbstractMessageConnection {
             connection.login(getUserName(), getPassword());
             fireConnect();
         } catch (XMPPException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "",e);
             disconnect(false);
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 eventHandler.connectionFailed(this, "Connection Failed. " + (e.getXMPPError()==null?e.getMessage():e.getXMPPError().getMessage()));
@@ -219,7 +222,7 @@ public class SmackConnection extends AbstractMessageConnection {
             connect();
         } catch (Exception e) {
 //            GeneralUtils.sleep(1000);
-            e.printStackTrace();
+            log.log(Level.SEVERE, "",e);
         }
     }
 
@@ -334,7 +337,7 @@ public class SmackConnection extends AbstractMessageConnection {
         try {
             chat.sendMessage(message.getText());
         } catch (XMPPException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "",e);
             throw new IOException(e.getMessage());
         }
     }

@@ -32,6 +32,8 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Provides a richness of a windows-like component.
@@ -45,6 +47,7 @@ import java.io.Serializable;
  * @since Date: Mar 25, 2004
  */
 public class BetterTextField extends JTextField {
+    private static final Logger log = Logger.getLogger(BetterTextField.class.getName());
     CaretListener autoCopy;
     private static BetterTextPopupMenu pmenu;
 
@@ -106,7 +109,7 @@ public class BetterTextField extends JTextField {
                 c.setSelectionStart(startPos);
                 c.setSelectionEnd(endPos);
             } catch (BadLocationException e) {
-                e.printStackTrace();
+                log.log(Level.SEVERE, "", e);
             }
         }
     };
@@ -142,7 +145,7 @@ public class BetterTextField extends JTextField {
                     if (undoManager.canUndo())
                         undoManager.undo();
                 } catch (CannotUndoException e) {
-                    e.printStackTrace();
+                    log.log(Level.SEVERE, "", e);
                 }
             }
         };
@@ -152,7 +155,7 @@ public class BetterTextField extends JTextField {
                     if (undoManager.canRedo())
                         undoManager.redo();
                 } catch (CannotUndoException e) {
-                    e.printStackTrace();
+                    log.log(Level.SEVERE, "", e);
                 }
             }
         };

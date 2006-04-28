@@ -26,6 +26,7 @@ import java.awt.*;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Saved as a whole to maintain all preferences.
@@ -34,6 +35,7 @@ import java.util.Map;
  * @since Sep 11, 2004
  */
 public class ClientProperties implements ConnectionProperties {
+    private static final Logger log = Logger.getLogger(ClientProperties.class.getName());
     /** Property field names. */
     private static final String PROP_DISCLAIMER = "disclaimer";
     private static final String PROP_DISCLAIMER_DELAY = "delay";
@@ -147,9 +149,7 @@ public class ClientProperties implements ConnectionProperties {
     private static  int getPresetOrDefault(String propName, int defaultValue) {
         if (System.getProperty(propName) == null)
             return defaultValue;
-        else {
-            return getInt(System.getProperty(propName), propName, defaultValue);
-        }
+        return getInt(System.getProperty(propName), propName, defaultValue);
     }
     /**
      * Gets the looked up value or the defaults.
@@ -160,9 +160,7 @@ public class ClientProperties implements ConnectionProperties {
     private static boolean getPresetOrDefault(String propName, boolean defaultValue) {
         if (System.getProperty(propName) == null)
             return defaultValue;
-        else {
-            return getBoolean(System.getProperty(propName), defaultValue);
-        }
+        return getBoolean(System.getProperty(propName), defaultValue);
     }
 
     /**
@@ -174,8 +172,7 @@ public class ClientProperties implements ConnectionProperties {
     private String getPresetOrDefault(String propName, String defaultValue) {
         if (System.getProperty(propName) == null)
             return defaultValue;
-        else
-            return System.getProperty(propName);
+        return System.getProperty(propName);
     }
 
 
@@ -190,7 +187,7 @@ public class ClientProperties implements ConnectionProperties {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            System.out.println("Failed to load " + name + " from " + value);
+            log.severe("Failed to load " + name + " from " + value);
             return defaultValue;
         }
     }
@@ -206,7 +203,7 @@ public class ClientProperties implements ConnectionProperties {
         try {
             return Long.parseLong(value);
         } catch (NumberFormatException e) {
-            System.out.println("Failed to load " + name + " from " + value);
+            log.severe("Failed to load " + name + " from " + value);
             return defaultValue;
         }
     }

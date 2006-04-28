@@ -29,6 +29,8 @@ import com.itbs.aimcer.commune.Connection;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Stress Test for Conltact List.
@@ -37,6 +39,7 @@ import java.util.ArrayList;
  * @since Sep 11, 2004
  */
 public class UTestContactListModel extends UTestFrameTest {
+    private static final Logger log = Logger.getLogger(UTestContactListModel.class.getName());
     Connection connection = new UTestFakeConnection();
     public void testRenderer() throws InterruptedException {
         java.util.List <Connection> connections = new ArrayList<Connection>();
@@ -110,7 +113,7 @@ public class UTestContactListModel extends UTestFrameTest {
 //                    yield();
                 }
             } catch (Exception e) {
-                e.printStackTrace();  //Todo change
+                log.log(Level.SEVERE, "", e);  //Todo change
             }
         }
     }

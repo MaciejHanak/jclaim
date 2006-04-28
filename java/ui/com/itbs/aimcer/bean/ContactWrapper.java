@@ -84,7 +84,7 @@ public class ContactWrapper implements Contact, Renderable {
     public static ContactWrapper create(String name, Connection connection) {
         ContactWrapper result = get(name, connection);
         if (result==null) {
-//            System.out.println("Creating a new wrapper for " + name);
+//            log.fine("Creating a new wrapper for " + name);
             result = new ContactWrapper(name, connection);
             if (connection != null) // NPE for unit tests
                 result.setIcon(ImageCacheUI.getImage(connection.getClass()));

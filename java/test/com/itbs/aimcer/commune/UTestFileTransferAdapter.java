@@ -24,6 +24,8 @@ import com.itbs.aimcer.bean.ContactWrapper;
 import com.itbs.aimcer.gui.UTestFrameTest;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Used to test file transfers.
@@ -32,6 +34,7 @@ import java.io.File;
  * @since Oct 8, 2004
  */
 public class UTestFileTransferAdapter extends UTestFrameTest {
+    private static final Logger log = Logger.getLogger(UTestFileTransferAdapter.class.getName());
     boolean failed;
 
     public void testTransferDialog() throws Exception {
@@ -64,7 +67,7 @@ public class UTestFileTransferAdapter extends UTestFrameTest {
                     sleep(1000);
                     adapter.notifyDone();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.log(Level.SEVERE, "", e);
                     failed = true;
                 }
             }

@@ -25,6 +25,8 @@ import com.itbs.aimcer.commune.*;
 
 import javax.swing.*;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Maintains the model for the List which displays contacts.
@@ -33,6 +35,7 @@ import java.util.Date;
  * @since Sep 9, 2004
  */
 public class ContactListModel extends AbstractListModel implements ConnectionEventListener {
+    private static final Logger log = Logger.getLogger(LoginPanel.class.getName());
     Connection connection;
     private static final boolean DEBUG = false;
     private static ContactListModel instance = new ContactListModel();
@@ -62,7 +65,7 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
                 groupWrapper = (GroupWrapper) group;
             else
                 groupWrapper = (GroupWrapper) connection.getGroupFactory().create(group);
-//            System.out.println("Group: "+g.getName());
+//            log.fine("Group: "+g.getName());
             if (groupWrapper.isShrunk())
                 continue;
             for (int contactCount = 0; contactCount < group.size(); contactCount++) {
@@ -134,12 +137,12 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         if (DEBUG)
-                            System.out.println("status Changed All" + new Date());
+                            log.fine("status Changed All" + new Date());
                         runActionDataChanged();
                     }
                 });
         } catch (Exception e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "Status changed", e);
         }
     }
 
@@ -159,7 +162,7 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
                 statusChanged(connection);
             } // redraw
         } catch (Exception e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "", e);
         }
     }
 

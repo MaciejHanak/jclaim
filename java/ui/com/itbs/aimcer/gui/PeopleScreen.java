@@ -41,6 +41,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Main screen of the UI.
@@ -51,6 +52,7 @@ import java.util.List;
  * @since Sep 9, 2004
  */
 final public class PeopleScreen extends GradientPanel  {
+    private static final Logger log = Logger.getLogger(PeopleScreen.class.getName());
     private JList list;
 
     public PeopleScreen() {
@@ -80,8 +82,8 @@ final public class PeopleScreen extends GradientPanel  {
                 Object entry = list.getModel().getElementAt(index);
                 if (entry instanceof ContactWrapper) {
                     return ((ContactWrapper) entry).getToolTipText();
-                } else
-                    return super.getToolTipText(event);
+                } 
+                return super.getToolTipText(event);
             }
         };
         list.setCellRenderer(new ListRenderer());
@@ -158,7 +160,7 @@ final public class PeopleScreen extends GradientPanel  {
                                             allContacts.add((ContactWrapper) group.get(j));
                                     }
                                 } else {
-                                    System.out.println("This is weird: " + selected.getClass() + ": " + selected);
+                                    log.info("This is weird: " + selected.getClass() + ": " + selected);
                                 }
                             }
                             if (allContacts.size() == 1) {

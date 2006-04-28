@@ -29,11 +29,14 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Alex Rass on Jul 20, 2005
  */
 public class GUIUtils {
+    private static final Logger log = Logger.getLogger(GUIUtils.class.getName());
     private static final String CANCEL_ACTION_KEY = "CANCEL_ACTION_KEY";
 
     /**
@@ -109,7 +112,7 @@ public class GUIUtils {
             try {
                 EventQueue.invokeLater(runnable);
             } catch (Exception e) {
-                e.printStackTrace();  //don't care, but lets see it.
+                log.log(Level.SEVERE, "", e);  //don't care, but lets see it.
             }
     }
 
@@ -132,7 +135,7 @@ public class GUIUtils {
                 try {
                     document.insertString(document.getLength(), text, style);
                 } catch (BadLocationException e) {
-                    e.printStackTrace(); // this should never happen unless getLength() is broken.
+                    log.log(Level.SEVERE, "", e); // this should never happen unless getLength() is broken.
                 }
                 textPane.setCaretPosition(textPane.getDocument().getLength());
             }

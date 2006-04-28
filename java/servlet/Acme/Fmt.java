@@ -187,21 +187,19 @@ public class Fmt
 	if ( hexadecimal )
 	    {
 	    if ( ( l & 0xf000000000000000L ) != 0 )
-		return fmt(
+		  return fmt(
 		    Long.toString( l >>> 60, 16 ) +
 		    fmt( l & 0x0fffffffffffffffL, 15, HX|ZF ),
 		    minWidth, flags|WN );
-	    else
 		return fmt( Long.toString( l, 16 ), minWidth, flags|WN );
 	    }
 	else if ( octal )
 	    {
 	    if ( ( l & 0x8000000000000000L ) != 0 )
-		return fmt(
+		  return fmt(
 		    Long.toString( l >>> 63, 8 ) +
 		    fmt( l & 0x7fffffffffffffffL, 21, OC|ZF ),
 		    minWidth, flags|WN );
-	    else
 		return fmt( Long.toString( l, 8 ), minWidth, flags|WN );
 	    }
 	else
@@ -221,15 +219,11 @@ public class Fmt
 	{
 	return fmt( f, minWidth, sigFigs, 0 );
 	}
-    public static String fmt( float f, int minWidth, int sigFigs, int flags )
-	{
-	if ( sigFigs != 0 )
-	    return fmt(
-		sigFigFix( Float.toString( f ), sigFigs ), minWidth,
-		flags|WN );
-	else
-	    return fmt( Float.toString( f ), minWidth, flags|WN );
-	}
+    public static String fmt(float f, int minWidth, int sigFigs, int flags) {
+        if (sigFigs != 0)
+            return fmt(sigFigFix(Float.toString(f), sigFigs), minWidth, flags | WN);
+        return fmt(Float.toString(f), minWidth, flags | WN);
+    }
 
     // double
     public static String fmt( double d )
@@ -246,13 +240,10 @@ public class Fmt
 	}
     public static String fmt( double d, int minWidth, int sigFigs, int flags )
 	{
-	if ( sigFigs != 0 )
-	    return fmt(
-		sigFigFix( doubleToString( d ), sigFigs ), minWidth,
-		flags|WN );
-	else
-	    return fmt( doubleToString( d ), minWidth, flags|WN );
-	}
+        if (sigFigs != 0)
+            return fmt(sigFigFix(doubleToString(d), sigFigs), minWidth, flags | WN);
+        return fmt(doubleToString(d), minWidth, flags | WN);
+    }
 
     // char
     public static String fmt( char c )
@@ -330,90 +321,72 @@ public class Fmt
 
     private static String sigFigFix( String s, int sigFigs )
 	{
-	// First dissect the floating-point number string into sign,
-	// integer part, fraction part, and exponent.
-	String sign;
-	String unsigned;
-	if ( s.startsWith( "-" ) || s.startsWith( "+" ) )
-	    {
-	    sign = s.substring( 0, 1 );
-	    unsigned = s.substring( 1 );
-	    }
-	else
-	    {
-	    sign = "";
-	    unsigned = s;
-	    }
-	String mantissa;
-	String exponent;
-	int eInd = unsigned.indexOf( 'e' );
-	if ( eInd == -1 )	// it may be 'e' or 'E'
-	    eInd = unsigned.indexOf( 'E' );
-	if ( eInd == -1 )
-	    {
-	    mantissa = unsigned;
-	    exponent = "";
-	    }
-	else
-	    {
-	    mantissa = unsigned.substring( 0, eInd );
-	    exponent = unsigned.substring( eInd );
-	    }
-	StringBuffer number, fraction;
-	int dotInd = mantissa.indexOf( '.' );
-	if ( dotInd == -1 )
-	    {
-	    number = new StringBuffer( mantissa );
-	    fraction = new StringBuffer( "" );
-	    }
-	else
-	    {
-	    number = new StringBuffer( mantissa.substring( 0, dotInd ) );
-	    fraction = new StringBuffer( mantissa.substring( dotInd + 1 ) );
-	    }
+        // First dissect the floating-point number string into sign,
+        // integer part, fraction part, and exponent.
+        String sign;
+        String unsigned;
+        if (s.startsWith("-") || s.startsWith("+")) {
+            sign = s.substring(0, 1);
+            unsigned = s.substring(1);
+        } else {
+            sign = "";
+            unsigned = s;
+        }
+        String mantissa;
+        String exponent;
+        int eInd = unsigned.indexOf('e');
+        if (eInd == -1) // it may be 'e' or 'E'
+            eInd = unsigned.indexOf('E');
+        if (eInd == -1) {
+            mantissa = unsigned;
+            exponent = "";
+        } else {
+            mantissa = unsigned.substring(0, eInd);
+            exponent = unsigned.substring(eInd);
+        }
+        StringBuffer number, fraction;
+        int dotInd = mantissa.indexOf('.');
+        if (dotInd == -1) {
+            number = new StringBuffer(mantissa);
+            fraction = new StringBuffer("");
+        } else {
+            number = new StringBuffer(mantissa.substring(0, dotInd));
+            fraction = new StringBuffer(mantissa.substring(dotInd + 1));
+        }
 
-	int numFigs = number.length();
-	int fracFigs = fraction.length();
-	if ( ( numFigs == 0 || number.equals( "0" ) ) && fracFigs > 0 )
-	    {
-	    // Don't count leading zeros in the fraction.
-	    numFigs = 0;
-	    for ( int i = 0; i < fraction.length(); ++i )
-		{
-		if ( fraction.charAt( i ) != '0' )
-		    break;
-		--fracFigs;
-		}
-	    }
-	int mantFigs = numFigs + fracFigs;
-	if ( sigFigs > mantFigs )
-	    {
-	    // We want more figures; just append zeros to the fraction.
-	    for ( int i = mantFigs; i < sigFigs; ++i )
-		fraction.append( '0' );
-	    }
-	else if ( sigFigs < mantFigs && sigFigs >= numFigs )
-	    {
-	    // Want fewer figures in the fraction; chop.
-	    fraction.setLength(
-		fraction.length() - ( fracFigs - ( sigFigs - numFigs ) ) );
-	    // Round?
-	    }
-	else if ( sigFigs < numFigs )
-	    {
-	    // Want fewer figures in the number; turn them to zeros.
-	    fraction.setLength( 0 );	// should already be zero, but make sure
-	    for ( int i = sigFigs; i < numFigs; ++i )
-		number.setCharAt( i, '0' );
-	    // Round?
-	    }
-	// Else sigFigs == mantFigs, which is fine.
+        int numFigs = number.length();
+        int fracFigs = fraction.length();
+        if ((numFigs == 0 || number.equals("0")) && fracFigs > 0) {
+            // Don't count leading zeros in the fraction.
+            numFigs = 0;
+            for (int i = 0; i < fraction.length(); ++i) {
+                if (fraction.charAt(i) != '0')
+                    break;
+                --fracFigs;
+            }
+        }
+        int mantFigs = numFigs + fracFigs;
+        if (sigFigs > mantFigs) {
+            // We want more figures; just append zeros to the fraction.
+            for (int i = mantFigs; i < sigFigs; ++i)
+                fraction.append('0');
+        } else if (sigFigs < mantFigs && sigFigs >= numFigs) {
+            // Want fewer figures in the fraction; chop.
+            fraction.setLength(fraction.length() - (fracFigs - (sigFigs - numFigs)));
+            // Round?
+        } else if (sigFigs < numFigs) {
+            // Want fewer figures in the number; turn them to zeros.
+            fraction.setLength(0); // should already be zero, but make sure
+            for (int i = sigFigs; i < numFigs; ++i)
+                number.setCharAt(i, '0');
+            // Round?
+        }
+        // Else sigFigs == mantFigs, which is fine.
 
-	if ( fraction.length() == 0 )
-	    return sign + number + exponent;
-	else
-	    return sign + number + "." + fraction + exponent;
-	}
+        if (fraction.length() == 0)
+            return sign + number + exponent;
+        return sign + number + "." + fraction + exponent;
+    }
 
 
     /// Improved version of Double.toString(), returns more decimal places.
