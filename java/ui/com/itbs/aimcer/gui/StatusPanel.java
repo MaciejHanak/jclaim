@@ -21,6 +21,7 @@
 package com.itbs.aimcer.gui;
 
 import com.itbs.aimcer.bean.ClientProperties;
+import com.itbs.gui.ClockLabel;
 import com.itbs.gui.GradientPanel;
 
 import javax.swing.*;
@@ -39,6 +40,7 @@ public class StatusPanel extends GradientPanel implements ActionListener {
     JLabel label = new JLabel();
     public StatusPanel() {
         super(new FlowLayout(FlowLayout.RIGHT, 5, 1));
+        add(new ClockLabel());
         cbAway.addActionListener(this);
         cbAway.setSelected(ClientProperties.INSTANCE.isIamAway());
         cbAway.setToolTipText("Global Away");
