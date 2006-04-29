@@ -33,6 +33,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
@@ -148,13 +149,13 @@ public class JazzyInterface {
     private synchronized  SpellChecker getSpellChecker() {
         return spellCheck;
     }
-    
+
     public List getSuggestions(String word) {
         if (word!=null && word.trim().length()>0)
             return spellCheck.getSuggestions(word, 2);
         return new ArrayList();
     }
-    
+
     static class UserSpellDictionary implements SpellDictionary {
         List<String> words = new ArrayList<String>();
         final static List emptyList = new ArrayList(0);
@@ -187,7 +188,7 @@ public class JazzyInterface {
     public synchronized void addSpellCheckComponent(final JTextComponent textComp) {
         SpellCheckingDocumentListener spellCheckingDocumentListener = new SpellCheckingDocumentListener(textComp);
         textComp.getDocument().addDocumentListener(spellCheckingDocumentListener);
-        
+
         KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, Event.CTRL_MASK, true);
         textComp.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -224,7 +225,9 @@ public class JazzyInterface {
             flagThread = new DelayedActionThread("SpellingThread", 500, textComp, null, new Runnable() {
                 public void run() {
 //                    log.fine(textComp.hashCode() + " running scpellcheck.");
-                    DocumentWordTokenizer tokenizer = new DocumentWordTokenizer(textComp.getDocument());
+                    Document document = textComp.getDocument();
+                    if (document.getLength() == 0) return; // no need to do this for empty document
+                    DocumentWordTokenizer tokenizer = new DocumentWordTokenizer(document);
                     Highlighter h = textComp.getHighlighter();
                     h.removeAllHighlights();
                     List <SpellCheckEvent> errors = null;
@@ -235,10 +238,11 @@ public class JazzyInterface {
                     } catch (Exception e) {
                         log.log(Level.SEVERE, "JI: Cought a funny exception: " + textComp.getText(), e);
                     }
-                    if (errors != null)
+                    if (errors != null) {
                         for (SpellCheckEvent event : errors) {
                             spellingError(event);
                         }
+                    }
                 }
             });
             flagThread.start();
@@ -276,7 +280,7 @@ public class JazzyInterface {
 //                h.addHighlight(start, end, DefaultHighlighter.DefaultPainter);
                 h.addHighlight(start, end, SpellHighlightPainter.singleton);
             } catch (BadLocationException e) {
-                log.log(Level.SEVERE, "", e);; // don't really care, but lets see them
+                log.log(Level.SEVERE, "Highlighting error", e); // don't really care, but lets see them
             }
         } // spellingError
 
