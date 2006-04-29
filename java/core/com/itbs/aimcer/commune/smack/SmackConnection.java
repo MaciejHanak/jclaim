@@ -23,11 +23,17 @@ package com.itbs.aimcer.commune.smack;
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.AbstractMessageConnection;
 import com.itbs.aimcer.commune.ConnectionEventListener;
+import com.itbs.aimcer.commune.FileTransferListener;
+import com.itbs.aimcer.commune.FileTransferSupport;
 import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.filter.MessageTypeFilter;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smackx.filetransfer.FileTransferManager;
+import org.jivesoftware.smackx.filetransfer.FileTransferRequest;
+import org.jivesoftware.smackx.filetransfer.IncomingFileTransfer;
+import org.jivesoftware.smackx.filetransfer.OutgoingFileTransfer;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -41,12 +47,14 @@ import java.util.logging.Logger;
  * @author Alex Rass
  * @since Dec 24, 2004
  */
-public class SmackConnection extends AbstractMessageConnection {
+public class    SmackConnection extends AbstractMessageConnection implements FileTransferSupport {
     private static final Logger log = Logger.getLogger(SmackConnection.class.getName());
     public static final String DEFAULT_HOST = "jabber.org";
     public static final int DEFAULT_PORT = 5222;
     public static final int DEFAULT_PORT_SSL = 5223;
     XMPPConnection connection;
+    FileTransferManager fileTransferManager;
+
 
     protected XMPPConnection getNewConnection() throws XMPPException {
         return new XMPPConnection(
@@ -193,6 +201,16 @@ public class SmackConnection extends AbstractMessageConnection {
             }
         });
 
+        // File transfers support:
+        fileTransferManager = new FileTransferManager(connection);
+        fileTransferManager.addFileTransferListener(new org.jivesoftware.smackx.filetransfer.FileTransferListener() {
+            public void fileTransferRequest(FileTransferRequest fileTransferRequest) {
+                for (ConnectionEventListener eventHandler : eventHandlers) {
+                    eventHandler.fileReceiveRequested(SmackConnection.this, getContactFactory().create(fileTransferRequest.getRequestor(), SmackConnection.this), fileTransferRequest.getFileName(), fileTransferRequest.getDescription(), fileTransferRequest);
+                }
+            }
+        });
+
         for (ConnectionEventListener eventHandler : eventHandlers) {
             eventHandler.statusChanged(this);
         }
@@ -200,7 +218,7 @@ public class SmackConnection extends AbstractMessageConnection {
         // tell everyone we are now running connected
         // use itertors b/c the size will change
         notifyConnectionEstablished();
-    }
+    } // fireConnect
 
     private String normalizeName(String userName) {
         int index = userName.indexOf('/');
@@ -245,13 +263,24 @@ public class SmackConnection extends AbstractMessageConnection {
         String[] groupNames = new String[1];
         groupNames[0] = group.getName();
         try {
-            connection.getRoster().createEntry(contact.getName(), contact.getName(), groupNames);
+            connection.getRoster().createEntry(fixUserName(contact.getName()), contact.getName(), groupNames);
         } catch (XMPPException e) {
             for (ConnectionEventListener connectionEventListener : eventHandlers) {
                 connectionEventListener.errorOccured("Failed to add a contact " + contact.getName(), e);
             }
         }
         group.add(contact);
+    }
+
+    /**
+     * Used to fix the usernames for the jabber protocol.
+     * Usernames need server name.
+     * @param name of the user's account to fix
+     * @return name, including server.
+     */
+    protected String fixUserName(String name) {
+        if (name.indexOf('@')>-1) return name;
+        return name + "@jabber.org";
     }
 
     public void removeContact(Nameable contact) {
@@ -374,5 +403,35 @@ public class SmackConnection extends AbstractMessageConnection {
 
     public String getDefaultIconName() {
         return "jabber.gif";
+    }
+
+    public void initiateFileTransfer(FileTransferListener ftl) throws IOException {
+        ftl.notifyNegotiation();
+        OutgoingFileTransfer oft = fileTransferManager.createOutgoingFileTransfer(fixUserName(ftl.getContactName()));
+        try {
+            ftl.notifyTransfer();
+            oft.sendFile(ftl.getFile(), ftl.getFileDescription());
+        } catch (XMPPException e) {
+            ftl.notifyFail();
+            log.log(Level.SEVERE, "Transfer failed", e);
+        }
+    }
+
+    public void acceptFileTransfer(FileTransferListener ftl, Object connectionInfo) {
+        FileTransferRequest fileTransferRequest = (FileTransferRequest) connectionInfo;
+        ftl.notifyNegotiation();
+        IncomingFileTransfer ift = fileTransferRequest.accept();
+        try {
+            ftl.notifyTransfer();
+            ift.recieveFile(ftl.getFile());
+        } catch (XMPPException e) {
+            ftl.notifyFail();
+            log.log(Level.SEVERE, "Transfer failed", e);
+        }
+    }
+
+    public void rejectFileTransfer(Object connectionInfo) {
+        FileTransferRequest fileTransferRequest = (FileTransferRequest) connectionInfo;
+        fileTransferRequest.reject();
     }
 }
