@@ -20,6 +20,8 @@
 
 package com.itbs.aimcer.commune.smack;
 
+import com.itbs.aimcer.bean.Group;
+import com.itbs.aimcer.bean.Nameable;
 import org.jivesoftware.smack.GoogleTalkConnection;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
@@ -33,6 +35,21 @@ public class GoogleConnection extends SmackConnection {
         return new GoogleTalkConnection();
     }
 
+    public void addContact(Nameable contact, Group group) {
+        super.addContact(contact, group);    //Todo change
+    }
+
+    /**
+     * Used to fix the usernames for the jabber protocol.
+     * Usernames need server name.
+     * @param name of the user's account to fix
+     * @return name, including server.
+     */
+    protected String fixUserName(String name) {
+        if (name.indexOf('@')>-1) return name;
+        return name + "@gmail.com";
+    }
+
     /**
      * Returns a short name for the service.
      * "AIM", "ICQ" etc.
@@ -40,6 +57,6 @@ public class GoogleConnection extends SmackConnection {
      * @return service name
      */
     public String getServiceName() {
-        return "GoogleTalk"; 
+        return "GoogleTalk";
     }
 }
