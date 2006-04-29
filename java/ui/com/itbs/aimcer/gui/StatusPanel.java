@@ -44,6 +44,7 @@ public class StatusPanel extends GradientPanel implements ActionListener {
         cbAway.addActionListener(this);
         cbAway.setSelected(ClientProperties.INSTANCE.isIamAway());
         cbAway.setToolTipText("Global Away");
+        cbAway.setOpaque(false);
         add(cbAway);
         label.setIcon(ImageCacheUI.ICON_JC.getIcon());
         add(label);
