@@ -24,7 +24,6 @@ import com.itbs.aimcer.bean.ContactFactory;
 import com.itbs.aimcer.bean.Message;
 import com.itbs.aimcer.bean.Nameable;
 
-import javax.swing.text.html.HTMLEditorKit;
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -196,8 +195,4 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
      * @throws IOException problems
      */
     abstract protected void processSecureMessage(Message message) throws IOException;
-
-    public HTMLEditorKit getEditorKit() {
-        return new HTMLEditorKit();
-    }
 }
