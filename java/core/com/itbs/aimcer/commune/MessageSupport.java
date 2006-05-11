@@ -23,7 +23,6 @@ package com.itbs.aimcer.commune;
 import com.itbs.aimcer.bean.Message;
 import com.itbs.aimcer.bean.Nameable;
 
-import javax.swing.text.html.HTMLEditorKit;
 import java.io.IOException;
 
 /**
@@ -57,11 +56,4 @@ public interface MessageSupport extends Connection {
      * @return support account or null
      */
     String getSupportAccount();
-
-    /**
-     * Which editor kit to use to display the incomming content.
-     * For future use.
-     * @return editor kit
-     */
-    public HTMLEditorKit getEditorKit();
 }
