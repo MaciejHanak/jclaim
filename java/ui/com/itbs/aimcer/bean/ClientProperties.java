@@ -244,7 +244,11 @@ public class ClientProperties implements ConnectionProperties {
     }
 
     public void setDisclaimerInterval(String text) {
-        setDisclaimerInterval(Long.parseLong(text) * 1000 * 60);
+        try {
+            setDisclaimerInterval(Long.parseLong(text) * 1000 * 60);
+        } catch (NumberFormatException e) {
+            disclaimerInterval = 0; 
+        }
     }
 
     public boolean isDisclaimerLocked() {
