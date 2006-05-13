@@ -316,6 +316,34 @@ public class BetterTextField extends JTextField {
                 super.insertString(offs, str, a);
             }
         }
-    }
+    } // class LengthDocument
 
-}
+    /**
+     * @see javax.swing.text.PlainDocument
+     */
+    public static class NumberDocument extends PlainDocument {
+
+        /**
+         * @see javax.swing.text.PlainDocument
+         */
+        public void insertString(int offs, String str, AttributeSet a)
+                throws BadLocationException {
+            if (str == null) {
+                return;
+            }
+            String insertString="";
+            for (int i=0; i<str.length(); i++) {
+                if (Character.isDigit(str.charAt(i))) {
+                    insertString += str.charAt(i);
+                }
+            }
+            super.insertString(offs, insertString, a);
+
+            if (str.length() != insertString.length()) { // complain otherwise
+                Toolkit.getDefaultToolkit().beep();
+            }
+        }
+    } // class NumberDocument
+
+
+} // class BetterTextField
