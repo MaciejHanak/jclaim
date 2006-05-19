@@ -40,6 +40,8 @@ public class ClientProperties implements ConnectionProperties {
     private static final String PROP_DISCLAIMER = "disclaimer";
     private static final String PROP_DISCLAIMER_DELAY = "delay";
     private static final String PROP_ENABLE_ORDER_ENTRY_IN_SYSTEM = "enableorderentry";
+    private static final String PROP_PROXY_HOST = "http.proxyHost";
+    private static final String PROP_PROXY_PORT = "http.proxyPort";
 
     /** Idle delay in seconds before setting away */
     private int away;
@@ -58,10 +60,14 @@ public class ClientProperties implements ConnectionProperties {
     };
 */
     private String logPath=File.separatorChar=='\\'?"c:\\AimLogs":"AimLogs";
+    private static final String DEFAULT_PROXY_HOST = ""; // "All the messages are being logged."
+    private static final int DEFAULT_PROXY_PORT = 8080;
     private static final String DISCLAIMER_DEFAULT=""; // "All the messages are being logged."
     private static final int DEFAULT_DISCLAIMER_INTERVAL = 20*60*1000;
     private static final int DEFAULT_FONT_SIZE = 10;
     private static final int DEFAULT_BEEP_DELAY = 5;
+    private String proxyHost = getPresetOrDefault(PROP_PROXY_HOST, DEFAULT_PROXY_HOST);
+    private int proxyPort = getPresetOrDefault(PROP_PROXY_PORT, DEFAULT_PROXY_PORT);
     private String disclaimerMessage = getPresetOrDefault(PROP_DISCLAIMER, DISCLAIMER_DEFAULT);
     private long disclaimerInterval = getPresetOrDefault(PROP_DISCLAIMER_DELAY, DEFAULT_DISCLAIMER_INTERVAL);
     private static boolean enableOrderEntryInSystem = getPresetOrDefault(PROP_ENABLE_ORDER_ENTRY_IN_SYSTEM, false);
@@ -247,7 +253,7 @@ public class ClientProperties implements ConnectionProperties {
         try {
             setDisclaimerInterval(Long.parseLong(text) * 1000 * 60);
         } catch (NumberFormatException e) {
-            disclaimerInterval = 0; 
+            disclaimerInterval = 0;
         }
     }
 
@@ -785,5 +791,26 @@ public class ClientProperties implements ConnectionProperties {
     public void setIpQuery(String ipQuery) {
         this.ipQuery = ipQuery;
     }
-    
+
+    public String getProxyHost() {
+        return proxyHost;
+    }
+
+    public void setProxyHost(String proxyHost) {
+        if (isTimeToSetProperty(PROP_PROXY_HOST)) {
+            this.proxyHost = proxyHost;
+//            System.setProperty(PROP_PROXY_HOST, proxyHost);
+        }
+    }
+
+    public int getProxyPort() {
+        return proxyPort;
+    }
+
+    public void setProxyPort(int proxyPort) {
+        if (isTimeToSetProperty(PROP_PROXY_PORT)) {
+            this.proxyPort = proxyPort;
+//            System.setProperty(PROP_PROXY_PORT, ""+proxyPort);
+        }
+    }
 }
