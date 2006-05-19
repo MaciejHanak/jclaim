@@ -40,4 +40,8 @@ public interface ConnectionProperties {
     boolean isShowWeather();
 
     String getWeatherZipCodes();
+
+    String getProxyHost();
+    
+    int getProxyPort();
 }
