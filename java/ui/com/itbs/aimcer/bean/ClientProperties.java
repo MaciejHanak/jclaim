@@ -40,8 +40,8 @@ public class ClientProperties implements ConnectionProperties {
     private static final String PROP_DISCLAIMER = "disclaimer";
     private static final String PROP_DISCLAIMER_DELAY = "delay";
     private static final String PROP_ENABLE_ORDER_ENTRY_IN_SYSTEM = "enableorderentry";
-    private static final String PROP_PROXY_HOST = "http.proxyHost";
-    private static final String PROP_PROXY_PORT = "http.proxyPort";
+    private static final String PROP_PROXY_HOST = "proxyHost";
+    private static final String PROP_PROXY_PORT = "proxyPort"; //http.proxyPort
 
     /** Idle delay in seconds before setting away */
     private int away;
@@ -799,7 +799,7 @@ public class ClientProperties implements ConnectionProperties {
     public void setProxyHost(String proxyHost) {
         if (isTimeToSetProperty(PROP_PROXY_HOST)) {
             this.proxyHost = proxyHost;
-//            System.setProperty(PROP_PROXY_HOST, proxyHost);
+//            System.setProperty("http."+PROP_PROXY_HOST, proxyHost);
         }
     }
 
@@ -810,7 +810,7 @@ public class ClientProperties implements ConnectionProperties {
     public void setProxyPort(int proxyPort) {
         if (isTimeToSetProperty(PROP_PROXY_PORT)) {
             this.proxyPort = proxyPort;
-//            System.setProperty(PROP_PROXY_PORT, ""+proxyPort);
+//            System.setProperty("http."+PROP_PROXY_PORT, ""+proxyPort);
         }
     }
 }
