@@ -50,6 +50,7 @@ import net.kano.joustsim.oscar.oscar.service.icbm.ft.*;
 import net.kano.joustsim.oscar.oscar.service.icbm.ft.events.RvConnectionEvent;
 import net.kano.joustsim.oscar.oscar.service.icbm.ft.events.TransferringFileEvent;
 import net.kano.joustsim.oscar.oscar.service.ssi.*;
+import net.kano.joustsim.oscar.proxy.AimProxyInfo;
 
 import javax.swing.*;
 import java.io.File;
@@ -167,6 +168,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         connectionProperties.setLoginHost(System.getProperty("OSCAR_HOST", connectionProperties.getLoginHost()));
         connectionProperties.setLoginPort(Integer.getInteger("OSCAR_PORT", connectionProperties.getLoginPort()));
         connection = session.openConnection(connectionProperties);
+        if (getProperties().getProxyHost() !=null && getProperties().getProxyHost().length()>0 && getProperties().getProxyPort() > 0) {
+            connection.setProxy(AimProxyInfo.forSocks4(getProperties().getProxyHost(), getProperties().getProxyPort(), System.getProperty("user.name")));
+        }
         catchBuddyList();
         connection.addStateListener(new StateListener() {
             public void handleStateChange(StateEvent event) {
