@@ -168,8 +168,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         connectionProperties.setLoginHost(System.getProperty("OSCAR_HOST", connectionProperties.getLoginHost()));
         connectionProperties.setLoginPort(Integer.getInteger("OSCAR_PORT", connectionProperties.getLoginPort()));
         connection = session.openConnection(connectionProperties);
-        if (getProperties().getProxyHost() !=null && getProperties().getProxyHost().length()>0 && getProperties().getProxyPort() > 0) {
-            connection.setProxy(AimProxyInfo.forSocks4(getProperties().getProxyHost(), getProperties().getProxyPort(), System.getProperty("user.name")));
+        if (getProperties().getProxyInfo(getServiceName()) !=null) {
+            ConnectionInfo connectionInfo = getProperties().getProxyInfo(getServiceName());
+            connection.setProxy(AimProxyInfo.forSocks4(connectionInfo.getIp(), connectionInfo.getPort(), System.getProperty("user.name")));
         }
         catchBuddyList();
         connection.addStateListener(new StateListener() {
