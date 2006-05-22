@@ -25,6 +25,7 @@ import com.itbs.aimcer.bean.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
 /**
  * Implements basic things one needs to support a connection.
@@ -34,6 +35,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @since Oct 10, 2004
  */
 abstract public class AbstractConnection implements Connection {
+    private static Logger log = Logger.getLogger(AbstractConnection.class.getName());
     protected List<ConnectionEventListener> eventHandlers = new  CopyOnWriteArrayList<ConnectionEventListener>();
     private boolean autoLogin;
     protected boolean disconnectIntentional;
@@ -103,6 +105,10 @@ abstract public class AbstractConnection implements Connection {
             throw new NullPointerException("Programmer, you forgot to assign the groupFactory for the connection.");
         if (contactFactory == null)
             throw new NullPointerException("Programmer, you forgot to assign the contactFactory for the connection.");
+        if (getProperties() == null) { // things may still work, so just warn.
+            log.warning("Please setProperties on connection prior to use.");
+        }
+
 //        disconnectIntentional = false; // seems more appropriate in the notify on connection this way menu disconnect will stop it
     }
     // ********************   Group List   ********************
