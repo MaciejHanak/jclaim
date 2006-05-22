@@ -170,7 +170,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         connection = session.openConnection(connectionProperties);
         if (getProperties().getProxyInfo(getServiceName()) !=null) {
             ConnectionInfo connectionInfo = getProperties().getProxyInfo(getServiceName());
-            connection.setProxy(AimProxyInfo.forSocks4(connectionInfo.getIp(), connectionInfo.getPort(), System.getProperty("user.name")));
+            connection.setProxy(AimProxyInfo.forSocks4(connectionInfo.getIp(), connectionInfo.getPort(),
+                    getUserName())); // this is for all those pesky logging systems that don't know how to get the uid
+//                    System.getProperty("user.name")));
         }
         catchBuddyList();
         connection.addStateListener(new StateListener() {
