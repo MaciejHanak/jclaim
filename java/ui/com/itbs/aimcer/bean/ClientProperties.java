@@ -795,7 +795,7 @@ public class ClientProperties implements ConnectionProperties {
     }
 
     public ConnectionInfo getProxyInfo(String serviceName) {
-        return proxyInfo.get(serviceName);
+        return proxyInfo.get(PROP_PROXY_INFO + serviceName);
     }
 
     public void setProxyInfo(String serviceName, ConnectionInfo proxyInfo) {
@@ -810,16 +810,16 @@ public class ClientProperties implements ConnectionProperties {
         Enumeration enumeration = System.getProperties().keys();
         while (enumeration.hasMoreElements()) {
             String key = ""+ enumeration.nextElement();
-            try {
-                if (key.startsWith(prefix)) {
-                    String value = System.getProperties().getProperty(key);
-                    StringTokenizer st = new StringTokenizer(value, ":");
-                    if (st.countTokens() == 2) {
-                        map.put(key, new ConnectionInfo(st.nextToken(), Integer.parseInt(st.nextToken())));
-                    }
+            if (key.startsWith(prefix)) {
+                try {
+                        String value = System.getProperties().getProperty(key);
+                        StringTokenizer st = new StringTokenizer(value, ":");
+                        if (st.countTokens() == 2) {
+                            map.put(key, new ConnectionInfo(st.nextToken(), Integer.parseInt(st.nextToken())));
+                        }
+                } catch (Exception e) { // Unknown Host  + Integer parse problems
+                    log.log(Level.WARNING, "Failed to load key " + key, e);
                 }
-            } catch (Exception e) { // Unknown Host  + Integer parse problems
-                log.log(Level.WARNING, "Failed to load key " + key, e);
             }
         }
         return map;
