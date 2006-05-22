@@ -20,12 +20,16 @@
 
 package com.itbs.aimcer.bean;
 
+import com.itbs.aimcer.commune.ConnectionInfo;
 import com.itbs.util.ReadableRectangle;
 
 import java.awt.*;
 import java.io.File;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -40,8 +44,7 @@ public class ClientProperties implements ConnectionProperties {
     private static final String PROP_DISCLAIMER = "disclaimer";
     private static final String PROP_DISCLAIMER_DELAY = "delay";
     private static final String PROP_ENABLE_ORDER_ENTRY_IN_SYSTEM = "enableorderentry";
-    private static final String PROP_PROXY_HOST = "proxyHost";
-    private static final String PROP_PROXY_PORT = "proxyPort"; //http.proxyPort
+    private static final String PROP_PROXY_INFO = "proxy."; //http.proxyPort
 
     /** Idle delay in seconds before setting away */
     private int away;
@@ -66,8 +69,7 @@ public class ClientProperties implements ConnectionProperties {
     private static final int DEFAULT_DISCLAIMER_INTERVAL = 20*60*1000;
     private static final int DEFAULT_FONT_SIZE = 10;
     private static final int DEFAULT_BEEP_DELAY = 5;
-    private String proxyHost = getPresetOrDefault(PROP_PROXY_HOST, DEFAULT_PROXY_HOST);
-    private int proxyPort = getPresetOrDefault(PROP_PROXY_PORT, DEFAULT_PROXY_PORT);
+    private Map<String, ConnectionInfo> proxyInfo = getPresetOrDefaultConnectionInfo(PROP_PROXY_INFO);
     private String disclaimerMessage = getPresetOrDefault(PROP_DISCLAIMER, DISCLAIMER_DEFAULT);
     private long disclaimerInterval = getPresetOrDefault(PROP_DISCLAIMER_DELAY, DEFAULT_DISCLAIMER_INTERVAL);
     private static boolean enableOrderEntryInSystem = getPresetOrDefault(PROP_ENABLE_ORDER_ENTRY_IN_SYSTEM, false);
@@ -517,7 +519,7 @@ public class ClientProperties implements ConnectionProperties {
     public void setShowOrderEntry(boolean showOrderEntry) {
         this.showOrderEntry = showOrderEntry;
     }
-    
+
     public boolean isSpellCheck() {
         return spellCheck;
     }
@@ -717,7 +719,7 @@ public class ClientProperties implements ConnectionProperties {
     public void setDisconnectCount(String disconnectCount) {
         this.disconnectCount = getInt(disconnectCount, "disconnectCount", this.disconnectCount);
     }
-    
+
     public void setDisconnectCount(int disconnectCount) {
         this.disconnectCount = disconnectCount;
     }
@@ -792,25 +794,44 @@ public class ClientProperties implements ConnectionProperties {
         this.ipQuery = ipQuery;
     }
 
-    public String getProxyHost() {
-        return proxyHost;
+    public ConnectionInfo getProxyInfo(String serviceName) {
+        return proxyInfo.get(serviceName);
     }
 
-    public void setProxyHost(String proxyHost) {
-        if (isTimeToSetProperty(PROP_PROXY_HOST)) {
-            this.proxyHost = proxyHost;
-//            System.setProperty("http."+PROP_PROXY_HOST, proxyHost);
+    public void setProxyInfo(String serviceName, ConnectionInfo proxyInfo) {
+        if (isTimeToSetProperty(PROP_PROXY_INFO + serviceName)) {
+            this.proxyInfo.put(serviceName, proxyInfo);
+//            System.setProperty("http."+PROP_PROXY_PORT, ""+proxyInfo);
         }
     }
 
-    public int getProxyPort() {
-        return proxyPort;
+    Map<String, ConnectionInfo> getPresetOrDefaultConnectionInfo(String prefix) {
+        Map<String, ConnectionInfo> map = new HashMap<String, ConnectionInfo>();
+        Enumeration enumeration = System.getProperties().keys();
+        while (enumeration.hasMoreElements()) {
+            String key = ""+ enumeration.nextElement();
+            try {
+                if (key.startsWith(prefix )) {
+                    String value = System.getProperties().getProperty(key);
+                    StringTokenizer st = new StringTokenizer(":");
+                    if (st.countTokens() == 2) {
+                        map.put(key, new ConnectionInfo(st.nextToken(), Integer.parseInt(st.nextToken())));
+                    }
+                }
+            } catch (Exception e) { // Unknown Host  + Integer parse problems
+                log.log(Level.WARNING, "Failed to load key " + key, e);
+            }
+        }
+        return map;
     }
 
-    public void setProxyPort(int proxyPort) {
-        if (isTimeToSetProperty(PROP_PROXY_PORT)) {
-            this.proxyPort = proxyPort;
-//            System.setProperty("http."+PROP_PROXY_PORT, ""+proxyPort);
-        }
+    /** FOR PERSISTANCE ONLY */
+    public Map<String, ConnectionInfo> getProxyInfo() {
+        return proxyInfo;
+    }
+
+    /** FOR PERSISTANCE ONLY */
+    public void setProxyInfo(Map<String, ConnectionInfo> proxyInfo) {
+        this.proxyInfo = proxyInfo;
     }
 }
