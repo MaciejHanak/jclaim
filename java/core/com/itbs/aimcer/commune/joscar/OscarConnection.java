@@ -151,6 +151,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         if (getUserName() == null || getPassword() == null) {
             throw new SecurityException("Login information was not available");
         }
+        if (getProperties() == null) { // this one will still work, so just warn.
+            log.warning("Please setProperties on connection prior to use.");
+        }
         final Screenname screenName = new Screenname(getUserName());
         AppSession appSession = new AppSession() {
             public AimSession openAimSession(Screenname sn) {
