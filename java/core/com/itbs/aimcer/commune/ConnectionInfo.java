@@ -21,16 +21,15 @@
 package com.itbs.aimcer.commune;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 /**
  * Used in file transfers and other things requiring an IP and port.
- * 
+ * Persistable. 
  * @author Alex Rass
  * @since Dec 19, 2004
  */
 public class ConnectionInfo {
-    InetAddress ip;
+    String ip;
     private int port;
 
     /**
@@ -41,33 +40,32 @@ public class ConnectionInfo {
     }
 
     /**
-     *  Constructor.
-     *
-     * @param ip of the thing
-     * @param port of the thing
-     * @throws UnknownHostException when host information is wrong, see this for details: {@link InetAddress#getByName(String)}
-     * @see InetAddress
-     */
-    public ConnectionInfo(String ip, int port) throws UnknownHostException {
-        this(InetAddress.getByName(ip), port);
-    }
-
-    /**
      * Constructor
      * @param ip of the thing
      * @param port of the thing
      * @see InetAddress
      */
     public ConnectionInfo(InetAddress ip, int port) {
+        setIp(ip.getHostAddress());
+        setPort(port);
+    }
+
+    /**
+     * Constructor
+     * @param ip of the thing
+     * @param port of the thing
+     */
+    public ConnectionInfo(String ip, int port) {
         setIp(ip);
         setPort(port);
     }
 
-    public InetAddress getIp() {
+
+    public String getIp() {
         return ip;
     }
 
-    public void setIp(InetAddress ip) {
+    public void setIp(String ip) {
         if (ip == null) throw new NullPointerException("IP can not be null");
         this.ip = ip;
     }
@@ -82,7 +80,7 @@ public class ConnectionInfo {
     }
 
     public boolean equals(Object obj) {
-        return obj instanceof ConnectionInfo && ((ConnectionInfo) obj).port == port && ((ConnectionInfo) obj).ip.equals(ip);
+        return obj instanceof ConnectionInfo && ((ConnectionInfo) obj).port == port && ((ConnectionInfo) obj).ip.equalsIgnoreCase(ip);
     }
 
     public String toString() {
