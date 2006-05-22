@@ -811,9 +811,9 @@ public class ClientProperties implements ConnectionProperties {
         while (enumeration.hasMoreElements()) {
             String key = ""+ enumeration.nextElement();
             try {
-                if (key.startsWith(prefix )) {
+                if (key.startsWith(prefix)) {
                     String value = System.getProperties().getProperty(key);
-                    StringTokenizer st = new StringTokenizer(":");
+                    StringTokenizer st = new StringTokenizer(value, ":");
                     if (st.countTokens() == 2) {
                         map.put(key, new ConnectionInfo(st.nextToken(), Integer.parseInt(st.nextToken())));
                     }
