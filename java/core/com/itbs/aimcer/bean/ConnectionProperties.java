@@ -20,6 +20,8 @@
 
 package com.itbs.aimcer.bean;
 
+import com.itbs.aimcer.commune.ConnectionInfo;
+
 /**
  * @author Alex Rass
  * @since Feb 11, 2006
@@ -41,7 +43,6 @@ public interface ConnectionProperties {
 
     String getWeatherZipCodes();
 
-    String getProxyHost();
-    
-    int getProxyPort();
+    ConnectionInfo getProxyInfo(String serviceName);    
+
 }
