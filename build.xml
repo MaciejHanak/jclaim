@@ -249,6 +249,9 @@
         <fileset dir="${dir.dist}">
             <include name="*.jar"/>
         </fileset>
+        <fileset dir="${dir.lib}">
+            <include name="*.jar"/>
+        </fileset>
     </path>
     <property name="classpath" value="run.classpath"/>
     
@@ -256,8 +259,11 @@
         description="Starts client">
 
         <java fork="yes" classname="com.itbs.aimcer.gui.Main">
-            <classpath refid="${classpath}"/>
+            <env key="PATH" path="${dir.lib}"/>
+            <jvmarg value="-Djava.library.path=${dir.lib}"/>
 
+            <!--jvmarg value="${dir.lib}"/-->
+            <classpath refid="${classpath}"/>
         </java>
     </target>
 
