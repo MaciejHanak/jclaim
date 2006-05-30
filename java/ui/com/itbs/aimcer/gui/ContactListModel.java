@@ -22,6 +22,7 @@ package com.itbs.aimcer.gui;
 
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
+import com.itbs.gui.EditableJList;
 
 import javax.swing.*;
 import java.util.Date;
@@ -34,7 +35,7 @@ import java.util.logging.Logger;
  * @author Alex Rass
  * @since Sep 9, 2004
  */
-public class ContactListModel extends AbstractListModel implements ConnectionEventListener {
+public class ContactListModel extends AbstractListModel implements ConnectionEventListener, EditableJList.MutableListModel {
     private static final Logger log = Logger.getLogger(LoginPanel.class.getName());
     Connection connection;
     private static final boolean DEBUG = false;
@@ -225,4 +226,18 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
     public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) {
     }
 
+    // ----------- MutableListModel
+
+    public boolean isCellEditable(int index) {
+        Object element  = getElementAt(index);
+        return  element !=null && element instanceof ContactWrapper;
+    }
+
+    public void setValueAt(Object value, int index) {
+        Object element  = getElementAt(index);
+        if (element !=null && element instanceof ContactWrapper) {
+            ((ContactWrapper) element).getPreferences().setDisplayName(""+value);
+            ((ContactWrapper) element).updateDisplayComponent();
+        }
+    }
 }
