@@ -27,6 +27,7 @@ import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.commune.weather.WeatherConnection;
 import com.itbs.gui.AbstractFileTransferHandler;
 import com.itbs.gui.ActionAdapter;
+import com.itbs.gui.EditableJList;
 import com.itbs.gui.GradientPanel;
 import org.jdesktop.jdic.desktop.Desktop;
 
@@ -73,7 +74,8 @@ final public class PeopleScreen extends GradientPanel  {
      * @return panel
      */
     private Component getCenterPanel() {
-        list = new JList() {
+        list = new EditableJList(ContactListModel.getInstance()) {
+//        list = new JList() {
             /**
              * @see javax.swing.JComponent#getToolTipText
              */
@@ -197,7 +199,7 @@ final public class PeopleScreen extends GradientPanel  {
                 } // if more than one selected
             } // mouseReleased
         });
-        list.setModel(ContactListModel.getInstance());
+//        list.setModel(ContactListModel.getInstance());
         // transfer handler must be set after the model has been set.
         list.setTransferHandler(new AbstractFileTransferHandler() {
             protected void handle(JComponent c, List<File> fileList) {
