@@ -65,8 +65,12 @@ public class WeatherConnection extends AbstractConnection {
     private synchronized void processSettings() {
         weather.clear(this);
         StringTokenizer tok = new StringTokenizer(getProperties().getWeatherZipCodes(), " ;,.#");
-        while (tok.hasMoreElements())
-            addContact(tok.nextToken());
+        while (tok.hasMoreElements()) {
+            Contact cw = getContactFactory().create(tok.nextToken(), this);
+            cw.getStatus().setOnline(true);
+            weather.add(cw);
+//            addContact(tok.nextToken());
+        }
     }
 
     public void connect() throws SecurityException, Exception {
