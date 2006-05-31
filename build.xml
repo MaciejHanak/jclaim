@@ -68,6 +68,9 @@
     <property name="file.socks.o.jar" value="${dir.dist}/jsocks.jar"/>
     <property name="file.socks.lib.jar" value="${dir.lib}/jsocks-klea.jar"/>
 
+    <property name="file.substance.o.jar" value="${dir.dist}/substance.jar"/>
+    <property name="file.substance.lib.jar" value="${dir.lib}/substance.jar"/>
+
     <!-- Create our packer task, if you get an error here, go get the jar file from web or the included tools/pack200 folder.
      Another way is to replace all pack tags with move (if you are building for JDK 1.4 or below. -->
     <taskdef name="pack200" classname="com.sun.tools.apache.ant.pack200.Pack200Task" classpath="Pack200Task.jar"/>
@@ -126,6 +129,7 @@
         <delete file="${file.msn.o.jar}"/>
         <delete file="${file.cos.o.jar}"/>
         <delete file="${file.socks.o.jar}"/>
+        <delete file="${file.substance.o.jar}"/>
     </target>
 
     <!-- =====================   COPY    =============================-->
@@ -194,42 +198,45 @@
 
         <pack200 src="${file.jclaim.o.jar}" destfile="${file.jclaim.o.jar}"	repack="true"/>
         <!-- Getting an error here means you did not create your own cert file.  Please do so using createcert target. -->
-        <signjar jar="${file.jclaim.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${file.jclaim.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
         <!--<move file="${file.jclaim.o.jar}" tofile="${file.jclaim.o.jar}"/>-->
 
         <!--<copy file="${file.jaim.lib.jar}" tofile="${file.jaim.o.jar}"/>-->
         <pack200 src="${file.jaim.lib.jar}" destfile="${file.jaim.o.jar}"	repack="true"/>
-        <signjar jar="${file.jaim.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${file.jaim.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.joscar.lib.jar}" destfile="${file.joscar.o.jar}"	repack="true"/>
-        <signjar jar="${file.joscar.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${file.joscar.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.oscar.lib.jar}" destfile="${file.oscar.o.jar}"	repack="true"/>
-        <signjar jar="${file.oscar.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${file.oscar.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.smack.lib.jar}" destfile="${file.smack.o.jar}"	repack="true"/>
-        <signjar jar="${file.smack.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${file.smack.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.smackx.lib.jar}" destfile="${file.smackx.o.jar}"	repack="true"/>
-        <signjar jar="${file.smackx.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${file.smackx.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.yahoo.lib.jar}" destfile="${file.yahoo.o.jar}"	repack="true"/>
-        <signjar jar="${file.yahoo.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${file.yahoo.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.jdic.lib.jar}" destfile="${file.jdic.o.jar}"	repack="true"/>
-        <signjar jar="${file.jdic.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${file.jdic.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.msn.lib.jar}" 	destfile="${file.msn.o.jar}"	repack="true"/>
-        <signjar jar="${file.msn.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${file.msn.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.cos.lib.jar}" destfile="${file.cos.o.jar}"	repack="true"/>
-        <signjar jar="${file.cos.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${file.cos.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.socks.lib.jar}" destfile="${file.socks.o.jar}"	repack="true"/>
-        <signjar jar="${file.socks.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${file.socks.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
+
+        <pack200 src="${file.substance.lib.jar}" destfile="${file.substance.o.jar}"	repack="true"/>
+        <signjar jar="${file.substance.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.jazzy.lib.jar}" destfile="${file.jazzy.o.jar}"	repack="true"/>
-        <signjar jar="${file.jazzy.o.jar}" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${file.jazzy.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
     </target>
 
     <target name="signnative" description="Signs native files" >
