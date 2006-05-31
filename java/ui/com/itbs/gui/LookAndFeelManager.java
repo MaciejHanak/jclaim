@@ -30,6 +30,13 @@ import java.awt.event.ActionListener;
  */
 public class LookAndFeelManager {
     static {
+        try {
+            Class.forName("org.jvnet.substance.SubstanceLookAndFeel");
+            UIManager.LookAndFeelInfo substance = new UIManager.LookAndFeelInfo("Substance", "org.jvnet.substance.SubstanceLookAndFeel");
+            UIManager.installLookAndFeel(substance);
+        } catch (ClassNotFoundException e) {
+            // Class is not present
+        }
 /*
         UIManager.LookAndFeelInfo apple = new UIManager.LookAndFeelInfo("Jaguar", QuaquaManager.getLookAndFeelClassName());
         UIManager.installLookAndFeel(apple);
@@ -37,6 +44,7 @@ public class LookAndFeelManager {
         UIManager.installLookAndFeel(windowsXP);
 */
     }
+
     private static UIManager.LookAndFeelInfo[] AVAILABLES = UIManager.getInstalledLookAndFeels();
 
     public static void setLookAndFeel(final int option) {
