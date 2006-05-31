@@ -175,7 +175,7 @@ public class WeatherConnection extends AbstractConnection {
         if (!getProperties().isShowWeather())
             return;
         disconnect(false);
-        timer = new Timer();
+        timer = new Timer(true);
 //        updateList();
 
         timer.scheduleAtFixedRate(new TimerTask() {
