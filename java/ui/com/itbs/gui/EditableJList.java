@@ -318,7 +318,7 @@ public class EditableJList extends JList implements CellEditorListener {
         }
 
         private boolean shouldIgnore(MouseEvent e) {
-            return e.isConsumed() || (!(SwingUtilities.isLeftMouseButton(e) && isEnabled()));
+            return e.isConsumed() || e.getClickCount() >= 2 || (!(SwingUtilities.isLeftMouseButton(e) && isEnabled()));
         }
 
         public void mousePressed(MouseEvent e){
