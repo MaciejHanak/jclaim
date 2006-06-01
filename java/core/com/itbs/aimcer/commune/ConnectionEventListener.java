@@ -112,5 +112,11 @@ public interface ConnectionEventListener {
      */
     void errorOccured(String message, Exception exception);
 
+    /**
+     * Determines if the contact is ok to be added.
+     * @param user requesting
+     * @param connection on which this happened.
+     * @return true if you have no objections to this contact adding you.
+     */
     public boolean contactRequestReceived(final String user, final MessageSupport connection);
 }
