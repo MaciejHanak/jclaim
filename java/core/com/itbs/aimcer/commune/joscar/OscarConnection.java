@@ -1005,9 +1005,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                             log.fine("TFEWSC: Starting with isOpen " + transfer.isOpen());
                             while (transfer.isOpen()) {
                                 int progress = (int) Math.min(
-                                    Math.abs(psp.getPosition() / (psp.getLength() - psp.getStartPosition()) * 100),
+                                    Math.abs((float)psp.getPosition() / (float)(psp.getLength() - psp.getStartPosition()) * 100),
                                     100);
-                                log.info("TFEWSC: " + progress + " Details:" + psp.getLength() + " " + psp.getStartPosition() + " " + psp.getPosition());
+                                log.fine("TFEWSC: " + progress + " Details:" + psp.getLength() + " " + psp.getStartPosition() + " " + psp.getPosition());
                                 ftl.setProgress(progress);
                                 GeneralUtils.sleep(700);
                             }
