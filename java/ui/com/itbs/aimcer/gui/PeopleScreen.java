@@ -34,10 +34,7 @@ import org.jdesktop.jdic.desktop.Desktop;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -69,6 +66,30 @@ final public class PeopleScreen extends GradientPanel  {
     } // Constr
 
     /**
+     * Common handler
+     * @param item to work
+     */
+    private void handleItem(Object item) {
+        if (item instanceof ContactWrapper) {
+            if (((ContactWrapper)item).getConnection() instanceof MessageSupport) {
+                MessageWindow.openWindow((ContactWrapper)item, true);
+            } else if (((ContactWrapper)item).getConnection() instanceof WeatherConnection) {
+                try {
+                    Desktop.browse(new URL(WeatherConnection.TOKEN_HOURLY + ((ContactWrapper)item).getName()));
+                } catch (Exception exc) {
+                    Main.complain("Failed to launch url " + WeatherConnection.TOKEN_HOURLY  + ((ContactWrapper)item).getName() + "\n", exc);
+                } catch (UnsatisfiedLinkError exc) {
+                    Main.complain("Failed to locate native libraries.  Please open "+ WeatherConnection.TOKEN_HOURLY  + ((ContactWrapper)item).getName() + " yourself.", new Exception(exc));
+                }
+            }
+        }
+        else if (item instanceof GroupWrapper) {
+            ((GroupWrapper)item).swapShrunk();
+            ((ContactListModel)list.getModel()).runActionDataChanged();
+        }
+    }
+
+    /**
      * Returns the list of controls that shows people.
      *
      * @return panel
@@ -92,6 +113,18 @@ final public class PeopleScreen extends GradientPanel  {
         list.setOpaque(false);
         list.setDragEnabled(true);
         list.setSelectionMode(ClientProperties.INSTANCE.isMultiSelectAllowed()?ListSelectionModel.MULTIPLE_INTERVAL_SELECTION:ListSelectionModel.SINGLE_SELECTION);
+
+        list.addKeyListener(new KeyAdapter() {
+            public void keyReleased(KeyEvent e) {
+                if ((e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_PLUS || e.getKeyCode() == KeyEvent.VK_MINUS) && e.getModifiers() == 0) {
+                    if (list.getSelectedIndices().length==1) {
+                        handleItem(list.getSelectedValue());
+                        e.consume();
+                    }
+                }
+            }
+        });
+
         // Add a listener for mouse clicks
         list.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
@@ -105,30 +138,6 @@ final public class PeopleScreen extends GradientPanel  {
             }
 
             /**
-             * Common handler
-             * @param item to work
-             */
-            private void handleItem(Object item) {
-                if (item instanceof ContactWrapper) {
-                    if (((ContactWrapper)item).getConnection() instanceof MessageSupport) {
-                        MessageWindow.openWindow((ContactWrapper)item, true);
-                    } else if (((ContactWrapper)item).getConnection() instanceof WeatherConnection) {
-                        try {
-                            Desktop.browse(new URL(WeatherConnection.TOKEN_HOURLY + ((ContactWrapper)item).getName()));
-                        } catch (Exception exc) {
-                            Main.complain("Failed to launch url " + WeatherConnection.TOKEN_HOURLY  + ((ContactWrapper)item).getName() + "\n", exc);
-                        } catch (UnsatisfiedLinkError exc) {
-                            Main.complain("Failed to locate native libraries.  Please open "+ WeatherConnection.TOKEN_HOURLY  + ((ContactWrapper)item).getName() + " yourself.", new Exception(exc));
-                        }
-                    }
-                }
-                else if (item instanceof GroupWrapper) {
-                    ((GroupWrapper)item).swapShrunk();
-                    ((ContactListModel)list.getModel()).runActionDataChanged();
-                }
-            }
-
-            /**
              * Invoked when a mouse button has been released on a component.
              */
             public void mouseReleased(MouseEvent evt) {
@@ -138,7 +147,8 @@ final public class PeopleScreen extends GradientPanel  {
                         list.setSelectedIndex(index);
                     }
                 }
-                if (evt.isPopupTrigger() && list.getSelectedIndex() > -1) { // show menus
+                // show popup menus
+                if (evt.isPopupTrigger() && list.getSelectedIndex() > -1) {
                     final Object[] items = list.getSelectedValues();
                     boolean multiple = items.length > 1 || list.getSelectedValue() instanceof GroupWrapper;
 
