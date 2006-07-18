@@ -27,6 +27,8 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 
 /**
+ * Provides implementation differences for GoogleTalk.
+ * 
  * @author Alex Rass
  * @since Aug 31, 2005
  */
@@ -35,8 +37,18 @@ public class GoogleConnection extends SmackConnection {
         return new GoogleTalkConnection();
     }
 
+    /**
+     * Adjusts the username for Googletalk using their rules.
+     * Removes the @* trailer.
+     * @param userName to adjust/assign
+     */
+    public void setUserName(String userName) {
+        int index = userName==null?-1:userName.indexOf('@');
+        super.setUserName(index==-1?userName:userName.substring(0, index));
+    }
+
     public void addContact(Nameable contact, Group group) {
-        super.addContact(contact, group);    //Todo change
+        super.addContact(contact, group);
     }
 
     /**
