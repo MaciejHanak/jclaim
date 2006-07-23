@@ -20,13 +20,12 @@
 
 package com.itbs.aimcer.commune;
 
-import java.util.logging.Logger;
-
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.gui.Main;
 import com.itbs.util.GeneralUtils;
 
 import javax.swing.*;
+import java.util.logging.Logger;
 
 /**
  * Handles basic connection maintenance.
@@ -46,7 +45,7 @@ public class GlobalEventHandler implements ConnectionEventListener {
         //   ((ContactWrapper)contact).setAway(away);
         //   ((ContactWrapper)contact).setOnline(online);
     }
-                       
+
     public void statusChanged(Connection connection) {
     }
 
@@ -96,9 +95,8 @@ public class GlobalEventHandler implements ConnectionEventListener {
         connectionDone();
     }
 
-    int connectionLostTimes;
     public void connectionLost(final Connection connection) {
-        log.info("Connection to " + connection.getServiceName() + " lost " + ++connectionLostTimes + " time(s).");
+        log.info("Connection to " + connection.getServiceName() + " lost " + connection.getDisconnectCount() + " time(s).");
         connectionDone();
         Main.setTitle(connection.getServiceName() + " Offline");
         handleDisconnect(connection);
@@ -108,7 +106,7 @@ public class GlobalEventHandler implements ConnectionEventListener {
             new Thread("Reconnect for " + connection.getServiceName()) {
                 public void run() {
                     try {
-                        sleep(60*1000);
+                        sleep(connection.getDisconnectCount()==1?5000:60*1000);
                         if (Main.getFrame().isDisplayable() && !connection.isDisconnectIntentional() && connection.getDisconnectCount() < ClientProperties.INSTANCE.getDisconnectCount() && !connection.isLoggedIn()) {
                             log.info("Trying to reconnect " + connection.getServiceName() + " attempt no. " + connection.getDisconnectCount());
                             connection.reconnect();
@@ -140,7 +138,7 @@ public class GlobalEventHandler implements ConnectionEventListener {
 
 
     public boolean messageReceived(MessageSupport connection, Message message) {
-        if (ClientProperties.INSTANCE.getIpQuery().length()>0) {
+        if (!message.isOutgoing() && ClientProperties.INSTANCE.getIpQuery().length()>0) {
             if (ClientProperties.INSTANCE.getIpQuery().equals(message.getPlainText())) {
                 try {
                     connection.sendMessage(new MessageImpl(message.getContact(), true, true, GeneralUtils.getInterfaces(false)));
@@ -173,8 +171,8 @@ public class GlobalEventHandler implements ConnectionEventListener {
      @param connection connection
       * @param contact
      * @param filename
-     * @param description
-     * @param connectionInfo
+     * @param description of the file
+     * @param connectionInfo  your private object used to store protocol specific data
      */
     public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) {
         // prompt for filename and acceptance
