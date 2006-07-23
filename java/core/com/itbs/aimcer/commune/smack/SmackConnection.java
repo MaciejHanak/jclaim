@@ -21,10 +21,8 @@
 package com.itbs.aimcer.commune.smack;
 
 import com.itbs.aimcer.bean.*;
-import com.itbs.aimcer.commune.AbstractMessageConnection;
-import com.itbs.aimcer.commune.ConnectionEventListener;
-import com.itbs.aimcer.commune.FileTransferListener;
-import com.itbs.aimcer.commune.FileTransferSupport;
+import com.itbs.aimcer.commune.*;
+import com.itbs.util.GeneralUtils;
 import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.filter.MessageTypeFilter;
 import org.jivesoftware.smack.filter.PacketFilter;
@@ -34,6 +32,9 @@ import org.jivesoftware.smackx.filetransfer.FileTransferManager;
 import org.jivesoftware.smackx.filetransfer.FileTransferRequest;
 import org.jivesoftware.smackx.filetransfer.IncomingFileTransfer;
 import org.jivesoftware.smackx.filetransfer.OutgoingFileTransfer;
+import org.jivesoftware.smackx.muc.MultiUserChat;
+import org.jivesoftware.smackx.muc.RoomInfo;
+import org.jivesoftware.smackx.muc.SubjectUpdatedListener;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -47,13 +48,14 @@ import java.util.logging.Logger;
  * @author Alex Rass
  * @since Dec 24, 2004
  */
-public class    SmackConnection extends AbstractMessageConnection implements FileTransferSupport {
+public class SmackConnection extends AbstractMessageConnection implements FileTransferSupport, ChatRoomSupport {
     private static final Logger log = Logger.getLogger(SmackConnection.class.getName());
     public static final String DEFAULT_HOST = "jabber.org";
     public static final int DEFAULT_PORT = 5222;
     public static final int DEFAULT_PORT_SSL = 5223;
     XMPPConnection connection;
     FileTransferManager fileTransferManager;
+    MultiUserChat multiUserChat;
 
 
     protected XMPPConnection getNewConnection() throws XMPPException {
@@ -434,4 +436,76 @@ public class    SmackConnection extends AbstractMessageConnection implements Fil
         FileTransferRequest fileTransferRequest = (FileTransferRequest) connectionInfo;
         fileTransferRequest.reject();
     }
-}
+
+    // ***********************  GROUP CHAT  *************************
+    public void join(String room, final String nickname, final ChatRoomEventListener listener) {
+        join(false, room, nickname, listener);
+    }
+    public void create(String room, String nickname, ChatRoomEventListener listener) {
+        join(true, room, nickname, listener);
+    }
+
+    private void join(boolean create, String room, final String nickname, final ChatRoomEventListener listener) {
+        try {
+            multiUserChat = new MultiUserChat(connection, room);
+
+            // The room service will decide the amount of history to send
+            if (create)
+                multiUserChat.create(nickname);
+            else
+                multiUserChat.join(nickname);
+
+            // Discover information about the room roomName@conference.myserver
+            RoomInfo info = MultiUserChat.getRoomInfo(connection, room);
+            if (info.getOccupantsCount() != -1)
+                listener.serverNotification("Number of occupants: " + info.getOccupantsCount());
+//                addHistoryText("Number of occupants: " + info.getOccupantsCount(), ATT_BLUE);
+            if (GeneralUtils.isNotEmpty(info.getSubject()))
+                listener.serverNotification("Room Subject: " + info.getSubject());
+            // listen for subject change and update
+            multiUserChat.addSubjectUpdatedListener(new SubjectUpdatedListener() {
+                public void subjectUpdated(String subject, String from) {
+                    listener.serverNotification("Room Subject:" + subject);
+                }
+            });
+            multiUserChat.addMessageListener(new PacketListener() {
+                public void processPacket(Packet packet) {
+                    int lastSlash = packet.getFrom().lastIndexOf('/');
+
+                    String from = lastSlash == -1 || lastSlash >= packet.getFrom().length()?
+                            packet.getFrom().trim() :
+                            packet.getFrom().substring(lastSlash+1);
+                    // ignore messages from self!
+                    if (from.equalsIgnoreCase(nickname))
+                        return;
+                    if (packet instanceof org.jivesoftware.smack.packet.Message) {
+                        org.jivesoftware.smack.packet.Message message = (org.jivesoftware.smack.packet.Message) packet;
+                        try {
+                            listener.messageReceived(SmackConnection.this, new MessageImpl(getContactFactory().create(from, SmackConnection.this), false, message.getBody()));
+                        } catch (Exception e) {
+                            listener.errorOccured("Error receiving message: " + e.getMessage(), e);
+                        }
+                    }
+                }
+            });
+        } catch (XMPPException e) {
+            listener.errorOccured("Error connecting to the room: " + e.getMessage(), e);
+        }
+
+    }
+
+    public void sendChatMessage(String message) {
+        if (isJoined())
+            try {
+                multiUserChat.sendMessage(message);
+            } catch (XMPPException e) {
+                for (ConnectionEventListener eventHandler : eventHandlers) {
+                    eventHandler.errorOccured("Failure while sending a message", e);
+                }
+            }
+    }
+
+    public boolean isJoined() {
+        return multiUserChat!=null && multiUserChat.isJoined();
+    }
+} // class SmackConnection
