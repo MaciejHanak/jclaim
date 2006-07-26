@@ -1,42 +1,63 @@
 package com.itbs.aimcer.gui;
 
+import com.itbs.aimcer.bean.Contact;
+import com.itbs.aimcer.bean.Message;
+import com.itbs.aimcer.bean.Nameable;
+import com.itbs.aimcer.commune.*;
+import com.itbs.gui.ActionAdapter;
+import com.itbs.gui.BetterButton;
+import com.itbs.gui.BetterTextPane;
+import com.itbs.gui.GUIUtils;
+
+import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.MutableAttributeSet;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 /**
  * @author Alex Rass
  * @since Jul 25, 2006 8:49:37 AM
  */
-public class MessageCollaborationWindow {}
-/*
+//public class MessageCollaborationWindow {}
+
 public class MessageCollaborationWindow  extends MessageWindowBase implements ConnectionEventListener {
     private JTextPane historyPane, messagePane;
     JLabel status = new JLabel();
-    CRApplet applet;
-    MutableAttributeSet ATT_NORMAL, ATT_RED, ATT_BLUE, ATT_GRAY;
+    ChatRoomSupport connection;
 
-    */
-/**
+    /**
      * Creates a new <code>JPanel</code> with a double buffer
      * and a flow layout.
+     * @param connection connection
+     * @param groupName name of the group to join
      */
-/*
-    public MessageCollaborationWindow(CRApplet crApplet) {
-        this.applet = crApplet;
-        frame.setLayout(new BorderLayout());
-        JPanel panel = LoginTab.getTitleLabel("How Can We Help You?");
-        frame.add(panel, BorderLayout.NORTH);
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, getHistoryPane(), getMessagePane());
-        splitPane.setDividerLocation(85);
-        frame.add(splitPane);
-        recalculateAttributes();
+    public MessageCollaborationWindow(final ChatRoomSupport connection, final String groupName) {
+        this.connection = connection;
+        frame = GUIUtils.createFrame(groupName + " on " + connection.getServiceName());
+        frame.setIconImage(ImageCacheUI.ICON_JC.getIcon().getImage());
+        frame.setBounds(DEFAULT_SIZE);
+        GUIUtils.addCancelByEscape(frame, new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+            }
+        });
+        composeUI();
+        offUIExecutor.execute(new Runnable() { public void run () {
+           join(groupName, connection.getUser().getName());
+        }});
     }
 
-    public JComponent getHistoryPane() {
+    public JComponent getHistory() {
         historyPane = new BetterTextPane();
         historyPane.setEditable(false);
-        return new JScrollPane(historyPane);
+        return new JScrollPane(historyPane, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
     }
 
     public void addHistoryText(final String text, final MutableAttributeSet style) {
-        GeneralUtils.runOnAWT(new Runnable() {
+        GUIUtils.runOnAWT(new Runnable() {
             public void run() {
                 if (historyPane == null)
                     return;
@@ -49,18 +70,18 @@ public class MessageCollaborationWindow  extends MessageWindowBase implements Co
                 historyPane.setCaretPosition(document.getLength());
             }
         });
-
     }
-    private Component getMessagePane() {
+
+    protected Component getButtons() {
         Action sendAction = new ActionAdapter("Send", new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                if (applet.connection.isLoggedIn()) {
-                    if (applet.connection.isJoined()) {
+                if (connection.isLoggedIn()) {
+                    if (connection.isJoined()) {
                         addHistoryText("You: " + messagePane.getText(),  ATT_GRAY);
-                        applet.connection.sendChatMessage(messagePane.getText());
+                        connection.sendChatMessage(messagePane.getText());
                         messagePane.setText("");
                     } else {
-                        JOptionPane.showMessageDialog(frame, "Failed to join the chat group.  Please relogin.", "Error:", JOptionPane.ERROR_MESSAGE);
+                        addHistoryText("Failed to join the chat group.  Please reopen the window.", ATT_RED);
                     }
                 } else {
                     JOptionPane.showMessageDialog(frame, "Not logged in.   Please login.", "Error:", JOptionPane.ERROR_MESSAGE);
@@ -72,27 +93,23 @@ public class MessageCollaborationWindow  extends MessageWindowBase implements Co
         messageArea.add(new JScrollPane(messagePane), BorderLayout.CENTER);
 
         messageArea.add(new BetterButton(sendAction), BorderLayout.EAST);
-        JPanel south = new JPanel(new BorderLayout());
-        south.add(new JLabel(" You are chatting with CyberCreek"));
-        south.add(status, BorderLayout.EAST);
-        messageArea.add(south, BorderLayout.SOUTH);
         return messageArea;
     }
 
     public void join(String room, final String nickname) {
-        applet.connection.join(room, nickname, new ChatRoomEventListener() {
+        connection.join(room, nickname, new ChatRoomEventListener() {
             public void serverNotification(String text) {
                 addHistoryText(text, ATT_BLUE);
             }
 
-            public boolean messageReceived(ChatRoomSupport connection, com.itbs.commune.Message message) throws Exception {
+            public boolean messageReceived(ChatRoomSupport connection, Message message) {
                 addHistoryText(message.getContact() + ": " + message.getPlainText(), ATT_NORMAL);
                 return false;
             }
 
             public void errorOccured(String message, Exception exception) {
                 exception.printStackTrace();
-                JOptionPane.showMessageDialog(frame, "Error connecting to the room: " + exception.getMessage(), "Error:", JOptionPane.ERROR_MESSAGE);
+                addHistoryText("Error connecting to the room: " + exception.getMessage(), ATT_RED);
             }
         });
     }
@@ -102,7 +119,7 @@ public class MessageCollaborationWindow  extends MessageWindowBase implements Co
     public void connectionInitiated(Connection connection) {
     }
 
-    public boolean messageReceived(MessageSupport connection, com.itbs.commune.Message message) throws Exception {
+    public boolean messageReceived(MessageSupport connection, Message message) throws Exception {
         addHistoryText(message.getText(), ATT_NORMAL);
         return false;
     }
@@ -132,5 +149,18 @@ public class MessageCollaborationWindow  extends MessageWindowBase implements Co
         return false;
     }
 
+
+    public boolean emailReceived(MessageSupport connection, Message message) throws Exception {
+        return false;
+    }
+
+    public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
+    }
+
+    public void pictureReceived(IconSupport connection, Contact contact) {
+    }
+
+    public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) {
+    }
 }
-*/
+
