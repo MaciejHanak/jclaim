@@ -27,6 +27,7 @@ public class MessageCollaborationWindow  extends MessageWindowBase implements Co
     private JTextPane historyPane, messagePane;
     JLabel status = new JLabel();
     ChatRoomSupport connection;
+    String groupName;
 
     /**
      * Creates a new <code>JPanel</code> with a double buffer
@@ -36,6 +37,7 @@ public class MessageCollaborationWindow  extends MessageWindowBase implements Co
      */
     public MessageCollaborationWindow(final ChatRoomSupport connection, final String groupName) {
         this.connection = connection;
+        this.groupName = groupName;
         frame = GUIUtils.createFrame(groupName + " on " + connection.getServiceName());
         frame.setIconImage(ImageCacheUI.ICON_JC.getIcon().getImage());
         frame.setBounds(DEFAULT_SIZE);

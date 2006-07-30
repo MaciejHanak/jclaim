@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2006, ITBS LLC. All Rights Reserved.
+ *
+ *     This file is part of JClaim.
+ *
+ *     JClaim is free software; you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation; version 2 of the License.
+ *
+ *     JClaim is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with JClaim; if not, find it at gnu.org or write to the Free Software
+ *     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ */
+
 package com.itbs.aimcer.gui;
 
 import com.itbs.aimcer.bean.*;
@@ -12,41 +32,36 @@ import org.jdesktop.jdic.desktop.Desktop;
 import org.jdesktop.jdic.desktop.DesktopException;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ *
+ * Provides the UI for the messaging window.
+ *
  * @author Alex Rass
  * @since Sep 9, 2004
  */
-public class MessageWindow  {
+public class MessageWindow extends MessageWindowBase {
     private static final Logger log = Logger.getLogger(MessageWindow.class.getName());
-    /** Size of the message box. */
-    public static final Rectangle DEFAULT_SIZE = new Rectangle(400, 200, 350, 330);
-    /** Where the line is. */
-    private static final double DEFAULT_SEPARATION = 3.0 / 5.0;//150;
-    /** The way the time in the window is formatted */
-    DateFormat timeFormat = new SimpleDateFormat(ClientProperties.INSTANCE.getTimeFormat());
 
-    private static List<MessageWindow> messageWindows = new CopyOnWriteArrayList<MessageWindow>();
-    private static Executor offUIExecutor = Executors.newFixedThreadPool(2);
+    private static final List<MessageWindow> messageWindows = new CopyOnWriteArrayList<MessageWindow>();
 
-    private static ConnectionEventListener cel = new MessageWindowConnectionEventListener();
+    private static final ConnectionEventListener cel = new MessageWindowConnectionEventListener();
     public static ConnectionEventListener getConnectionEventListener() {
         return cel;
     }
@@ -56,24 +71,16 @@ public class MessageWindow  {
     final private ContactWrapper contactWrapper;
     final private FileTransferHandler ftHandler;
 
-    /** message frame. */
-    final JFrame frame;
-    /** Typing display with dalay. */
+    /** Typing icon display with delay. */
     private DelayedThread delayedShow;
-    private JSplitPane splitPane; // lets us save the vertical separation, that's all.
-    private long lastBeep;
     private JLabel userIcon;
     private String historyText;
-
-    public MutableAttributeSet ATT_NORMAL, ATT_RED, ATT_BLUE, ATT_GRAY;
 
     public MessageSupport getConnection() {
         return (MessageSupport) contactWrapper.getConnection();
     }
 
-    private BetterTextPane textPane;
-    private JTextPane historyPane;
-    private final AbstractAction ACTION_SEND, ACTION_ADD, ACTION_INFO, ACTION_LOG, ACTION_PAGE, ACTION_EMAIL;
+    private final AbstractAction ACTION_ADD, ACTION_INFO, ACTION_LOG, ACTION_PAGE, ACTION_EMAIL;
     private JCheckBox secureIM;
     private final JLabel charCount = new JLabel();
     private JPanel personalInfo;
@@ -213,7 +220,6 @@ public class MessageWindow  {
                 }
             }
         });
-        frame.getContentPane().setLayout(new BorderLayout());
 
         // Make sure to save last coordinates.
         frame.addWindowListener(new WindowAdapter() {
@@ -225,23 +231,11 @@ public class MessageWindow  {
                 onWindowClose();
             }
         });
-        SwingUtilities.invokeLater(new Runnable(){
-            public void run() {
-                frame.getContentPane().add(getTextComponents());
-                frame.getContentPane().add(getButtons(), BorderLayout.SOUTH);
-                frame.setVisible(true);
-                try {
-                    if (ClientProperties.INSTANCE.isSpellCheck())
-                        JazzyInterface.create().addSpellCheckComponent(textPane);
-                } catch (IOException e) {
-                    log.log(Level.SEVERE, "", e);
-                }
-                delayedShow.start();
-                textPane.requestFocus();
-            }
-        });
-        if (SoundHelper.playSound(ClientProperties.INSTANCE.getSoundNewWindow()))
-            lastBeep = System.currentTimeMillis(); // don't forget to update this puppy
+        composeUI();
+    }
+
+    protected void startUIDependent() {
+        delayedShow.start();
     }
 
     private void onWindowClose() {
@@ -252,11 +246,13 @@ public class MessageWindow  {
             messageWindows.remove(this);
         }
     }
+
     private void addDNDSupport(JComponent comp) {
         if (contactWrapper.getConnection() instanceof FileTransferSupport) {
             comp.setTransferHandler(ftHandler);
         }
     }
+
     /**
      * Shows and hides the extra panel.
      * Adjusts the size of the frame as well.
@@ -314,12 +310,6 @@ public class MessageWindow  {
             TrayAdapter.alert(messageWindow.frame);
         return messageWindow;
     }
-    /**
-     * Just Close!
-     */
-    public void closeWindow() {
-        frame.dispose();
-    }
 
     /**
      * Sends a message to buddy as long as this is the right window
@@ -345,7 +335,7 @@ public class MessageWindow  {
         offUIExecutor.execute(new Runnable() { public void run () { Main.saveProperties(); } });
     }
 
-    private Component getButtons() {
+    protected Component getButtons() {
         JPanel south = new JPanel();
         south.setLayout(new BoxLayout(south, BoxLayout.Y_AXIS));
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 3, 3));
@@ -370,9 +360,11 @@ public class MessageWindow  {
         panel.add(new BetterButton(ACTION_EMAIL));
         panel.add(new BetterButton(ACTION_PAGE));
         panel.add(new BetterButton(ACTION_LOG));
+
         panel.add(new BetterButton(ACTION_INFO));
 
-         // see if we already added this one some place
+        // see if we already added this one some place and if so, we don't need the add button
+        // todo consider doing the search off screen and making button visible
         if (!contactWrapper.getStatus().isOnline()) {
             boolean found = false;
             GroupList gl = contactWrapper.getConnection().getGroupList();
@@ -396,6 +388,7 @@ public class MessageWindow  {
             panel.add(secureIM = new JCheckBox("Secure"));
         panel.add(new BetterButton(ACTION_SEND));
         south.add(panel);
+
         personalInfo = new PersonalInfoPanel(contactWrapper);
         south.add(personalInfo);
 
@@ -406,7 +399,7 @@ public class MessageWindow  {
      * Adds history pane and typing space.
      * @return panel with components
      */
-    private JComponent getTextComponents() {
+    protected JComponent getTextComponents() {
         splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, getHistory(), getMessage());
         addDNDSupport(splitPane);
         if (contactWrapper.getPreferences().getVerticalSeparation() == -1)
@@ -421,23 +414,9 @@ public class MessageWindow  {
      * Created the typing window.
      * @return panel with typing space.
      */
-    private Component getMessage() {
-        textPane = new BetterTextPane(ACTION_SEND);
+    JComponent getMessage() {
+        JComponent typingSpace = super.getMessage();
         addDNDSupport(textPane);
-//        EditorTools.addSuggestionPopup(textPane); // TODO finish
-//        textPane.setContentType("text/html");
-        if (!ClientProperties.INSTANCE.isEnterSends()) {
-            textPane.addModifier(KeyEvent.SHIFT_DOWN_MASK);
-            textPane.addModifier(KeyEvent.CTRL_DOWN_MASK);
-        }
-        textPane.getDocument().addDocumentListener(new DocumentListener() {
-            public void count(DocumentEvent e) { charCount.setText(""+e.getDocument().getLength()); }
-            public void insertUpdate(DocumentEvent e) { count(e); }
-            public void removeUpdate(DocumentEvent e) { count(e); }
-            public void changedUpdate(DocumentEvent e) { count(e); }
-        });
-        JPanel typingSpace = new JPanel(new BorderLayout());
-        typingSpace.add(new JScrollPane(textPane, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
         userIcon = new JLabel();
         if (ClientProperties.INSTANCE.isShowPictures())
             if (contactWrapper.getPicture() == null && getConnection() instanceof IconSupport)
@@ -448,17 +427,18 @@ public class MessageWindow  {
         return typingSpace;
     }
 
-    private Component getHistory() {
+    protected Component getHistory() {
 //        historyPane = new JTextPane();
         historyPane = new BetterTextPane();
+//        historyPane.setDocument(new HTMLDocLinkDetector(historyPane));
         addDNDSupport(historyPane);
         historyPane.setEditable(false);
+
 //        historyPane.setContentType("text/html");
         appendHistoryText(historyText);
         if (!contactWrapper.getStatus().isOnline())
             appendHistoryText("\nStatus of this contact is offline or unknown. Your message may not get delivered.\n");
 //        historyPane.setCaretPosition(historyPane.getDocument().getLength()); not needed since we do that in appendHistoryText() call
-        recalculateAttributes();
         if (historyPane.getFont().getSize() > 10)
             StyleConstants.setFontSize(ATT_GRAY, historyPane.getFont().getSize() - 1);
         final JScrollPane jScrollPane = new JScrollPane(historyPane, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -468,28 +448,8 @@ public class MessageWindow  {
         return jScrollPane;
     }
 
-    private void recalculateAttributes() {
-        ATT_NORMAL = new SimpleAttributeSet();
-        StyleConstants.setFontFamily(ATT_NORMAL,"Monospaced");
-        StyleConstants.setFontSize(ATT_NORMAL, historyPane.getFont().getSize());
-        ATT_BLUE = (MutableAttributeSet) ATT_NORMAL.copyAttributes();
-        ATT_RED = (MutableAttributeSet) ATT_NORMAL.copyAttributes();
-        ATT_GRAY = (MutableAttributeSet) ATT_NORMAL.copyAttributes();
-        StyleConstants.setForeground(ATT_BLUE, Color.BLUE);
-        StyleConstants.setForeground(ATT_RED,  Color.RED);
-        StyleConstants.setForeground(ATT_GRAY, Color.GRAY);
-    }
 
-    /** Helper. */
-    void appendHistoryText(final String text) {
-        appendHistoryText(text, ATT_NORMAL);
-    }
-
-    public void appendHistoryText(final String text, final AttributeSet style) {
-        GUIUtils.appendText(historyPane, text, style);
-    }
-
-    private void appendHistoryText(final String prefix, final boolean toBuddy, final String text) {
+    void appendHistoryText(final String prefix, final boolean toBuddy, final String text) {
         GUIUtils.runOnAWT(new Runnable() {
             public void run() {
 //                historyPane.setText(historyPane.getText() + text);
@@ -497,7 +457,7 @@ public class MessageWindow  {
                 try {
                     document.insertString(document.getLength(), "\n", ATT_NORMAL);
                     document.insertString(document.getLength(),
-                            prefix + (toBuddy?getConnection().getUser():contactWrapper.getDisplayName()) + ": ",
+                            prefix + (toBuddy?getConnection().getUserName():contactWrapper.getDisplayName()) + ": ",
                             toBuddy?ATT_BLUE:ATT_RED);
                     document.insertString(document.getLength(), text, toBuddy?ATT_GRAY:ATT_NORMAL);
                 } catch (BadLocationException e) {
@@ -508,12 +468,9 @@ public class MessageWindow  {
         });
     }
 
-    public JTextPane getHistoryPane() {
-        return historyPane;
-    }
 
     public void addTextToHistoryPanel(Message message, final boolean toBuddy) throws IOException {
-        if (ClientProperties.INSTANCE.getDisclaimerMessage().trim().length() > 0 && (contactWrapper.getLastDisclaimerTime() == 0 ||
+        if (ClientProperties.INSTANCE.getDisclaimerMessage().trim().length() > 0 && ClientProperties.INSTANCE.getDisclaimerInterval() > 0 && (contactWrapper.getLastDisclaimerTime() == 0 ||
                 System.currentTimeMillis() - contactWrapper.getLastDisclaimerTime() > ClientProperties.INSTANCE.getDisclaimerInterval())) {
             contactWrapper.setLastDisclaimerTime();
             Message disclMessage = new MessageImpl(contactWrapper, true, false, ClientProperties.INSTANCE.getDisclaimerMessage());
@@ -526,7 +483,7 @@ public class MessageWindow  {
             // now the actual message
 //            Message messageOut = new MessageImpl(contactWrapper, toBuddy, message);
             //Main.getLogger().log(messageOut);
-            appendHistoryText((ClientProperties.INSTANCE.isShowTime() ? timeFormat.format(new Date()) : ""),
+            appendHistoryText((ClientProperties.INSTANCE.isShowTime() ? TIME_FORMAT.format(new Date()) : ""),
                     toBuddy, (message.isAutoResponse()?"Automatic response: ":"") + (toBuddy?message.getText():message.getPlainText()));
             if (ClientProperties.INSTANCE.isSoundAllowed()
 //                    && (toBuddy && ClientProperties.INSTANCE.isSoundSend()) || (!toBuddy && ClientProperties.INSTANCE.isSoundReceiveAllowed()))
@@ -633,7 +590,7 @@ public class MessageWindow  {
         public void notifyAllUsers(String text, Connection connection) {
             for (MessageWindow messageWindow : messageWindows) {
                 if (messageWindow.contactWrapper.getConnection().equals(connection)) {
-                    messageWindow.appendHistoryText(text, ATT_ERROR);
+                    messageWindow.appendHistoryText("\n" + text, ATT_ERROR);
                 }
             }
         }
@@ -642,7 +599,7 @@ public class MessageWindow  {
          * Nameable's status changed.
          *
          * @param contact  contact
-         * @param idleMins
+         * @param idleMins how long the contact is idle for
          */
         public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
             if (contact.getStatus().isOnline() != online) {
@@ -653,7 +610,7 @@ public class MessageWindow  {
         /**
          * Statuses for contacts that belong to this connection have changed.
          *
-         * @param connection
+         * @param connection to use
          */
         public void statusChanged(Connection connection) {
 /*
@@ -708,8 +665,8 @@ public class MessageWindow  {
          * @param connection connection
          * @param contact
          * @param filename
-         * @param description
-         * @param connectionInfo
+         * @param description of the file
+         * @param connectionInfo  your private object used to store protocol specific data
          */
         public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) {
 //            todo do

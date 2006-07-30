@@ -59,7 +59,7 @@ abstract public class MessageWindowBase {
     void recalculateAttributes() {
         ATT_NORMAL = new SimpleAttributeSet();
         StyleConstants.setFontFamily(ATT_NORMAL,"Monospaced");
-        StyleConstants.setFontSize(ATT_NORMAL, historyPane.getFont().getSize());
+        StyleConstants.setFontSize(ATT_NORMAL, ClientProperties.INSTANCE.getFontSize()+1);
         ATT_BLUE = (MutableAttributeSet) ATT_NORMAL.copyAttributes();
         ATT_RED = (MutableAttributeSet) ATT_NORMAL.copyAttributes();
         ATT_GRAY = (MutableAttributeSet) ATT_NORMAL.copyAttributes();
@@ -106,6 +106,7 @@ abstract public class MessageWindowBase {
     abstract protected Component getButtons();
 
     protected void composeUI() {
+        recalculateAttributes();
         frame.getContentPane().setLayout(new BorderLayout());
         SwingUtilities.invokeLater(new Runnable(){
             public void run() {
@@ -118,16 +119,18 @@ abstract public class MessageWindowBase {
                 } catch (IOException e) {
                     log.log(Level.SEVERE, "", e);
                 }
-                textPane.requestFocus();
                 // offui:
                 offUIExecutor.execute(new Runnable() { public void run () {
                     if (SoundHelper.playSound(ClientProperties.INSTANCE.getSoundNewWindow()))
                         lastBeep = System.currentTimeMillis(); // don't forget to update this puppy
                 } });
-
+                startUIDependent();
+                textPane.requestFocus();
             }
         });
     }
+
+    protected void startUIDependent() {};
 
 
     /**

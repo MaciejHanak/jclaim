@@ -129,7 +129,6 @@ public class MessageGroupWindow  extends MessageWindowBase {
             appendHistoryText("\nSome contacts are offline. Your message may be missed.\n");
         historyPane.setCaretPosition(historyPane.getDocument().getLength());
 
-        recalculateAttributes();
         if (historyPane.getFont().getSize() > 10)
             StyleConstants.setFontSize(ATT_GRAY, historyPane.getFont().getSize() - 1);
         final JScrollPane jScrollPane = new JScrollPane(historyPane, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
