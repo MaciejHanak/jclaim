@@ -24,7 +24,6 @@ import java.awt.event.ActionListener;
 //public class MessageCollaborationWindow {}
 
 public class MessageCollaborationWindow  extends MessageWindowBase implements ConnectionEventListener {
-    private JTextPane historyPane, messagePane;
     JLabel status = new JLabel();
     ChatRoomSupport connection;
     String groupName;
@@ -41,6 +40,21 @@ public class MessageCollaborationWindow  extends MessageWindowBase implements Co
         frame = GUIUtils.createFrame(groupName + " on " + connection.getServiceName());
         frame.setIconImage(ImageCacheUI.ICON_JC.getIcon().getImage());
         frame.setBounds(DEFAULT_SIZE);
+        ACTION_SEND = new ActionAdapter("Send", new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                if (connection.isLoggedIn()) {
+                    if (connection.isJoined()) {
+                        addHistoryText("You: " + textPane.getText(),  ATT_GRAY);
+                        connection.sendChatMessage(textPane.getText());
+                        textPane.setText("");
+                    } else {
+                        addHistoryText("Failed to join the chat group.  Please reopen the window.", ATT_RED);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Not logged in.   Please login.", "Error:", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }, 'S');
         GUIUtils.addCancelByEscape(frame, new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
@@ -58,6 +72,17 @@ public class MessageCollaborationWindow  extends MessageWindowBase implements Co
         return new JScrollPane(historyPane, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
     }
 
+    protected Component getButtons() {
+        JPanel south = new JPanel();
+        south.setLayout(new BoxLayout(south, BoxLayout.Y_AXIS));
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 3, 3));
+        panel.setOpaque(false);
+
+        panel.add(new BetterButton(ACTION_SEND));
+        south.add(panel);
+        return south;
+    }
+    
     public void addHistoryText(final String text, final MutableAttributeSet style) {
         GUIUtils.runOnAWT(new Runnable() {
             public void run() {
@@ -72,30 +97,6 @@ public class MessageCollaborationWindow  extends MessageWindowBase implements Co
                 historyPane.setCaretPosition(document.getLength());
             }
         });
-    }
-
-    protected Component getButtons() {
-        Action sendAction = new ActionAdapter("Send", new ActionListener(){
-            public void actionPerformed(ActionEvent e) {
-                if (connection.isLoggedIn()) {
-                    if (connection.isJoined()) {
-                        addHistoryText("You: " + messagePane.getText(),  ATT_GRAY);
-                        connection.sendChatMessage(messagePane.getText());
-                        messagePane.setText("");
-                    } else {
-                        addHistoryText("Failed to join the chat group.  Please reopen the window.", ATT_RED);
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(frame, "Not logged in.   Please login.", "Error:", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }, 'S');
-        messagePane = new BetterTextPane(sendAction);
-        JPanel messageArea = new JPanel(new BorderLayout());
-        messageArea.add(new JScrollPane(messagePane), BorderLayout.CENTER);
-
-        messageArea.add(new BetterButton(sendAction), BorderLayout.EAST);
-        return messageArea;
     }
 
     public void join(String room, final String nickname) {
