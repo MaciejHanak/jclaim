@@ -26,6 +26,7 @@
     <property name="dir.dist" value="dist"/>
     <property name="dir.lib" value="lib"/>
     <property name="dir.java" value="java"/>
+    <property name="dir.doc" value="doc"/>
     <property name="dir.classes" value="${dir.java}/classes"/>
     <property name="dir.classes.source" value="${dir.java}/classes/source"/>
     <property name="dir.ui" value="${dir.java}/ui"/>
@@ -249,6 +250,44 @@
         <signjar jar="${dir.dist}/lib/sunos/jdic_stub.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
         <signjar jar="${dir.dist}/lib/sunos/nativex86.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
         <signjar jar="${dir.dist}/lib/sunos/nativesparc.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+    </target>
+
+    <!-- =====================   JAVADOC    =============================-->
+	
+	<target name="javadoc" depends="compile" description="Generate JavaDoc for the code tree">
+		<tstamp>
+			<format property="TODAY_US" pattern="d-MMMM-yyyy" locale="en"/>
+		</tstamp>
+		
+		<javadoc
+        	destdir="${dir.doc}"
+           	author="true" version="true" use="true"
+			windowtitle="JCLAIM - Code API">
+
+			<classpath refid="path.compile"/>
+			
+    		<packageset dir="${dir.core}" defaultexcludes="yes">
+				<include name="*/**"/>
+				<exclude name="*.xml"/>
+				<exclude name="*.xsl"/>
+			</packageset>
+
+    		<packageset dir="${dir.servlet}" defaultexcludes="yes">
+				<include name="*/**"/>
+				<exclude name="*.xml"/>
+				<exclude name="*.xsl"/>
+			</packageset>
+			
+    		<packageset dir="${dir.ui}" defaultexcludes="yes">
+				<include name="*/**"/>
+				<exclude name="*.xml"/>
+				<exclude name="*.xsl"/>
+			</packageset>
+
+			<doctitle><![CDATA[<h2>BDAP - Content Management API</h2>]]></doctitle>
+			<bottom><![CDATA[<i>Copyright &#169; ${TODAY_US} ITBS LLC. All Rights Reserved.</i>]]></bottom>
+
+	    </javadoc>
     </target>
 
     <!-- =====================   RUN    =============================-->
