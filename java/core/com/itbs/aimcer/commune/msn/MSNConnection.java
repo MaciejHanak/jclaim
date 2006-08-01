@@ -444,7 +444,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
     public boolean isAway() {
         if (connection == null)
             return super.isAway();
-        return UserStatus.ONLINE.equals(connection.getMyStatus());
+        return !UserStatus.ONLINE.equals(connection.getMyStatus());
     }
 
     /**
