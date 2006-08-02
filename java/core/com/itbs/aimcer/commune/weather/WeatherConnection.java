@@ -50,10 +50,10 @@ public class WeatherConnection extends AbstractConnection {
     
     private Group weather;
     private Timer timer;
-    private static final String TOKEN_PLACE = "View the Forecast Center for ";//"Weather Forecast for ";
-    private static final String TOKEN_TEMP = "Temperature: ";
+    private static final String TOKEN_PLACE = "class=\"cityTitle\">";
+    private static final String TOKEN_TEMP = "id=\"quicklook_current_temps\">";
 //    private static final String TOKEN_ICON = "http://vortex.accuweather.com/phoenix2/images/common/icons/"; //33_31x31.gif
-    private static final String TOKEN_ICON = "http://vortex.accuweather.com/adc2004/common/images/icons/standard/wx/45x45/"; //33_31x31.gif
+    private static final String TOKEN_ICON = "http://vortex.accuweather.com/adc2004/common/images/wxicons/120x90/"; //images/icons/standard/wx/45x45/"; //33_31x31.gif
     public static final String TOKEN_HOURLY = "http://www.weather.com/weather/hourbyhour/"; // + zip
     /** Used to prefix the display string when updates fail */
     private static final String PREFIX_OLD = "<HTML>Old: ";
@@ -91,7 +91,6 @@ public class WeatherConnection extends AbstractConnection {
             try {
 //                page = WebHelper.getPage(new URL("http://www.w2.weather.com/weather/local/" + zip));
 //                page = WebHelper.getPage(new URL("http://www.weather.com/weather/local/" + zip));
-//                page = WebHelper.getPage(new URL("http://wwwa.accuweather.com/adcbin/public/local_index.asp?zipcode="+zip.getName()+"&partner=TRILLIAN"));
                 page = WebHelper.getPage(new URL("http://wwwa.accuweather.com/index-forecast.asp?&partner=accuweather&zipcode="+zip.getName()));
 //                page = WebHelper.getPage(new URL("http://www.weather.com/weather/local/"+zip+"?lswe="+zip+"&lwsa=WeatherLocalUndeclared"));
 //                page = WebHelper.getPage(new URL("http://www.w2.weather.com/weather/local/"+zip+"?lswe="+zip+"&lwsa=WeatherLocalUndeclared"));
@@ -164,7 +163,7 @@ public class WeatherConnection extends AbstractConnection {
     }
 
     public void disconnect(boolean intentional) {
-        log.info("Disconnected weather.");
+        log.fine("Disconnected weather.");
         if (timer != null)
             timer.cancel();
         weather.clear(this);
