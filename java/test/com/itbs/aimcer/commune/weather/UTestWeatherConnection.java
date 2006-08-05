@@ -20,7 +20,9 @@
 
 package com.itbs.aimcer.commune.weather;
 
+import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.aimcer.bean.ContactWrapper;
+import com.itbs.aimcer.gui.Main;
 import com.itbs.aimcer.gui.UTestFrameTest;
 
 /**
@@ -46,6 +48,9 @@ public class UTestWeatherConnection extends UTestFrameTest {
 
     public void testCheckWeather() throws Exception {
         WeatherConnection conn = new WeatherConnection();
+        conn.setProperties(ClientProperties.INSTANCE);
+        conn.assignGroupFactory(Main.standardGroupFactory);
+        conn.assignContactFactory(Main.standardContactFactory);
         conn.connect();
         for (String aZipCode : zipCode) {
             ContactWrapper cw = ContactWrapper.create(aZipCode, conn);
@@ -54,7 +59,7 @@ public class UTestWeatherConnection extends UTestFrameTest {
         }
         conn.connect();
         window.setVisible(true);
-        Thread.sleep(20000*1);
+        Thread.sleep(10000*1);
         for (String aZipCode1 : zipCode) {
             ContactWrapper cw = ContactWrapper.create(aZipCode1, conn);
             window.getContentPane().add(cw.getDisplayComponent(false, false));
