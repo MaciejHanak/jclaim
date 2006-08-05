@@ -28,7 +28,6 @@ import com.itbs.aimcer.commune.weather.WeatherConnection;
 import com.itbs.gui.AbstractFileTransferHandler;
 import com.itbs.gui.ActionAdapter;
 import com.itbs.gui.EditableJList;
-import com.itbs.gui.GradientPanel;
 import org.jdesktop.jdic.desktop.Desktop;
 
 import javax.swing.*;
@@ -49,11 +48,12 @@ import java.util.logging.Logger;
  * @author Alex Rass
  * @since Sep 9, 2004
  */
-final public class PeopleScreen extends GradientPanel  {
+final public class PeopleScreen extends JPanel  {
     private static final Logger log = Logger.getLogger(PeopleScreen.class.getName());
     private JList list;
 
     public PeopleScreen() {
+//        setOpaque(true);
         // create the screen
         setLayout(new BorderLayout());
         add(getCenterPanel());
