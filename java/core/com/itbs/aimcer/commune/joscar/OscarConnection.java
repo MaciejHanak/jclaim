@@ -60,6 +60,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -101,7 +102,8 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
     public boolean isAway() {
         if (connection != null && connection.getInfoService()!=null)
-            return connection.getInfoService().getCurrentAwayMessage() != null;
+            return connection.getInfoService().getLastSetAwayMessage() != null;
+//            return connection.getInfoService().getCurrentAwayMessage() != null;
         return super.isAway();
     }
 
@@ -551,6 +553,13 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                 public void newConversation(IcbmService service, Conversation conv) {
                     // Adds a conversation listener that tells every listener when a message has been received.
                     conv.addConversationListener(new TypingAdapter());
+                }
+
+                public void sendAutomaticallyFailed(IcbmService service, net.kano.joustsim.oscar.oscar.service.icbm.Message message, Set<Conversation> triedConversations) {
+                    log.warning("Automatically Failed message.");
+                    for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
+                        eventHandler.errorOccured("The service provider has failed to deliver previous message. ", null);
+                    }
                 }
 
                 public void buddyInfoUpdated(IcbmService service, Screenname buddy, IcbmBuddyInfo info) {
@@ -1226,6 +1235,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         }
 
         public void alertSoundChanged(Buddy buddy, String oldAlertSound, String newAlertSound) {
+        }
+
+        public void awaitingAuthChanged(Buddy buddy, boolean oldAwaitingAuth, boolean newAwaitingAuth) {
         }
     }
 } // class OscarConnection
