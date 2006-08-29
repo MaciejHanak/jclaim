@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2006, ITBS LLC. All Rights Reserved.
+ *
+ *     This file is part of JClaim.
+ *
+ *     JClaim is free software; you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation; version 2 of the License.
+ *
+ *     JClaim is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with JClaim; if not, find it at gnu.org or write to the Free Software
+ *     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ */
+
 package com.itbs.aimcer.gui;
 
 import com.itbs.aimcer.bean.*;
@@ -15,6 +35,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -57,6 +78,7 @@ public class MenuManager {
     private static final String COMMAND_CONN_LOGIN =  "Login";
     private static final String COMMAND_CONN_LOGOFF = "Logoff";
     private static final String COMMAND_CONN_REMOVE = "Remove";
+    private static final String COMMAND_CONN_JOIN =   "Join Chat";
 
     protected static JMenuBar getMenuBar()
     {
@@ -117,6 +139,9 @@ public class MenuManager {
         submenu.addSeparator();
         submenu.add(ActionAdapter.createMenuItem(COMMAND_CONN_MANAGE, connectionMenuEventHandler, 'm'));
         submenu.add(ActionAdapter.createMenuItem(COMMAND_CONN_REMOVE, connectionMenuEventHandler));
+        if (connection instanceof ChatRoomSupport) {
+            submenu.add(ActionAdapter.createMenuItem(COMMAND_CONN_JOIN, connectionMenuEventHandler));
+        }
 
         connectionMenu.add(submenu);
     }
@@ -173,7 +198,7 @@ public class MenuManager {
          * Connection with server has failed.
          *
          * @param connection itself
-         * @param message
+         * @param message to relay
          */
         public void connectionFailed(Connection connection, String message) {
             for (int i = 0; i < enabledWhenOn.size(); i++) {
@@ -255,6 +280,11 @@ public class MenuManager {
                         return;
                     addContact(connRef, Main.getFrame(), "");
                     updateContactList(connRef);
+                } else if (COMMAND_CONN_JOIN.equals(e.getActionCommand())) {
+                    String result = JOptionPane.showInputDialog(Main.getFrame(), "Please enter the name of the group", "Group Name", JOptionPane.QUESTION_MESSAGE);
+                    if (result!=null) {
+                        new MessageCollaborationWindow((ChatRoomSupport) connRef, result);
+                    }
                 } else if (COMMAND_CONN_REMOVE.equals(e.getActionCommand())) {
                     int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete " + connRef.getServiceName() + " for " + connRef.getUserName(), "Delete connection?", JOptionPane.YES_NO_OPTION);
                     if (result == JOptionPane.YES_OPTION) {
@@ -383,7 +413,7 @@ public class MenuManager {
                                 updateContactList(((ContactWrapper)value).getConnection());
                             }
                         }
-                    } else if (value instanceof GroupFactory) {
+                    } else if (value instanceof GroupWrapper) {
                         int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete entire group " + value + "?", "Delete a group?", JOptionPane.YES_NO_OPTION);
                         if (result == JOptionPane.YES_OPTION) {
                             for (Connection conn:Main.getConnections()) {
@@ -429,7 +459,7 @@ public class MenuManager {
                     JOptionPane.showMessageDialog(Main.getFrame(), Main.ABOUT_MESSAGE, "About:", JOptionPane.INFORMATION_MESSAGE);
                 }
             } else if (COMMAND_HELP_ABOUT.equals(command)) {
-                log.info("Mem: " + Runtime.getRuntime().freeMemory() + "/" + Runtime.getRuntime().totalMemory());
+                log.info("Mem free:" + NumberFormat.getInstance().format(Runtime.getRuntime().freeMemory()) + " total:" + NumberFormat.getInstance().format(Runtime.getRuntime().totalMemory()));
                 JOptionPane.showMessageDialog(Main.getFrame(), Main.ABOUT_MESSAGE, "About:", JOptionPane.INFORMATION_MESSAGE);
             }
         }
@@ -514,6 +544,9 @@ public class MenuManager {
     }
     /**
      * Prompts and then adds the contact.
+     * @param conn Connection
+     * @param parent Top frame
+     * @param defaultName name of contact
      */
     static void addContact(Connection conn, final Frame parent, String defaultName) {
         Returned selectedGroup = genericPrompter(conn, parent, defaultName, "Add contact?");
