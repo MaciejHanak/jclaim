@@ -20,6 +20,8 @@
 
 package com.itbs.gui;
 
+import org.jdesktop.jdic.desktop.Desktop;
+
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -32,6 +34,8 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.Serializable;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,6 +61,8 @@ public class BetterTextField extends JTextField {
         menu = ActionAdapter.createMenuItem("Copy", new DefaultEditorKit.CopyAction(), 'C');
         pmenu.add(menu);
         menu = ActionAdapter.createMenuItem("Paste", new DefaultEditorKit.PasteAction(), 'P');
+        pmenu.add(menu);
+        menu = ActionAdapter.createMenuItem("Google", new GoogleAction(), 'G');
         pmenu.add(menu);
     }
 
@@ -86,6 +92,36 @@ public class BetterTextField extends JTextField {
         typicalInit(this);
     }
 
+    public static class GoogleAction extends TextAction {
+        /**
+         * Creates a new JTextAction object.
+         *
+
+         */
+        public GoogleAction() {
+            super("Google");
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            JTextComponent c = getTextComponent(evt);
+            evt.setSource(c);
+            // if nothing is selected, select out, google
+            if (c.getSelectionStart() == c.getSelectionEnd()) {
+                selectOutAction.actionPerformed(evt);
+            }
+            if (c.getSelectionStart() == c.getSelectionEnd() || c.getSelectedText().trim().length() == 0) {
+                Toolkit.getDefaultToolkit().beep();
+                return; // nothing to google.
+            }
+            // if something is selected, google that
+            try {
+                Desktop.browse(new URL("http://www.google.com/search?q="+ URLEncoder.encode(c.getSelectedText().trim(), "UTF-8") + "&ie=utf-8&oe=utf-8"));
+            } catch (Exception e) {
+                log.log(Level.SEVERE, "Failed to lookup.", e);
+            }
+        }
+    }
+    
     public static Action selectOutAction = new AbstractAction("Select Out") {
         public void actionPerformed(ActionEvent evt) {
             JTextComponent c = (JTextComponent) evt.getSource();
