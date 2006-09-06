@@ -449,6 +449,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
         public void friendsUpdateReceived(SessionFriendEvent ev) {
             for (YahooUser aYu : ev.getFriends()) {
 //                log.fine("Updated: " + yu[i].toString());
+                if (aYu==null) continue;
                 Contact contact = getContactFactory().create(aYu.getId(), YMsgConnection.this);
                 for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
                     eventHandler.statusChanged(YMsgConnection.this, contact, aYu.isLoggedIn(), isAway(aYu), 0);
