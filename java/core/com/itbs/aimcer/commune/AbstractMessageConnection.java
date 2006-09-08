@@ -40,6 +40,8 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
     private static Logger log = Logger.getLogger(AbstractMessageConnection.class.getName());
     
     private String userName, password;
+    protected String serverName;
+    protected int serverPort;
     private Nameable user;
 
     private boolean away;
@@ -64,6 +66,25 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
         else if (getContactFactory() != null) // update user.  But it doesn't make sense to do it before connect.
             user = getContactFactory().create(getUserName(), this);
     }
+
+    //        S E R V E R
+    public String getServerName() {
+        return serverName;
+    }
+
+    public void setServerName(String address) {
+        serverName = address;
+    }
+
+    public int getServerPort() {
+        return serverPort;
+    }
+
+    public void setServerPort(int port) {
+        serverPort = port;
+    }
+
+    //   ^^^     S E R V E R    ^^^
 
     /**
      * Most of the time, one would overwrite it.

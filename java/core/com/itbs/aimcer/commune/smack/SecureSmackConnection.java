@@ -25,14 +25,22 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 
 /**
+ * Provides secure Jabber connectivity.
+ *
  * @author Alex Rass
  * @since Aug 31, 2005
  */
 public class SecureSmackConnection extends SmackConnection {
+
+    public SecureSmackConnection() {
+        super();
+        serverPort = DEFAULT_PORT_SSL;
+    }
+
     protected XMPPConnection getNewConnection() throws XMPPException {
         return new SSLXMPPConnection(
-                System.getProperty("JABBER_HOST", DEFAULT_HOST),
-                Integer.getInteger("JABBER_PORT_SSL", DEFAULT_PORT_SSL)
+                System.getProperty("JABBER_HOST", getServerName()),
+                Integer.getInteger("JABBER_PORT_SSL", getServerPort())
                 );
     }
 

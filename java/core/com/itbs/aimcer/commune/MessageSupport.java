@@ -36,6 +36,10 @@ public interface MessageSupport extends Connection {
     public void setUserName(String userName);
     void setPassword(String password);
     String getPassword();
+    public String getServerName();
+    public void setServerName(String address);
+    public int getServerPort();
+    public void setServerPort(int port);
 
     void sendMessage(Message message);
     void sendTypingNotification();

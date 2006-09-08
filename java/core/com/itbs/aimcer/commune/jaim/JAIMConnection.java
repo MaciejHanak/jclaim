@@ -51,6 +51,11 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
         return "AIM";
     }
 
+    public JAIMConnection() {
+        serverName = "toc.oscar.aol.com";
+        serverPort = 9898;
+    }
+
     public String getSupportAccount() {
         return "JClaimHelp";
     }
@@ -60,7 +65,7 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
         for (ConnectionEventListener el:eventHandlers) {
             el.connectionInitiated(this);
         }
-        connection = new JaimConnection("toc.oscar.aol.com", 9898);
+        connection = new JaimConnection(getServerName(), getServerPort());
         connection.setDebug(true);   // Send debugging to standard output
         connection.connect();
         connection.addEventListener(this);

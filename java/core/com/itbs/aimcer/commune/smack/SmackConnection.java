@@ -50,7 +50,6 @@ import java.util.logging.Logger;
  */
 public class SmackConnection extends AbstractMessageConnection implements FileTransferSupport, ChatRoomSupport {
     private static final Logger log = Logger.getLogger(SmackConnection.class.getName());
-    public static final String DEFAULT_HOST = "jabber.org";
     public static final int DEFAULT_PORT = 5222;
     public static final int DEFAULT_PORT_SSL = 5223;
     XMPPConnection connection;
@@ -58,10 +57,15 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     MultiUserChat multiUserChat;
 
 
+    public SmackConnection() {
+        serverName = "jabber.org";
+        serverPort = DEFAULT_PORT;
+    }
+
     protected XMPPConnection getNewConnection() throws XMPPException {
         return new XMPPConnection(
-                System.getProperty("JABBER_HOST", DEFAULT_HOST),
-                Integer.getInteger("JABBER_PORT", DEFAULT_PORT)
+                System.getProperty("JABBER_HOST", getServerName()),
+                Integer.getInteger("JABBER_PORT", getServerPort())
                 );
     }
     /**
