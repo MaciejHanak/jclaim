@@ -75,7 +75,7 @@ import java.util.logging.Logger;
 public class OscarConnection extends AbstractMessageConnection implements FileTransferSupport, IconSupport {
     private static Logger log = Logger.getLogger(OscarConnection.class.getName());
     AimConnection connection;
-    private AimConnectionProperties connectionProperties; // use to hold on connection settings
+    private AimConnectionProperties connectionProperties = new AimConnectionProperties(null, null); // use to hold on connection settings
     RvProcessor rvProcessor;
     /** Conversation support */
     IcbmListener lastIcbmListener;
@@ -146,6 +146,27 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         logger.setLevel(Level.ALL);
     }
 
+
+    public String getServerName() {
+        return connectionProperties.getLoginHost();
+    }
+
+    public void setServerName(String address) {
+        if (System.getProperty("OSCAR_HOST") == null) { // if no forced overwrite
+            connectionProperties.setLoginHost(address);
+        }
+    }
+
+    public int getServerPort() {
+        return connectionProperties.getLoginPort();
+    }
+
+    public void setServerPort(int port) {
+        if (System.getProperty("OSCAR_PORT") == null) { // if no forced overwrite
+            connectionProperties.setLoginPort(port);
+        }
+    }
+
     final public void connect() throws Exception {
         super.connect();
 //        turnOnLogging();
@@ -166,7 +187,8 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         };
 
         AimSession session = appSession.openAimSession(screenName);
-        connectionProperties = new AimConnectionProperties(screenName, getPassword());
+        connectionProperties.setScreenname(screenName);
+        connectionProperties.setPassword(getPassword());
         connectionProperties.setLoginHost(System.getProperty("OSCAR_HOST", connectionProperties.getLoginHost()));
         connectionProperties.setLoginPort(Integer.getInteger("OSCAR_PORT", connectionProperties.getLoginPort()));
         connection = session.openConnection(connectionProperties);
