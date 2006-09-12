@@ -44,8 +44,6 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
     
     // -----The session object - our way into the Yahoo API
     private Session session;
-    /** remembers last state. */
-    private boolean disconnect;
     private static String EMPTY_EMAIL_STATE = "Unread Email Count: 0";
     private String emailState = EMPTY_EMAIL_STATE;
 
@@ -66,7 +64,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
     }
 */
 
-    public void connect() throws SecurityException, Exception {
+    public void connect() throws Exception {
         super.connect();
         notifyConnectionInitiated();
         int mode = DIRECT;
@@ -133,7 +131,6 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
 
 // todo see about this               currentIdentity=null;
                 notifyConnectionEstablished();
-                disconnect = false;
             } else {
                 for (ConnectionEventListener eventHandler : eventHandlers) {
                     eventHandler.connectionFailed(this, "Sorry, there was a problem connecting.");
@@ -235,7 +232,6 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
     }
 
     public void disconnect(boolean intentional) {
-        disconnect = true;
         try {
             if (isLoggedIn())
                 session.logout();
@@ -244,16 +240,14 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
         }
         session = null; // clear, gc
         super.disconnect(intentional);
-        System.gc();
     }
 
     public void reconnect() {
-        if (!disconnect && getGroupList().size() > 0)
-            try {
-                connect();
-            } catch (Exception e) {
-                log.log(Level.SEVERE, "", e);//Todo change
-            }
+        try {
+            connect();
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Failed to connect", e);
+        }
     }
 
     public boolean isLoggedIn() {
@@ -336,6 +330,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
      * Starts a file transfer.
      *
      * @param ftl listener
+     * @throws java.io.IOException exc
      */
     public void initiateFileTransfer(FileTransferListener ftl) throws IOException {
         session.sendFileTransfer(ftl.getContactName(), ftl.getFile().getAbsolutePath(), ftl.getFileDescription());
@@ -345,7 +340,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
      * Sets up file for receival
      *
      * @param ftl param
-     * @param connectionInfo
+     * @param connectionInfo contains details of the transfer
      */
     public void acceptFileTransfer(FileTransferListener ftl, Object connectionInfo) {
         try {
