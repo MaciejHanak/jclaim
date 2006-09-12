@@ -106,7 +106,8 @@ public class GlobalEventHandler implements ConnectionEventListener {
             new Thread("Reconnect for " + connection.getServiceName()) {
                 public void run() {
                     try {
-                        sleep(connection.getDisconnectCount()==1?5000:60*1000);
+                        int lastReconnectCoefficient = (ClientProperties.INSTANCE.getDisconnectCount() == connection.getDisconnectCount() - 1) ? 5 : 1; 
+                        sleep(connection.getDisconnectCount()==1?5000:60*1000*lastReconnectCoefficient);
                         if (Main.getFrame().isDisplayable() && !connection.isDisconnectIntentional() && connection.getDisconnectCount() < ClientProperties.INSTANCE.getDisconnectCount() && !connection.isLoggedIn()) {
                             log.info("Trying to reconnect " + connection.getServiceName() + " attempt no. " + connection.getDisconnectCount());
                             connection.reconnect();
@@ -120,6 +121,7 @@ public class GlobalEventHandler implements ConnectionEventListener {
 
     /**
      * Call this method after you disconnect.
+     * @param connection connection reference
      */
     private void handleDisconnect(Connection connection) {
         // run through the groups and kill all contacts which belong to this connection
@@ -169,8 +171,8 @@ public class GlobalEventHandler implements ConnectionEventListener {
     /**
      * Other side requested a file transfer.
      @param connection connection
-      * @param contact
-     * @param filename
+      * @param contact who initiated msg
+     * @param filename proposed
      * @param description of the file
      * @param connectionInfo  your private object used to store protocol specific data
      */
@@ -181,13 +183,30 @@ public class GlobalEventHandler implements ConnectionEventListener {
         chooser.setToolTipText(description);
         int returnVal = chooser.showSaveDialog(null);//main.getFrame()); // no parent is ok
         ClientProperties.INSTANCE.setLastFolder(chooser.getCurrentDirectory().getAbsolutePath());
-        if (returnVal != JFileChooser.APPROVE_OPTION)
+        if (returnVal != JFileChooser.APPROVE_OPTION) {
             connection.rejectFileTransfer(connectionInfo);
-        else if(chooser.getSelectedFile().exists() || chooser.getSelectedFile().isDirectory()) {
+            return;
+        } else if(chooser.getSelectedFile().isDirectory()) {
             JOptionPane.showMessageDialog(Main.getFrame(), "File already exists or is a folder.", "Error:", JOptionPane.ERROR_MESSAGE);
             connection.rejectFileTransfer(connectionInfo);
-        } else
-            connection.acceptFileTransfer(new FileTransferAdapter(Main.getFrame(), description, chooser.getSelectedFile(), contact), connectionInfo);
+        } else if(chooser.getSelectedFile().exists()) {
+            returnVal = JOptionPane.showConfirmDialog(Main.getFrame(), "File already exists overwrite?.", "Problem:", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (returnVal == JOptionPane.NO_OPTION) {
+                fileReceiveRequested(connection, contact, filename, description, connectionInfo);
+                return;
+            } else if (returnVal == JOptionPane.CANCEL_OPTION) {
+                connection.rejectFileTransfer(connectionInfo);
+                return;
+            }
+            // yes will fall through and activate
+            if (!chooser.getSelectedFile().delete()) {
+                JOptionPane.showMessageDialog(Main.getFrame(), "Failed to delete the file.  Choose a different name please.", "Error:", JOptionPane.ERROR_MESSAGE);
+                fileReceiveRequested(connection, contact, filename, description, connectionInfo);
+                return;
+            }
+        }
+
+        connection.acceptFileTransfer(new FileTransferAdapter(Main.getFrame(), description, chooser.getSelectedFile(), contact), connectionInfo);
     }
 
     public boolean contactRequestReceived(final String user, final MessageSupport connection) {
