@@ -50,8 +50,8 @@ abstract public class AbstractConnection implements Connection {
      * Allows one to check credentials withoout looking in.
      * For secondary services. (like web)
      *                         N
-     * @param name
-     * @param pass
+     * @param name username to try
+     * @param pass password to try
      * @return true if match
      */
     public boolean isLoginInfoGood(String name, String pass) {
@@ -98,9 +98,10 @@ abstract public class AbstractConnection implements Connection {
         for (ConnectionEventListener connectionEventListener : eventHandlers) {
             connectionEventListener.connectionLost(this);
         }
+        System.gc();
     }
 
-    public void connect() throws SecurityException, Exception {
+    public void connect() throws Exception {
         if (groupFactory == null)
             throw new NullPointerException("Programmer, you forgot to assign the groupFactory for the connection.");
         if (contactFactory == null)
@@ -149,8 +150,8 @@ abstract public class AbstractConnection implements Connection {
     /**
      * Moves contact from one group to another.
      * Anyone who can do a better job
-     * @param contact
-     * @param group
+     * @param contact  to move
+     * @param group destination group
      */
     public void moveContact(Nameable contact, Group group) {
         removeContact(contact);
