@@ -204,7 +204,7 @@ public class ContactWrapper implements Contact, Renderable {
             displayComponent.setIcon(null);
             displayComponent.setFont(OFF);
             displayComponent.setForeground(AWAY);
-            displayComponent.setToolTipText("Last Seen: " + preferences.getLastConnected()); // turn off tooltip
+            displayComponent.setToolTipText("Last Seen: " + (preferences.getLastConnected()==null?"Not yet.":preferences.getLastConnected())); // turn off tooltip
         }
     } // updateDisplayComponent()
 
