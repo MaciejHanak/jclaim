@@ -62,9 +62,7 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
 
     public void connect() throws SecurityException, Exception {
         super.connect();
-        for (ConnectionEventListener el:eventHandlers) {
-            el.connectionInitiated(this);
-        }
+        notifyConnectionInitiated();
         connection = new JaimConnection(getServerName(), getServerPort());
         connection.setDebug(true);   // Send debugging to standard output
         connection.connect();
