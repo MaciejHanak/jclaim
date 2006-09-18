@@ -20,11 +20,10 @@
 
 package com.itbs.gui;
 
-import javax.swing.*;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.TextAction;
 import java.awt.event.ActionEvent;
 
 /**
@@ -34,7 +33,7 @@ import java.awt.event.ActionEvent;
  * @since  Apr 17, 2006
  * @author Alex Rass
  */
-class ReplaceWordAction extends AbstractAction {
+class ReplaceWordAction extends TextAction {
     JTextComponent tc;
     public ReplaceWordAction(JTextComponent parent, String string) {
         super(string);
@@ -45,9 +44,13 @@ class ReplaceWordAction extends AbstractAction {
         e.setSource(tc); // source comes in as JMenu.  Useless.
         if (tc.getSelectionStart() == tc.getSelectionEnd()) {
             // reuse existing action selectWordAction
+            
+/*          This causes a bug when the cursor is at the end of the text
             Action action = tc.getActionMap().get(DefaultEditorKit.selectWordAction);
             if (action!=null)
                 action.actionPerformed(e);
+*/
+            SelectOutAction.getInstance().actionPerformed(e);
         }
         tc.replaceSelection(e.getActionCommand());
     }

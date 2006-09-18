@@ -112,43 +112,19 @@ public class BetterTextField extends JTextField {
             if (c.getSelectionStart() == c.getSelectionEnd() || c.getSelectedText().trim().length() == 0) {
                 Toolkit.getDefaultToolkit().beep();
                 return; // nothing to google.
-            }
+            }                                                       
             // if something is selected, google that
             try {
-                Desktop.browse(new URL("http://www.google.com/search?q="+ URLEncoder.encode(c.getSelectedText().trim(), "UTF-8") + "&ie=utf-8&oe=utf-8"));
+//                Desktop.browse(new URL("http://www.google.com/search?q="+ URLEncoder.encode(c.getSelectedText().trim(), "UTF-8") + "&ie=utf-8&oe=utf-8"));
+                // Using a partner link instead or the regular one.
+                Desktop.browse(new URL("http://www.google.com/custom?q="+ URLEncoder.encode(c.getSelectedText().trim(), "UTF-8") + "&client=pub-3922476703716903&ie=utf-8&oe=utf-8"));
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Failed to lookup.", e);
             }
         }
     }
-    
-    public static Action selectOutAction = new AbstractAction("Select Out") {
-        public void actionPerformed(ActionEvent evt) {
-            JTextComponent c = (JTextComponent) evt.getSource();
 
-            try {
-                int startPos = c.getSelectionStart();
-                int endPos = c.getSelectionEnd();
-                if (startPos != endPos) { // starting with selection
-                    if (startPos > c.getDocument().getStartPosition().getOffset())
-                        startPos--;
-                    if (endPos < c.getDocument().getEndPosition().getOffset())
-                        endPos++;
-                }
-                // go left till space
-                while (startPos > c.getDocument().getStartPosition().getOffset() &&
-                        !" ".equals(c.getDocument().getText(startPos - 1, 1)))
-                    startPos--;
-                // go right till space
-                while (endPos < c.getDocument().getEndPosition().getOffset() && !" ".equals(c.getDocument().getText(endPos, 1)))
-                    endPos++;
-                c.setSelectionStart(startPos);
-                c.setSelectionEnd(endPos);
-            } catch (BadLocationException e) {
-                log.log(Level.SEVERE, "", e);
-            }
-        }
-    };
+    public static Action selectOutAction = new SelectOutAction();
 
     static void typicalInit(final JTextComponent textComp) {
         textComp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK), DefaultEditorKit.pasteAction);
