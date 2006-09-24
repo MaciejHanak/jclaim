@@ -170,12 +170,12 @@ public class GlobalEventHandler implements ConnectionEventListener {
 
     /**
      * Other side requested a file transfer.
-     @param connection connection
-      * @param contact who initiated msg
-     * @param filename proposed
+     * @param connection connection
+     * @param contact who initiated msg
+     * @param filename proposed name of file
      * @param description of the file
      * @param connectionInfo  your private object used to store protocol specific data
-     */
+     */    
     public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) {
         // prompt for filename and acceptance
         final JFileChooser chooser = new JFileChooser(ClientProperties.INSTANCE.getLastFolder());
