@@ -93,7 +93,7 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
      * @throws SecurityException exception
      * @throws Exception exception
      */
-    public void connect() throws SecurityException, Exception {
+    public void connect() throws Exception {
         setUserName(getUserName()); // update user 
     }
 
@@ -115,8 +115,8 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
 
     /**
      * Allows one to check credentials withoout looking in
-     * @param name
-     * @param pass
+     * @param name username to try
+     * @param pass password to try
      * @return true if match
      */
     public boolean isLoginInfoGood(String name, String pass) {
@@ -138,7 +138,7 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
     /**
      * Notifies everyone that status has been updated.
      * If overwriting, call at the end of your method.
-     * @param away
+     * @param away status
      */
     public void setAway(boolean away) {
         this.away = away;
