@@ -98,10 +98,10 @@ public interface ConnectionEventListener {
     /**
      * Other side requested a file transfer.
      * @param connection connection
-     * @param contact
-     * @param filename
-     * @param description
-     * @param connectionInfo
+     * @param contact who initiated msg
+     * @param filename proposed name of file
+     * @param description of the file
+     * @param connectionInfo  your private object used to store protocol specific data
      */
     void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo);
 
