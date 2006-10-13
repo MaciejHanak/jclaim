@@ -20,10 +20,7 @@
 
 package com.itbs.aimcer;
 
-import com.itbs.aimcer.bean.ClientProperties;
-import com.itbs.aimcer.bean.Contact;
-import com.itbs.aimcer.bean.Message;
-import com.itbs.aimcer.bean.Nameable;
+import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 
 import java.io.File;
@@ -38,12 +35,16 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Alex Rass
  * @since Sep 9, 2004
  */
 public class LoggerEventListener implements ConnectionEventListener {
+    private static final Logger log = Logger.getLogger(LoggerEventListener.class.getName());
+
     File centralPath;
     PreparedStatement statement;
     private static final String CR = System.getProperty("line.separator");
@@ -87,16 +88,16 @@ public class LoggerEventListener implements ConnectionEventListener {
         }
     }
 
-    private HoldingHandle openFile(MessageSupport connection, String buddy) throws IOException {
+    private HoldingHandle openFile(Connection connection, String buddy) throws IOException {
         RandomAccessFile raf;
-        File path = new File(centralPath, connection.getServiceName() + "." + connection.getUserName());
+        File path = new File(centralPath, connection.getServiceName() + "." + connection.getUser().getName());
         path.mkdirs();
         path = new File(path, buddy+".txt");
         path.createNewFile();
         raf = new RandomAccessFile(path, "rw");
         raf.seek(raf.length());
         HoldingHandle result = new HoldingHandle(raf);
-        cachedHandles.put(connection.getServiceName() + connection.getUserName() + buddy, result);
+        cachedHandles.put(connection.getServiceName() + connection.getUser().getName() + buddy, result);
         return result;
     }
 
@@ -109,6 +110,7 @@ public class LoggerEventListener implements ConnectionEventListener {
 
     /**
      * Returns last portion of the log.
+     * @param connection connection
      * @param buddy to load the log for
      * @return logged lines
      * @throws IOException when things blow up
@@ -139,18 +141,31 @@ public class LoggerEventListener implements ConnectionEventListener {
      * Recevied a message.
      * Called with incoming and outgoing messages from any connection.
      * @param connection connection
-     @param message message
+     * @param message message
      */
     public boolean messageReceived(MessageSupport connection, Message message) throws IOException {
+        return messageReceived(((Connection) connection), message);
+    }
+
+    /**
+     * Recevied a message.
+     * Called with incoming and outgoing messages from any connection.
+     * @param connection connection
+     * @param message message
+     * @return true if ok
+     * @throws IOException when can't complete
+     */
+    public boolean messageReceived(Connection connection, Message message) throws IOException {
         final String buddy = message.getContact().getName();
-        HoldingHandle holdingHandle = cachedHandles.get(connection.getServiceName() + connection.getUserName() + buddy);
+        final String userName = connection.getUser().getName();
+        HoldingHandle holdingHandle = cachedHandles.get(connection.getServiceName() + userName + buddy);
         if (holdingHandle == null) {
             holdingHandle = openFile(connection, buddy);
         }
         synchronized(holdingHandle) {
             holdingHandle.verifyDate();
             holdingHandle.raf.writeBytes(timeFormat.format(new Date()));
-            holdingHandle.raf.writeBytes((message.isOutgoing()?connection.getUserName():buddy));
+            holdingHandle.raf.writeBytes((message.isOutgoing()?userName:buddy));
             holdingHandle.raf.writeBytes(": ");
             holdingHandle.raf.writeBytes(message.isOutgoing()?message.getText():message.getPlainText());
             holdingHandle.raf.writeBytes(CR);
@@ -158,8 +173,8 @@ public class LoggerEventListener implements ConnectionEventListener {
         if (ClientProperties.INSTANCE.getDatabaseURL() != null) {
             try {
                 statement.clearParameters();
-                statement.setString(1, message.isOutgoing()?connection.getUserName():buddy);
-                statement.setString(2, !message.isOutgoing()?connection.getUserName():buddy);
+                statement.setString(1, message.isOutgoing()?userName:buddy);
+                statement.setString(2, !message.isOutgoing()?userName:buddy);
                 statement.setString(3, message.getText());
                 statement.executeUpdate();
             } catch (SQLException e) {
@@ -192,7 +207,7 @@ public class LoggerEventListener implements ConnectionEventListener {
 
     /**
      * Statuses for contacts that belong to this connection have changed.
-     * @param connection
+     * @param connection connection
      */
     public void statusChanged(Connection connection) {
     }
@@ -219,14 +234,22 @@ public class LoggerEventListener implements ConnectionEventListener {
 
     /**
      * Other side requested a file transfer.
-     @param connection connection
-      * @param contact
-     * @param filename
-     * @param description
-     * @param connectionInfo
+     * @param connection connection
+     * @param contact who initiated msg
+     * @param filename proposed name of file
+     * @param description of the file
+     * @param connectionInfo  your private object used to store protocol specific data
      */
-    public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) {
+    public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo)  {
+        String text = "\n" + contact.getName() + " is trying to send you a file: " + filename + (description==null || description.trim().length()==0?"":"\nDescription: " + description);
+        Message message = new MessageImpl(contact, false, text);
+        try {
+            messageReceived(connection, message);
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "Failed to log incoming file info!", e);
+        }
     }
+    
     public boolean contactRequestReceived(final String user, final MessageSupport connection) {  return true; }
     
 }
