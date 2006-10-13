@@ -32,6 +32,8 @@ import org.jdesktop.jdic.desktop.Desktop;
 import org.jdesktop.jdic.desktop.DesktopException;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
@@ -82,7 +84,6 @@ public class MessageWindow extends MessageWindowBase {
 
     private final AbstractAction ACTION_ADD, ACTION_INFO, ACTION_LOG, ACTION_PAGE, ACTION_EMAIL;
     private JCheckBox secureIM;
-    private final JLabel charCount = new JLabel();
     private JPanel personalInfo;
 
     /**
@@ -360,7 +361,6 @@ public class MessageWindow extends MessageWindowBase {
         panel.add(new BetterButton(ACTION_EMAIL));
         panel.add(new BetterButton(ACTION_PAGE));
         panel.add(new BetterButton(ACTION_LOG));
-
         panel.add(new BetterButton(ACTION_INFO));
 
         // see if we already added this one some place and if so, we don't need the add button
@@ -380,9 +380,17 @@ public class MessageWindow extends MessageWindowBase {
                 panel.add(new BetterButton(ACTION_ADD));
         }
 
-        panel.add(charCount);
-        charCount.setToolTipText("Character Count");
-        charCount.setVisible(ClientProperties.INSTANCE.isShowCharCounter());
+        if (ClientProperties.INSTANCE.isShowCharCounter()) {
+            final JLabel charCount = new JLabel();
+            textPane.getDocument().addDocumentListener(new DocumentListener() {
+                public void count(DocumentEvent e) { charCount.setText(""+e.getDocument().getLength()); }
+                public void insertUpdate(DocumentEvent e) { count(e); }
+                public void removeUpdate(DocumentEvent e) { count(e); }
+                public void changedUpdate(DocumentEvent e) { count(e); }
+            });
+            panel.add(charCount);
+            charCount.setToolTipText("Character Count");
+        }
 
         if (getConnection() != null && getConnection().isSecureMessageSupported())
             panel.add(secureIM = new JCheckBox("Secure"));
@@ -663,18 +671,17 @@ public class MessageWindow extends MessageWindowBase {
         /**
          * Other side requested a file transfer.
          * @param connection connection
-         * @param contact
-         * @param filename
+         * @param contact who initiated msg
+         * @param filename proposed name of file
          * @param description of the file
          * @param connectionInfo  your private object used to store protocol specific data
          */
         public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) {
-//            todo do
-//            Iterator iter= messageWindows.iterator();
-//            while (iter.hasNext()) {
-//                MessageWindow messageWindow = (MessageWindow) iter.next();
-//                messageWindow.appendText("\nFile send requesteed by contact" + messageWindow.contactWrapper), ATT_ERROR);
-//            }
+            MessageWindow window = openWindow(contact, false);
+            description = description==null ? "": GeneralUtils.stripHTML(description);
+            description = description.trim().length()==0?"":"\nDescription: " + description;
+            String message = "\n" + contact.getName() + " is trying to send you a file: " + filename + description;
+            window.appendHistoryText(message, ATT_ERROR);
         }
 
     } // class
