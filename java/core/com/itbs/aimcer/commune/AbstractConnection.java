@@ -25,6 +25,7 @@ import com.itbs.aimcer.bean.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -35,7 +36,7 @@ import java.util.logging.Logger;
  * @since Oct 10, 2004
  */
 abstract public class AbstractConnection implements Connection {
-    private static Logger log = Logger.getLogger(AbstractConnection.class.getName());
+    private static Logger logger = Logger.getLogger(AbstractConnection.class.getName());
     protected List<ConnectionEventListener> eventHandlers = new  CopyOnWriteArrayList<ConnectionEventListener>();
     private boolean autoLogin;
     protected boolean disconnectIntentional;
@@ -94,10 +95,7 @@ abstract public class AbstractConnection implements Connection {
     public void disconnect(boolean intentional) {
         if (intentional)
             disconnectIntentional = true; // one way switch b/c we'll get called by finalization stuff
-
-        for (ConnectionEventListener connectionEventListener : eventHandlers) {
-            connectionEventListener.connectionLost(this);
-        }
+        notifyConnectionLost();
         System.gc();
     }
 
@@ -107,7 +105,7 @@ abstract public class AbstractConnection implements Connection {
         if (contactFactory == null)
             throw new NullPointerException("Programmer, you forgot to assign the contactFactory for the connection.");
         if (getProperties() == null) { // things may still work, so just warn.
-            log.warning("Please setProperties on connection prior to use.");
+            logger.warning("Please setProperties on connection prior to use.");
         }
 
 //        disconnectIntentional = false; // seems more appropriate in the notify on connection this way menu disconnect will stop it
@@ -173,16 +171,37 @@ abstract public class AbstractConnection implements Connection {
         return eventHandlers.iterator();
     }
 
+    /**
+     * Tells everyone connection was initiated.
+     */
     protected void notifyConnectionInitiated() {
         Iterator <ConnectionEventListener >iter = getEventListenerIterator();
         while (iter.hasNext()) {
             iter.next().connectionInitiated(this);
         }
     }
+
+    /**
+     * Tells everyone connection was established.
+     */
     protected void notifyConnectionEstablished() {
         Iterator <ConnectionEventListener >iter = getEventListenerIterator();
         while (iter.hasNext()) {
             iter.next().connectionEstablished(this);
+        }
+    }
+
+    /**
+     * Tells everyone connection was lost.
+     */
+    protected void notifyConnectionLost() {
+        Iterator <ConnectionEventListener >iter = getEventListenerIterator();
+        while (iter.hasNext()) {
+            try {
+                iter.next().connectionLost(this);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Should not be failing on logout.", e); 
+            }
         }
     }
     // ********************   Icons   ********************
