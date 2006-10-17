@@ -25,6 +25,7 @@ import com.itbs.aimcer.gui.Main;
 import com.itbs.util.GeneralUtils;
 
 import javax.swing.*;
+import java.io.File;
 import java.util.logging.Logger;
 
 /**
@@ -87,12 +88,8 @@ public class GlobalEventHandler implements ConnectionEventListener {
     }
 
     public void connectionFailed(final Connection connection, final String message) {
-        new Thread("Complain") {
-            public void run() {
-                Main.complain(connection.getServiceName() + ": " + message);
-            }
-        }.start();
         connectionDone();
+        reconnect(connection, message);
     }
 
     public void connectionLost(final Connection connection) {
@@ -101,21 +98,33 @@ public class GlobalEventHandler implements ConnectionEventListener {
         Main.setTitle(connection.getServiceName() + " Offline");
         handleDisconnect(connection);
         // this takes care of reconnects.
-        if (Main.getFrame().isDisplayable() && !connection.isDisconnectIntentional() && connection.getDisconnectCount() < ClientProperties.INSTANCE.getDisconnectCount()) {
-            connection.incDisconnectCount();
-            new Thread("Reconnect for " + connection.getServiceName()) {
-                public void run() {
-                    try {
-                        int lastReconnectCoefficient = (ClientProperties.INSTANCE.getDisconnectCount() == connection.getDisconnectCount() - 1) ? 5 : 1; 
-                        sleep(connection.getDisconnectCount()==1?5000:60*1000*lastReconnectCoefficient);
-                        if (Main.getFrame().isDisplayable() && !connection.isDisconnectIntentional() && connection.getDisconnectCount() < ClientProperties.INSTANCE.getDisconnectCount() && !connection.isLoggedIn()) {
-                            log.info("Trying to reconnect " + connection.getServiceName() + " attempt no. " + connection.getDisconnectCount());
-                            connection.reconnect();
+        reconnect(connection, "Lost Connection for " + connection.getUser().getName());
+    }
+
+    private synchronized void reconnect(final Connection connection, final String message) {
+        if (Main.getFrame().isDisplayable() && !connection.isDisconnectIntentional()) {
+            if (connection.getDisconnectCount() < ClientProperties.INSTANCE.getDisconnectCount()) {
+                connection.incDisconnectCount();
+                new Thread("Reconnect for " + connection.getServiceName()) {
+                    public void run() {
+                        try {
+                            int lastReconnectCoefficient = (ClientProperties.INSTANCE.getDisconnectCount() == connection.getDisconnectCount() - 1) ? 5 : 1;
+                            sleep(connection.getDisconnectCount()==1?5000:60*1000*lastReconnectCoefficient);
+                            if (Main.getFrame().isDisplayable() && !connection.isDisconnectIntentional() && connection.getDisconnectCount() < ClientProperties.INSTANCE.getDisconnectCount() && !connection.isLoggedIn()) {
+                                log.info("Trying to reconnect " + connection.getServiceName() + " attempt no. " + connection.getDisconnectCount());
+                                connection.reconnect();
+                            }
+                        } catch (InterruptedException e) { //
                         }
-                    } catch (InterruptedException e) { //
                     }
-                }
-            }.start();
+                }.start();
+            } else { // complain
+                new Thread("Complain") {
+                    public void run() {
+                        Main.complain(connection.getServiceName() + ": " + message);
+                    }
+                }.start();
+            }
         }
     }
 
@@ -181,6 +190,10 @@ public class GlobalEventHandler implements ConnectionEventListener {
         final JFileChooser chooser = new JFileChooser(ClientProperties.INSTANCE.getLastFolder());
         chooser.setDialogTitle(contact + " is sending you file " + filename);
         chooser.setToolTipText(description);
+        String name = filename==null?"":GeneralUtils.stripHTML(filename);
+        name = GeneralUtils.replace(name, "/", ""); // for security
+        name = GeneralUtils.replace(name, "\\", ""); // for security
+        chooser.setSelectedFile(new File(ClientProperties.INSTANCE.getLastFolder(), name));
         int returnVal = chooser.showSaveDialog(null);//main.getFrame()); // no parent is ok
         ClientProperties.INSTANCE.setLastFolder(chooser.getCurrentDirectory().getAbsolutePath());
         if (returnVal != JFileChooser.APPROVE_OPTION) {
