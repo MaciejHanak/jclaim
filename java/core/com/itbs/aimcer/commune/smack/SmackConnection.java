@@ -91,7 +91,9 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             log.log(Level.SEVERE, "",e);
             disconnect(false);
             for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.connectionFailed(this, "Connection Failed. " + (e.getXMPPError()==null?e.getMessage():e.getXMPPError().getMessage()));
+                String error = e.getXMPPError() == null ? e.getMessage() : e.getXMPPError().getMessage();
+                error = error == null ? "" : error;
+                eventHandler.connectionFailed(this, "Connection Failed. " + error);
 //                eventHandler.connectionEstablished(this);
             }
         }
