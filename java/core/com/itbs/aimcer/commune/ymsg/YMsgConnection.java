@@ -174,34 +174,40 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
      * @param group to add to
      */
     public void addContact(Nameable contact, Group group) {
-        // do it for the server
-        try {
-            session.addFriend(contact.getName(), group.getName());
-            group.add(contact);
-            if (contact instanceof Contact)
-                ((Contact) contact).getStatus().setOnline(true);
-        } catch (IOException e) {
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.errorOccured("Failed to add your contact", e);
+        if (session != null) {
+            // do it for the server
+            try {
+                session.addFriend(contact.getName(), group.getName());
+                group.add(contact);
+                if (contact instanceof Contact) {
+                    ((Contact) contact).getStatus().setOnline(true);
+                }
+            } catch (IOException e) {
+                for (ConnectionEventListener eventHandler : eventHandlers) {
+                    eventHandler.errorOccured("Failed to add your contact", e);
+                }
             }
         }
     }
 
     public void moveContact(Nameable contact, Group group) {
-        boolean found = false;
-        GroupList list = getGroupList();
-        for (int i = list.size(); i>0 && !found; i--) {
-            try {
-                if (list.get(i).remove(contact) && !list.get(i).getName().equalsIgnoreCase(group.getName())) {
-                    found = true;
-                    session.removeFriend(contact.getName(), list.get(i).getName());
+        if (session != null) {
+            boolean found = false;
+            GroupList list = getGroupList();
+            for (int i = list.size(); i>0 && !found; i--) {
+                try {
+                    if (list.get(i).remove(contact) && !list.get(i).getName().equalsIgnoreCase(group.getName())) {
+                        found = true;
+                        session.removeFriend(contact.getName(), list.get(i).getName());
+                    }
+                } catch (IOException e) {
+                    log.log(Level.SEVERE, "", e);//Todo change?
                 }
-            } catch (IOException e) {
-                log.log(Level.SEVERE, "", e);//Todo change?
+            }
+            if (found) {
+                addContact(contact, group);
             }
         }
-        if (found)
-            addContact(contact, group);
     }
 
     public void addContactGroup(Group group) {
@@ -217,24 +223,27 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
      * @param contact to delete
      */
     public void removeContact(Nameable contact) {
-        // do it for the server
-        GroupList list = getGroupList();
-        for (int i = list.size()-1; i >= 0; i--) {
-            try {
-                if (list.get(i).remove(contact)) {
-                    session.removeFriend(contact.getName(), list.get(i).getName());
-                    return; // just 1 at a time, jik
+        if (session != null) {
+            // do it for the server
+            GroupList list = getGroupList();
+            for (int i = list.size()-1; i >= 0; i--) {
+                try {
+                    if (list.get(i).remove(contact)) {
+                        session.removeFriend(contact.getName(), list.get(i).getName());
+                        return; // just 1 at a time, jik
+                    }
+                } catch (IOException e) {
+                    log.log(Level.SEVERE, "", e);  //Todo change?
                 }
-            } catch (IOException e) {
-                log.log(Level.SEVERE, "", e);  //Todo change?
             }
         }
     }
 
     public void disconnect(boolean intentional) {
         try {
-            if (isLoggedIn())
+            if (isLoggedIn()) {
                 session.logout();
+            }
         } catch (Exception e) {
            // log.log(Level.SEVERE, "", e); //We really don't care
         }
@@ -266,7 +275,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
     }
 
     public void setAway(boolean away) {
-        if (session != null)
+        if (session != null) {
             try {
                 if (away && getProperties().getIamAwayMessage().length() > 0) // STATUS_CUSTOM
                     session.setStatus(getProperties().getIamAwayMessage(), true);
@@ -275,6 +284,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
             } catch (Exception e) {
                 log.log(Level.SEVERE, "", e);
             }
+        }
         super.setAway(away);
     }
 
@@ -283,7 +293,9 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
     }
 
     public void processMessage(Message message) throws IOException {
-        session.sendMessage(message.getContact().getName(), message.getText());
+        if (session != null) {
+            session.sendMessage(message.getContact().getName(), message.getText());
+        }
     }
 
     public void processSecureMessage(Message message) throws IOException {
@@ -333,7 +345,9 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
      * @throws java.io.IOException exc
      */
     public void initiateFileTransfer(FileTransferListener ftl) throws IOException {
-        session.sendFileTransfer(ftl.getContactName(), ftl.getFile().getAbsolutePath(), ftl.getFileDescription());
+        if (session != null) {
+            session.sendFileTransfer(ftl.getContactName(), ftl.getFile().getAbsolutePath(), ftl.getFileDescription());
+        }
     }
 
     /**
@@ -343,11 +357,13 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
      * @param connectionInfo contains details of the transfer
      */
     public void acceptFileTransfer(FileTransferListener ftl, Object connectionInfo) {
-        try {
-            session.saveFileTransferAs((SessionFileTransferEvent) connectionInfo, ftl.getFile().getAbsolutePath());
-        } catch (IOException e) {
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.errorOccured("ERROR while transfering file: " + e.getMessage(), e);
+        if (session != null) {
+            try {
+                session.saveFileTransferAs((SessionFileTransferEvent) connectionInfo, ftl.getFile().getAbsolutePath());
+            } catch (IOException e) {
+                for (ConnectionEventListener eventHandler : eventHandlers) {
+                    eventHandler.errorOccured("ERROR while transfering file: " + e.getMessage(), e);
+                }
             }
         }
     }
@@ -541,8 +557,9 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
             final String text = (event.getEmailAddress()==null?"":("Yahoo! mail from: " + event.getEmailAddress() + "\n"))
                     + (event.getSubject()==null?"":("Subject: " + event.getSubject() + "\n"))
                     + "Unread Email Count: " + event.getMailCount();
-            if (EMPTY_EMAIL_STATE.equals(text) || emailState.equals(text)) // same as empty or last 
+            if (EMPTY_EMAIL_STATE.equals(text) || emailState.equals(text)) { // same as empty or last
                 return;
+            }
             emailState = text;
 
             Message message = new MessageImpl(getContactFactory().create(getUserName(), YMsgConnection.this), false, text);
