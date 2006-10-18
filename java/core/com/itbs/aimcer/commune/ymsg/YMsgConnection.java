@@ -132,9 +132,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
 // todo see about this               currentIdentity=null;
                 notifyConnectionEstablished();
             } else {
-                for (ConnectionEventListener eventHandler : eventHandlers) {
-                    eventHandler.connectionFailed(this, "Sorry, there was a problem connecting.");
-                }
+                notifyConnectionFailed("Failed to login.");
             }
         } catch (LoginRefusedException e) {
             String msg = "Login Refused.";
@@ -152,18 +150,12 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
                         msg += "\nPlease visit: " + e2.getWebPage().toString();
                     break;
             }
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.connectionFailed(this, msg);
-            }
+            notifyConnectionFailed(msg);
         } catch(InterruptedIOException e) {
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.connectionFailed(this, "Timeout during connection.\n" + e.getMessage());
-            }
+            notifyConnectionFailed("Timeout during connection.\n" + e.getMessage());
         } catch(IOException e) {
-            log.log(Level.SEVERE, "", e);
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.connectionFailed(this, "Problem connecting.\n" + e.getMessage());
-            }
+            log.log(Level.SEVERE, "Problem connecting", e);
+            notifyConnectionFailed("Problem connecting.\n" + e.getMessage());
         }
 
     }
