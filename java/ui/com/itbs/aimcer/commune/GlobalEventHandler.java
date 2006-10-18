@@ -87,15 +87,22 @@ public class GlobalEventHandler implements ConnectionEventListener {
         connection.resetDisconnectInfo();
     }
 
+    /**
+     * Connection failed on login
+     * @param connection that failed
+     * @param message to display.
+     */
     public void connectionFailed(final Connection connection, final String message) {
+        log.info("Connection to " + connection.getServiceName() + " failed " + message + "." + connection.getDisconnectCount() + " time(s).");
         connectionDone();
-        reconnect(connection, message);
+        handleDisconnect(connection);
+        reconnect(connection,  message);
     }
 
     public void connectionLost(final Connection connection) {
         log.info("Connection to " + connection.getServiceName() + " lost " + connection.getDisconnectCount() + " time(s).");
-        connectionDone();
         Main.setTitle(connection.getServiceName() + " Offline");
+        connectionDone();
         handleDisconnect(connection);
         // this takes care of reconnects.
         reconnect(connection, "Lost Connection for " + connection.getUser().getName());
