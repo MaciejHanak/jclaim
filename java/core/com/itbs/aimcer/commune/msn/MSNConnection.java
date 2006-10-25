@@ -155,13 +155,11 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
             sessions.put(friend.getLoginName(), ss);
             Message message = new MessageImpl(getContactFactory().create(friend.getLoginName(), MSNConnection.this),
                     false, false, mime.getMessage());
-            for (int i = 0; i < eventHandlers.size(); i++) {
+            for (ConnectionEventListener eventHandler : eventHandlers) {
                 try {
-                    (eventHandlers.get(i)).messageReceived(MSNConnection.this, message);
+                    eventHandler.messageReceived(MSNConnection.this, message);
                 } catch (Exception e) {
-                    for (ConnectionEventListener eventHandler : eventHandlers) {
-                        eventHandler.errorOccured("Failure while receiving a message", e);
-                    }
+                    notifyErrorOccured("Failure while receiving a message", e);
                 }
             }
         }
@@ -218,9 +216,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
         }
 
         public void logoutNotify() {
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.connectionLost(MSNConnection.this);
-            }
+            notifyConnectionLost();
         }
 
         /**

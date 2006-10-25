@@ -218,6 +218,20 @@ abstract public class AbstractConnection implements Connection {
             }
         }
     }
+    /**
+     * Tells everyone connection was lost.
+     * @param message message to pass
+     */
+    protected void notifyErrorOccured(String message, Exception exception) {
+        Iterator <ConnectionEventListener >iter = getEventListenerIterator();
+        while (iter.hasNext()) {
+            try {
+                iter.next().errorOccured(message, exception);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Failure while notifying listeners of connectionFailure", e);
+            }
+        }
+    }
     // ********************   Icons   ********************
 
     public final void setProperties(ConnectionProperties properties) {

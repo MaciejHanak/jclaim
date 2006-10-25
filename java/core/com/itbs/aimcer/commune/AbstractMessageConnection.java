@@ -164,9 +164,7 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
                     processMessage(message);
                     notifyOfAMessage(message);
                 } catch (Exception e) {
-                    for (ConnectionEventListener eventHandler : eventHandlers) {
-                        eventHandler.errorOccured("Failed to send a message", e);
-                    }
+                    notifyErrorOccured("Failed to send a message", e);
                 }
             }
         });
@@ -183,9 +181,7 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
                     processSecureMessage(message);
                     notifyOfAMessage(message);
                 } catch (Exception e) {
-                    for (ConnectionEventListener eventHandler : eventHandlers) {
-                        eventHandler.errorOccured("Failed to send a message", e);
-                    }
+                    notifyErrorOccured("Failed to send a secure message", e);
                 }
             }
         });
@@ -196,9 +192,7 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
             try {
                 connectionEventListener.messageReceived(this, message);
             } catch (Exception e) {
-                for (ConnectionEventListener eventListener:eventHandlers) {
-                    eventListener.errorOccured("Error processing message.", e);
-                }
+                notifyErrorOccured("Error processing message.", e);
             }
         }
     }

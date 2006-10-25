@@ -2,8 +2,10 @@ package com.itbs.aimcer.commune.msn;
 
 import com.itbs.aimcer.bean.Group;
 import com.itbs.aimcer.bean.Message;
+import com.itbs.aimcer.bean.MessageImpl;
 import com.itbs.aimcer.bean.Nameable;
 import com.itbs.aimcer.commune.AbstractMessageConnection;
+import com.itbs.aimcer.commune.ConnectionEventListener;
 import net.sf.jml.*;
 import net.sf.jml.event.MsnAdapter;
 import net.sf.jml.impl.MsnMessengerFactory;
@@ -25,9 +27,10 @@ public class JmlMsnConnection extends AbstractMessageConnection {
     private static final Logger log = Logger.getLogger(JmlMsnConnection.class.getName());
 
 	MsnMessenger connection = null;
-	Map sessions = new ConcurrentHashMap();
+	Map <Email, MsnSwitchboard> sessions = new ConcurrentHashMap<Email, MsnSwitchboard>();
+    private static final String SYSTEM = "System Message";
 
-	public void connect() throws SecurityException, Exception {
+    public void connect() throws SecurityException, Exception {
 		super.connect();
 		sessions.clear();
 		notifyConnectionInitiated();
@@ -46,7 +49,8 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 
 	class ConnectionListener extends MsnAdapter {
 		public void exceptionCaught(MsnMessenger messenger, Throwable throwable) {
-			log.log(Level.SEVERE, messenger + throwable.toString(), throwable);
+            notifyErrorOccured(messenger + throwable.toString(), new Exception(throwable));
+            log.log(Level.SEVERE, messenger + throwable.toString(), throwable);
 		}
 
 		public void loginCompleted(MsnMessenger messenger) {
@@ -55,23 +59,40 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 		}
 
 		public void logout(MsnMessenger messenger) {
-			log.fine(messenger + " logout");
-		}
+            notifyConnectionLost();
+            log.fine(messenger + " logout");
+        }
 
 		public void instantMessageReceived(MsnSwitchboard switchboard,
-				MsnInstantMessage message, MsnContact friend) {
-
+                                           MsnInstantMessage message,
+                                           MsnContact friend) {
 			// set personal message
-			switchboard.getMessenger().getOwner().setPersonalMessage(
-					message.getContent());
+			switchboard.getMessenger().getOwner().setPersonalMessage(message.getContent());
 
 			sessions.put(friend.getEmail(), switchboard);
-
-		}
+            Message jcMessage = new MessageImpl(getContactFactory().create(friend.getId(), JmlMsnConnection.this),
+                    false, false, message.getContent());
+            for (ConnectionEventListener eventHandler : eventHandlers) {
+                try {
+                    eventHandler.messageReceived(JmlMsnConnection.this, jcMessage);
+                } catch (Exception e) {
+                    notifyErrorOccured("Failure while receiving a message", e);
+                }
+            }
+        }
 
 		public void systemMessageReceived(MsnMessenger messenger,
 				MsnSystemMessage message) {
 			log.fine(messenger + " recv system message " + message);
+            Message jcMessage = new MessageImpl(getContactFactory().create(SYSTEM, JmlMsnConnection.this),
+                    false, false, message.getContent());
+            for (ConnectionEventListener eventHandler : eventHandlers) {
+                try {
+                    eventHandler.messageReceived(JmlMsnConnection.this, jcMessage);
+                } catch (Exception e) {
+                    notifyErrorOccured("Failure while receiving a message", e);
+                }
+            }
 		}
 
 		public void controlMessageReceived(MsnSwitchboard switchboard,
@@ -160,8 +181,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 	}
 
 	public boolean isSystemMessage(Nameable arg0) {
-		// TODO Auto-generated method stub
-		return false;
+		return SYSTEM.equalsIgnoreCase(arg0.getName());
 	}
 
 	public void addContact(Nameable contact, Group group) {
