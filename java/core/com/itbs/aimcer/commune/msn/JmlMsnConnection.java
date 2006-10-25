@@ -1,9 +1,6 @@
 package com.itbs.aimcer.commune.msn;
 
-import com.itbs.aimcer.bean.Group;
-import com.itbs.aimcer.bean.Message;
-import com.itbs.aimcer.bean.MessageImpl;
-import com.itbs.aimcer.bean.Nameable;
+import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.AbstractMessageConnection;
 import com.itbs.aimcer.commune.ConnectionEventListener;
 import net.sf.jml.*;
@@ -20,7 +17,7 @@ import java.util.logging.Logger;
 /**
  * This implementation provides a MSN Messenger connection using the JML and JClaim libraries.
  *
- * @author Chris Chiappone
+ * @author Chris Chiappone, Alex Rass
  * @since Oct, 2006
  */
 public class JmlMsnConnection extends AbstractMessageConnection {
@@ -113,7 +110,11 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 		public void unknownMessageReceived(MsnSwitchboard switchboard,
 				MsnUnknownMessage message, MsnContact friend) {
 			log.fine(switchboard + " recv unknown message " + message);
-		}
+            
+            MsnInstantMessage msnInstantMessage = new MsnInstantMessage();
+            msnInstantMessage.setContent(message.getContentAsString());
+            instantMessageReceived(switchboard, msnInstantMessage, friend);
+        }
 
 		public void contactListInitCompleted(MsnMessenger messenger) {
 			log.fine(messenger + " contact list init completeted");
@@ -121,14 +122,35 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 
 		public void contactListSyncCompleted(MsnMessenger messenger) {
 			log.fine(messenger + " contact list sync completed");
-		}
+            MsnGroup[] groups = connection.getContactList().getGroups();
+            for (MsnGroup group : groups) {
+                Group gw = getGroupFactory().create(group.getGroupName());
+                MsnContact[] contacts = group.getContacts();
+                for (MsnContact friend : contacts) {
+                    Contact cw = getContactFactory().create(friend.getId(), JmlMsnConnection.this);
+                    cw.getStatus().setOnline(!friend.getStatus().equals(MsnUserStatus.OFFLINE));
+                    cw.setDisplayName(friend.getFriendlyName());
+                    gw.add(cw);
+                }
+                getGroupList().add(gw);
+            }
+            for (ConnectionEventListener eventHandler : eventHandlers) {
+                eventHandler.statusChanged(JmlMsnConnection.this);
+            }
+        }
 
 		public void contactStatusChanged(MsnMessenger messenger,
 				MsnContact friend) {
 			log.fine(messenger + " friend " + friend.getEmail()
 					+ " status changed from " + friend.getOldStatus() + " to "
 					+ friend.getStatus());
-		}
+            Contact cw = getContactFactory().create(friend.getId(), JmlMsnConnection.this);
+//            cw.setOnline(true);
+            for (ConnectionEventListener eventHandler : eventHandlers) {
+                (eventHandler).statusChanged(JmlMsnConnection.this, cw, true, false, 0);
+            }
+
+        }
 
 		public void ownerStatusChanged(MsnMessenger messenger) {
 			log.fine(messenger + " status changed from "
@@ -146,10 +168,12 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 
 		public void switchboardClosed(MsnSwitchboard switchboard) {
 			log.fine(switchboard + " closed");
-		}
+            sessions.remove(switchboard.getMessenger().getOwner().getEmail());
+        }
 
 		public void switchboardStarted(MsnSwitchboard switchboard) {
 			log.fine(switchboard + " started");
+            sessions.put(switchboard.getMessenger().getOwner().getEmail(), switchboard);
 		}
 
 		public void contactJoinSwitchboard(MsnSwitchboard switchboard,
@@ -170,14 +194,11 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 	}
 
 	protected void processMessage(Message content) throws IOException {
-
 		connection.sendText(Email.parseStr(content.getContact().getName()), content.getPlainText());
-
 	}
 
-	protected void processSecureMessage(Message arg0) throws IOException {
-		// TODO Auto-generated method stub
-
+	protected void processSecureMessage(Message content) throws IOException {
+        connection.sendText(Email.parseStr(content.getContact().getName()), content.getPlainText());
 	}
 
 	public boolean isSystemMessage(Nameable arg0) {
@@ -186,8 +207,9 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 
 	public void addContact(Nameable contact, Group group) {
 		connection.addGroup(group.getName());
-		connection.addFriend(Email.parseStr(contact.getName()), contact
-				.getName());
+        Email email = Email.parseStr(contact.getName());
+        connection.addFriend(email, contact.getName());
+        connection.moveFriend(email, "", group.getName()); // this probably needs a fix for default group name.
 
 	}
 
@@ -196,8 +218,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 	}
 
 	public void cancel() {
-		 if (!isLoggedIn())
-	            disconnect(false);
+        disconnect(true);
 	}
 
 	public void disconnect(boolean intentional){
@@ -235,9 +256,6 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 	}
 
 	public void setTimeout(int arg0) {
-		// TODO Auto-generated method stub
-
 	}
-
 
 }

@@ -176,9 +176,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
         }
 
         public void addFailed(int errorCode) {
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.errorOccured("Failed to add.  Error code " + errorCode, null);
-            }
+            notifyErrorOccured("Failed to add.  Error code " + errorCode, null);            
         }
 
         /**
@@ -342,8 +340,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
      * Cancel login.
      */
     public void cancel() {
-        if (!isLoggedIn())
-            disconnect(false);
+        disconnect(false);
     }
 
     public void setTimeout(int timeout) {
