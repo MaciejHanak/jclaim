@@ -28,7 +28,8 @@ public class JmlMsnConnection extends AbstractMessageConnection {
     private static final String SYSTEM = "System Message";
 
     public void connect() throws SecurityException, Exception {
-		super.connect();
+        log.setLevel(Level.ALL); // see them all by now.
+        super.connect();
 		sessions.clear();
 		notifyConnectionInitiated();
 		String username = getUserName();
@@ -123,17 +124,32 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 		public void contactListSyncCompleted(MsnMessenger messenger) {
 			log.fine(messenger + " contact list sync completed");
             MsnGroup[] groups = connection.getContactList().getGroups();
+            Group gw;
+            Contact cw;
             for (MsnGroup group : groups) {
-                Group gw = getGroupFactory().create(group.getGroupName());
+                gw = getGroupFactory().create(group.getGroupName());
                 MsnContact[] contacts = group.getContacts();
                 for (MsnContact friend : contacts) {
-                    Contact cw = getContactFactory().create(friend.getId(), JmlMsnConnection.this);
+                    cw = getContactFactory().create(friend.getId(), JmlMsnConnection.this);
                     cw.getStatus().setOnline(!friend.getStatus().equals(MsnUserStatus.OFFLINE));
                     cw.setDisplayName(friend.getFriendlyName());
                     gw.add(cw);
                 }
                 getGroupList().add(gw);
             }
+            MsnGroup defaultGroup = connection.getContactList().getDefaultGroup();
+            gw = getGroupFactory().create(defaultGroup.getGroupName());
+            
+            MsnContact[] contacts = connection.getContactList().getContacts();
+            for (MsnContact friend : contacts) {
+                if (friend.getBelongGroups().length==0) {
+                    cw = getContactFactory().create(friend.getId(), JmlMsnConnection.this);
+                    cw.getStatus().setOnline(!friend.getStatus().equals(MsnUserStatus.OFFLINE));
+                    cw.setDisplayName(friend.getFriendlyName());
+                    gw.add(cw);
+                }
+            }
+
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 eventHandler.statusChanged(JmlMsnConnection.this);
             }
