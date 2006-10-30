@@ -76,7 +76,6 @@ public class Grep {
             "</FONT>"
             + "</FONT></HTML>";
     Executor offUIThread = Executors.newSingleThreadExecutor();
-    public static final String GOOGLE_URL = "http://www.google.com/custom?client=pub-3922476703716903&forid=1&ie=ISO-8859-1&oe=ISO-8859-1&safe=active&cof=GALT%3A%23008000%3BGL%3A1%3BDIV%3A%23336699%3BVLC%3A663399%3BAH%3Acenter%3BBGC%3AFFFFFF%3BLBGC%3A336699%3BALC%3A0000FF%3BLC%3A0000FF%3BT%3A000000%3BGFNT%3A0000FF%3BGIMP%3A0000FF%3BFORID%3A1%3B&hl=en&q=";
 
     static {
         ATT_NORMAL = new SimpleAttributeSet();
@@ -223,8 +222,8 @@ public class Grep {
 
                 String url = null;
                 try {
-                    url = URLEncoder.encode(string.getText(), "UTF-8");
-                    url = GOOGLE_URL + url;
+                    url = URLEncoder.encode(string.getText().trim(), "UTF-8");
+                    url = BetterTextField.GoogleAction.GOOGLE_URL + url;
                     try {
                         Desktop.browse(new URL(url));
                     } catch (Exception exc) {
