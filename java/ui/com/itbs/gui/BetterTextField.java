@@ -93,6 +93,8 @@ public class BetterTextField extends JTextField {
     }
 
     public static class GoogleAction extends TextAction {
+        public static final String GOOGLE_URL = "http://www.google.com/custom?client=pub-3922476703716903&forid=1&ie=ISO-8859-1&oe=ISO-8859-1&cof=GALT%3A%23008000%3BGL%3A1%3BDIV%3A%23336699%3BVLC%3A663399%3BAH%3Acenter%3BBGC%3AFFFFFF%3BLBGC%3A336699%3BALC%3A0000FF%3BLC%3A0000FF%3BT%3A000000%3BGFNT%3A0000FF%3BGIMP%3A0000FF%3BFORID%3A1%3B&hl=en&q=";
+
         /**
          * Creates a new JTextAction object.
          *
@@ -117,7 +119,7 @@ public class BetterTextField extends JTextField {
             try {
 //                Desktop.browse(new URL("http://www.google.com/search?q="+ URLEncoder.encode(c.getSelectedText().trim(), "UTF-8") + "&ie=utf-8&oe=utf-8"));
                 // Using a partner link instead or the regular one.
-                Desktop.browse(new URL("http://www.google.com/custom?q="+ URLEncoder.encode(c.getSelectedText().trim(), "UTF-8") + "&client=pub-3922476703716903&ie=utf-8&oe=utf-8"));
+                Desktop.browse(new URL(GOOGLE_URL + URLEncoder.encode(c.getSelectedText().trim(), "UTF-8") ));
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Failed to lookup.", e);
             }
