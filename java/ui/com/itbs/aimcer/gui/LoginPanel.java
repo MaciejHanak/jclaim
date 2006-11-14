@@ -33,7 +33,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.ConnectException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -189,12 +188,7 @@ public final class LoginPanel extends JDialog implements ActionListener {
                     password.selectAll();
                     setControlsEnabled(true);
                 } catch (Exception ex) {
-                    if (connection!=null)
-                        try {
-                            connection.disconnect(true);
-                        } catch (Exception e) {
-                            log.log(Level.SEVERE, "", e);  //don't care
-                        }
+                    connection.cancel();
                     setControlsEnabled(true);
                     ErrorDialog.displayError(LoginPanel.this, "Failed to add connection. ", ex);
                 } finally {
@@ -287,11 +281,11 @@ public final class LoginPanel extends JDialog implements ActionListener {
 
         /**
          * Other side requested a file transfer.
-         @param connection connection
-          * @param contact
-         * @param filename
-         * @param description
-         * @param connectionInfo
+         * @param connection connection
+         * @param contact contact
+         * @param filename file name
+         * @param description of the file
+         * @param connectionInfo proprietary connection info that needs to be passed around.
          */
         public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) { }
         public void typingNotificationReceived(MessageSupport connection, Nameable contact) { }
