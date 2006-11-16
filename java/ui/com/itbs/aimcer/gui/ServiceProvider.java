@@ -24,6 +24,7 @@ import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.commune.jaim.JAIMConnection;
 import com.itbs.aimcer.commune.joscar.ICQConnection;
 import com.itbs.aimcer.commune.joscar.OscarConnection;
+import com.itbs.aimcer.commune.msn.JmlMsnConnection;
 import com.itbs.aimcer.commune.msn.MSNConnection;
 import com.itbs.aimcer.commune.smack.GoogleConnection;
 import com.itbs.aimcer.commune.smack.SecureSmackConnection;
@@ -48,7 +49,8 @@ class ServiceProvider {
         new ServiceProvider(ICQConnection.class,         "ICQ"           ),
 //        new ServiceProvider(AIMConnection.class,       "AIM - Oscar 2" ),
         new ServiceProvider(YMsgConnection.class,        "Yahoo!"        ),
-        new ServiceProvider(MSNConnection.class,         "MSN"           ),
+        new ServiceProvider(JmlMsnConnection.class,      "MSN (JML)"     ),
+        new ServiceProvider(MSNConnection.class,         "MSN (JMSN-Old)"),
         new ServiceProvider(GoogleConnection.class,      "Google Talk"   ),
         new ServiceProvider(SmackConnection.class,       "Jabber"        ),
         new ServiceProvider(SecureSmackConnection.class, "Secure Jabber" ),
