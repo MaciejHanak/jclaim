@@ -472,6 +472,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
         }
 
         public void contactRequestReceived(SessionEvent ev) {
+            if (ev.getFrom() == null) return; // this is a bug in the library.
             boolean accept = true;
             for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
                 accept = eventHandler.contactRequestReceived(ev.getFrom(), YMsgConnection.this);
