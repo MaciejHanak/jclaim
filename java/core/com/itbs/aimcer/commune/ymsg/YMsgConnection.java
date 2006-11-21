@@ -482,7 +482,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
                 try {
                     session.rejectContact(ev, "Not now, thanks");
                 } catch (IOException e) {
-                    log.log(Level.SEVERE, "", e);//Todo change
+                    log.log(Level.SEVERE, "Failed to reject contact " + ev.getFrom(), e);
                 }
 
         }
