@@ -45,6 +45,7 @@ public class ContactPreferences {
     private boolean notifyOnConnect;
     private boolean infoPanelVisible;
     private boolean orderPanelVisible;
+    private boolean showIcon = true; // default to true
     private String name;
     private String phone;
     private String emailAddress;
@@ -181,6 +182,18 @@ public class ContactPreferences {
 
     public void setOrderPanelVisible(boolean orderPanelVisible) {
         this.orderPanelVisible = orderPanelVisible;
+    }
+
+    /**
+     * Display the buddy icon for the user?
+     * @return true if so
+     */
+    public boolean isShowIcon() {
+        return showIcon;
+    }
+
+    public void setShowIcon(boolean showIcon) {
+        this.showIcon = showIcon;
     }
 
     /**
