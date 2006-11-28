@@ -22,6 +22,7 @@ package com.itbs.aimcer.gui;
 
 import com.itbs.aimcer.bean.ContactPreferences;
 import com.itbs.aimcer.bean.ContactWrapper;
+import com.itbs.gui.ActionAdapter;
 import com.itbs.gui.BetterTextField;
 import com.itbs.gui.BetterTextPane;
 
@@ -30,6 +31,8 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * Hosts the additional user info.
@@ -58,9 +61,10 @@ public class PersonalInfoPanel extends JPanel {
         preferences = contact.getPreferences();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         JTextComponent symbol;
-        JPanel namesPanel;
+        JCheckBox checkBox;
+        JPanel linePanel;
 
-        namesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 
         symbol = new BetterTextField(preferences.getName(), 14);
         ComponentFactory.fixWidget(symbol, "Full Name");
@@ -70,7 +74,7 @@ public class PersonalInfoPanel extends JPanel {
                 preferences.setName(((JTextComponent)e.getSource()).getText());
             }
         });
-        namesPanel.add(symbol);
+        linePanel.add(symbol);
 
         symbol = new BetterTextField(preferences.getDisplayName(), 10);
         ComponentFactory.fixWidget(symbol, "Display Name");
@@ -81,10 +85,10 @@ public class PersonalInfoPanel extends JPanel {
                 contact.updateDisplayComponent(); //nicely enough - right on AWT thread
             }
         });
-        namesPanel.add(symbol);
-        add(namesPanel);
+        linePanel.add(symbol);
+        add(linePanel);
 
-        namesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 
         symbol = new BetterTextField(preferences.getPhone(), 14);
         ComponentFactory.fixWidget(symbol, "Cell Phone");
@@ -93,7 +97,7 @@ public class PersonalInfoPanel extends JPanel {
                 preferences.setPhone(((JTextComponent)e.getSource()).getText());
             }
         });
-        namesPanel.add(symbol);
+        linePanel.add(symbol);
 
         symbol = new BetterTextField(preferences.getEmailAddress(), 14);
         ComponentFactory.fixWidget(symbol, "Email");
@@ -102,8 +106,30 @@ public class PersonalInfoPanel extends JPanel {
                 preferences.setEmailAddress(((JTextComponent)e.getSource()).getText());
             }
         });
-        namesPanel.add(symbol);
-        add(namesPanel);
+        linePanel.add(symbol);
+        add(linePanel);
+
+        // Checkboxes:
+        linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        checkBox = new JCheckBox(new ActionAdapter("Keep Offile", "Always offline.", new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                preferences.setHideFromList(!preferences.isHideFromList());
+                ((JCheckBox) e.getSource()).setSelected(preferences.isHideFromList());
+                contact.updateDisplayComponent(); //nicely enough - right on AWT thread
+            }
+        }));
+        checkBox.setSelected(preferences.isHideFromList());
+        linePanel.add(checkBox);
+        checkBox = new JCheckBox(new ActionAdapter("Show Icon", "Always offline.", new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                preferences.setShowIcon(!preferences.isShowIcon());
+                ((JCheckBox) e.getSource()).setSelected(preferences.isShowIcon());                
+            }
+        }));
+        checkBox.setSelected(preferences.isShowIcon());
+        linePanel.add(checkBox);
+        add(linePanel);
+        // ^^^ Checkboxes ^^^
 
         symbol = new BetterTextPane();
         ComponentFactory.fixWidget(symbol, "Notes");
