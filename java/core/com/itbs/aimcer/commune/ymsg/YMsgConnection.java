@@ -171,9 +171,10 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
             try {
                 session.addFriend(contact.getName(), group.getName());
                 group.add(contact);
-                if (contact instanceof Contact) {
-                    ((Contact) contact).getStatus().setOnline(true);
-                }
+//              Why was this done!?  Causes contacts to appear online when they are not! Testing, maybe?               
+//                if (contact instanceof Contact) {
+//                    ((Contact) contact).getStatus().setOnline(true);
+//                }
             } catch (IOException e) {
                 for (ConnectionEventListener eventHandler : eventHandlers) {
                     eventHandler.errorOccured("Failed to add your contact", e);
