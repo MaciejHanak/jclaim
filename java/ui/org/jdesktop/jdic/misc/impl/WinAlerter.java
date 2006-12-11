@@ -74,7 +74,7 @@ public class WinAlerter extends Alerter {
         if (frame.isFocused() || alerted.contains(frame)) return;
         alerted.add(frame);
 
-        final Timer loop = new Timer();
+        final Timer loop = new Timer("WinAlerter");
         loop.schedule(new TimerTask() {
             public void run() {
                 GeneralUtils.sleep(200); // slow it down a bit
