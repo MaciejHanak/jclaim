@@ -146,8 +146,8 @@ public class WeatherConnection extends AbstractConnection {
 
     /**
      * Returns a clean data section.
-     * @param index
-     * @param page
+     * @param index starting index.
+     * @param page to parse
      * @return clean data section
      */
     private static String getSection(int index, String page) {
@@ -164,8 +164,10 @@ public class WeatherConnection extends AbstractConnection {
 
     public void disconnect(boolean intentional) {
         log.fine("Disconnected weather.");
-        if (timer != null)
-            timer.cancel();
+        synchronized(this) {
+            if (timer != null)
+                timer.cancel();
+        }
         weather.clear(this);
 //        super.disconnect(); // todo work this out
     }
@@ -173,21 +175,23 @@ public class WeatherConnection extends AbstractConnection {
     public void reconnect() {
         if (!getProperties().isShowWeather())
             return;
-        disconnect(false);
-        timer = new Timer(true);
-//        updateList();
+        synchronized(this) {
+            disconnect(false);
+            timer = new Timer("Weather Timer", true);
+//          updateList();
 
-        timer.scheduleAtFixedRate(new TimerTask() {
-            public void run() {
-                if (DEBUG)
-                    log.fine("Updating weather..." + new Date());
-                try {
-                    updateList();
-                } catch (Exception e) {
-                    log.log(Level.SEVERE, "Failed to update list", e);
+            timer.scheduleAtFixedRate(new TimerTask() {
+                public void run() {
+                    if (DEBUG)
+                        log.fine("Updating weather..." + new Date());
+                    try {
+                        updateList();
+                    } catch (Exception e) {
+                        log.log(Level.SEVERE, "Failed to update list", e);
+                    }
                 }
-            }
-        }, 2000, 30*60*1000); // each half-hour
+            }, 2000, 30*60*1000); // each half-hour
+        } // synchronized
     }
 
     public boolean isLoggedIn() {
@@ -196,8 +200,10 @@ public class WeatherConnection extends AbstractConnection {
 
     public void cancel() {
         log.fine("Cancelled weather.");
-        if (timer != null)
-            timer.cancel();
+        synchronized(this) {
+            if (timer != null)
+                timer.cancel();
+        }
     }
 
     public void setTimeout(int timeout) { }
