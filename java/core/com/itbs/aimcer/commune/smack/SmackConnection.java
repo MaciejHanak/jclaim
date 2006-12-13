@@ -134,7 +134,9 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             while (entries.hasNext()) {
                 RosterEntry rosterEntry = (RosterEntry) entries.next();
                 contact = getContactFactory().create(rosterEntry.getUser(), this);
-                contact.setDisplayName(rosterEntry.getName());
+                if (rosterEntry.getName() != null) {
+                    contact.setDisplayName(rosterEntry.getName());
+                }
                 lastGroup.add(contact);
             }
         } // while
