@@ -161,6 +161,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 					+ " status changed from " + friend.getOldStatus() + " to "
 					+ friend.getStatus());
             Contact cw = getContactFactory().create(friend.getId(), JmlMsnConnection.this);
+            cw.setDisplayName(friend.getFriendlyName());
 //            cw.setOnline(true);
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 (eventHandler).statusChanged(JmlMsnConnection.this, cw, true, false, 0);

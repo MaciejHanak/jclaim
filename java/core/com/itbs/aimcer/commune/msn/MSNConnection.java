@@ -190,6 +190,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
          */
         public void listOnline(MsnFriend friend) {
             Contact cw = getContactFactory().create(friend.getLoginName(), MSNConnection.this);
+            cw.setDisplayName(friend.getFriendlyName());
 //            cw.setOnline(true);
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 (eventHandler).statusChanged(MSNConnection.this, cw, true, false, 0);
