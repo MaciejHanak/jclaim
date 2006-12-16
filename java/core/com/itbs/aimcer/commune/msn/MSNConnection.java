@@ -24,6 +24,7 @@ import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.AbstractMessageConnection;
 import com.itbs.aimcer.commune.ConnectionEventListener;
 import com.itbs.aimcer.commune.FileTransferListener;
+import com.itbs.util.GeneralUtils;
 import rath.msnm.BuddyList;
 import rath.msnm.MSNMessenger;
 import rath.msnm.SwitchboardSession;
@@ -108,6 +109,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
         public void userOnline(MsnFriend friend) {
             Contact contact = getContactFactory().get(friend.getLoginName(), MSNConnection.this);
             if (contact != null) {
+                contact.setDisplayName(GeneralUtils.stripHTML(friend.getFormattedFriendlyName()));
                 for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
                     eventHandler.statusChanged(MSNConnection.this, contact, true, false, 0);
                 }
@@ -144,7 +146,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
         public void listAdd(MsnFriend friend) {
             Contact cw  = getContactFactory().create(friend.getLoginName(), MSNConnection.this);
             cw.getStatus().setOnline(!friend.getStatus().equals(UserStatus.OFFLINE));
-            cw.setDisplayName(friend.getFormattedFriendlyName());
+            cw.setDisplayName(GeneralUtils.stripHTML(friend.getFormattedFriendlyName()));
             log.fine("friend " + friend.getStatus() + " group index " + friend.getGroupIndex());
             Group gw = getGroupFactory().create(connection.getBuddyGroup().getGroupList().getGroup(friend.getGroupIndex()).getName());
             gw.add(cw);
@@ -190,7 +192,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
          */
         public void listOnline(MsnFriend friend) {
             Contact cw = getContactFactory().create(friend.getLoginName(), MSNConnection.this);
-            cw.setDisplayName(friend.getFriendlyName());
+            cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
 //            cw.setOnline(true);
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 (eventHandler).statusChanged(MSNConnection.this, cw, true, false, 0);

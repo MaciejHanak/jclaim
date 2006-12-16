@@ -3,6 +3,7 @@ package com.itbs.aimcer.commune.msn;
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.AbstractMessageConnection;
 import com.itbs.aimcer.commune.ConnectionEventListener;
+import com.itbs.util.GeneralUtils;
 import net.sf.jml.*;
 import net.sf.jml.event.MsnAdapter;
 import net.sf.jml.impl.MsnMessengerFactory;
@@ -132,7 +133,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
                 for (MsnContact friend : contacts) {
                     cw = getContactFactory().create(friend.getId(), JmlMsnConnection.this);
                     cw.getStatus().setOnline(!friend.getStatus().equals(MsnUserStatus.OFFLINE));
-                    cw.setDisplayName(friend.getFriendlyName());
+                    cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
                     gw.add(cw);
                 }
                 getGroupList().add(gw);
@@ -145,7 +146,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
                 if (friend.getBelongGroups().length==0) {
                     cw = getContactFactory().create(friend.getId(), JmlMsnConnection.this);
                     cw.getStatus().setOnline(!friend.getStatus().equals(MsnUserStatus.OFFLINE));
-                    cw.setDisplayName(friend.getFriendlyName());
+                    cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
                     gw.add(cw);
                 }
             }
@@ -161,7 +162,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 					+ " status changed from " + friend.getOldStatus() + " to "
 					+ friend.getStatus());
             Contact cw = getContactFactory().create(friend.getId(), JmlMsnConnection.this);
-            cw.setDisplayName(friend.getFriendlyName());
+            cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
 //            cw.setOnline(true);
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 (eventHandler).statusChanged(JmlMsnConnection.this, cw, true, false, 0);
