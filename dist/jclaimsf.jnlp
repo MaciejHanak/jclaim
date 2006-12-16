@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?> 
 <!--
+  ~
+  ~
+  ~
+  ~      I F    Y O U    S E E   T H I S,  PLEASE INSTALL JAVA AND START AGAIN.
+  ~
+  ~            See site for setup instructions.
+  ~
+  ~
+  ~
+  ~
+  ~
   ~ Copyright (c) 2006, ITBS LLC. All Rights Reserved.
   ~
   ~     This file is part of JClaim.
@@ -35,7 +46,7 @@
     <all-permissions/> 
   </security> 
   <resources>     
-    <j2se version="1.5" max-heap-size="25m"/>
+    <j2se version="1.5+" max-heap-size="32m"/>
     <jar href="jclaim.jar" main="true"/>  
     <jar href="cos.jar" />  
     <jar href="jaimlib.jar" />  
@@ -44,9 +55,14 @@
     <jar href="joscar.jar" />  
     <jar href="jsocks.jar" />  
     <jar href="msnm.jar" />  
+    <jar href="jml.jar" />  
+    <jar href="cindy.jar" />  
+    <jar href="commons-logging.jar" />  
     <jar href="oscar.jar" />  
     <jar href="smack.jar" />  
-    <jar href="ymsg.jar" />  
+    <jar href="smackx.jar" />  
+    <jar href="ymsg.jar" />
+    <jar href="substance.jar" />
   </resources> 
   <resources os="Mac">
      <jar         href="lib/mac/jdic_misc.jar"/> 
