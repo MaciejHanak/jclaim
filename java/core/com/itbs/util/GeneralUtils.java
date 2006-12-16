@@ -113,6 +113,8 @@ public class GeneralUtils {
         temp = replace(temp, "&gt;",   ">");
         temp = replace(temp, "&quot;", "\"");
         temp = replace(temp, "&amp;",  "&");
+        temp = replace(temp, "%20",    " ");
+        temp = replace(temp, "%22",    "\"");
         temp = replace(temp, "&nbsp;", " ");
         return temp;
     }
