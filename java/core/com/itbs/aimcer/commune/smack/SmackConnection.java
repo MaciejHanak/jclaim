@@ -102,17 +102,11 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     private void fireConnect() {
         connection.addConnectionListener(new ConnectionListener() {
             public void connectionClosed() {
-                Iterator <ConnectionEventListener >iter = getEventListenerIterator();
-                while (iter.hasNext()) {
-                    iter.next().connectionLost(SmackConnection.this);
-                }
+                notifyConnectionLost();
             }
 
             public void connectionClosedOnError(Exception e) {
-                Iterator <ConnectionEventListener >iter = getEventListenerIterator();
-                while (iter.hasNext()) {
-                    iter.next().connectionLost(SmackConnection.this);
-                }
+                notifyConnectionLost();
             }
         });
           //////////////////////
