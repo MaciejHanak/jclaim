@@ -25,6 +25,7 @@ import com.itbs.aimcer.commune.*;
 import com.itbs.gui.EditableJList;
 
 import javax.swing.*;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,6 +82,7 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
         return sum;
     }
 
+    
     /**
      * Returns an element at index.
      * Todo find out why it returns nulls
@@ -92,15 +94,17 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
         int count = 0;
         GroupWrapper groupWrapper;
         ContactWrapper contactWrapper;
-        GroupList glist = connection.getGroupList(); // using trick that it's static
-        for (int i = 0; i < glist.size(); i++) {
-            Group group = glist.get(i);
+        Group[] groups = connection.getGroupList().toArray(); // using trick that it's static
+        if (ClientProperties.INSTANCE.isSortContactList()) {
+            Arrays.sort(groups, GroupWrapper.COMP_NAME);
+        }
+        for (Group group : groups) {
             if (group instanceof GroupWrapper)
                 groupWrapper = (GroupWrapper) group;
             else
                 groupWrapper = (GroupWrapper) connection.getGroupFactory().create(group);
             // if we don't need to display members, move on.
-            if (ClientProperties.INSTANCE.isHideEmptyGroups()  && ClientProperties.INSTANCE.isHideOffline() && groupWrapper.sizeOnline() == 0) {
+            if (ClientProperties.INSTANCE.isHideEmptyGroups() && ClientProperties.INSTANCE.isHideOffline() && groupWrapper.sizeOnline() == 0) {
                 continue;
             }
             if (index == count)
@@ -108,10 +112,13 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
             count++;
             if (groupWrapper.isShrunk())
                 continue;
-            for (int contactCount = 0; contactCount < group.size(); contactCount++) {
-                Nameable b = group.get(contactCount);
-                if (b instanceof ContactWrapper) {
-                    contactWrapper = (ContactWrapper) b;//ContactWrapper.create(b, connection.get(connIndex));
+            Nameable[] contacts = group.toArray();
+            if (ClientProperties.INSTANCE.isSortContactList()) {
+                Arrays.sort(contacts, ContactWrapper.COMP_NAME);
+            }
+            for (Nameable contact : contacts) {
+                if (contact instanceof ContactWrapper) {
+                    contactWrapper = (ContactWrapper) contact;//ContactWrapper.create(b, connection.get(connIndex));
                     if (contactWrapper.getStatus().isOnline() || !ClientProperties.INSTANCE.isHideOffline()) {
                         if (index == count)
                             return contactWrapper;
