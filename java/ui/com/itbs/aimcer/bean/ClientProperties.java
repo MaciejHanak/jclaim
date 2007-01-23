@@ -76,7 +76,7 @@ public class ClientProperties implements ConnectionProperties {
 
     /** Tells if this is the first time this user has started the software. todo make use of this for disclaimers. */
     private static boolean firstTimeUse;
-    private boolean statusbarAlwaysVisible = false;
+    private boolean statusbarAlwaysVisible = true;
     private boolean useAlert = false;
     private boolean hideOffline = true;
     private boolean showEmptyGroups = true;
@@ -111,6 +111,7 @@ public class ClientProperties implements ConnectionProperties {
     private int serverPort = 2000;
     private boolean useTray = true;
     private boolean snapWindows = false;
+    private boolean sortContactList = false;
     private Rectangle windowBounds;
     Map<String,ContactPreferences> buddyPreferences = new HashMap<String, ContactPreferences>();
     Map<String,GroupPreferences> groupPreferences = new HashMap<String, GroupPreferences>();
@@ -188,7 +189,7 @@ public class ClientProperties implements ConnectionProperties {
      * Helper method.  Gets long from a line.
      * @param value parse this
      * @param name of the fiels
-     * @param defaultValue
+     * @param defaultValue default value
      * @return value
      */
     private static int getInt(String value, String name, int defaultValue) {
@@ -204,7 +205,7 @@ public class ClientProperties implements ConnectionProperties {
      * Helper method.  Gets long from a line.
      * @param value parse this
      * @param name of the value
-     * @param defaultValue
+     * @param defaultValue default value
      * @return value
      */
     private static long getLong(String value, String name, long defaultValue) {
@@ -218,6 +219,7 @@ public class ClientProperties implements ConnectionProperties {
     /**
      * Helper method.  Gets long from a line.
      * @param value parse this
+     * @param defaultValue default value
      * @return value
      */
     private static boolean getBoolean(String value, boolean defaultValue) {
@@ -758,6 +760,7 @@ public class ClientProperties implements ConnectionProperties {
 
     /**
      * Display buffer size.
+     * For the web.
      * In Killobytes.
      * @return Display buffer size. In Killobytes.
      */
@@ -833,5 +836,17 @@ public class ClientProperties implements ConnectionProperties {
     /** FOR PERSISTANCE ONLY */
     public void setProxyInfo(Map<String, ConnectionInfo> proxyInfo) {
         this.proxyInfo = proxyInfo;
+    }
+
+    /**
+     * Determines if the list of contacts should be sorted as groups and inside groups.
+     * @return true if so
+     */
+    public boolean isSortContactList() {
+        return sortContactList;
+    }
+
+    public void setSortContactList(boolean sortContactList) {
+        this.sortContactList = sortContactList;
     }
 }
