@@ -45,7 +45,7 @@ import java.util.logging.Logger;
 public class GroupWrapper implements Group, Renderable {
     private static final Logger log = Logger.getLogger(GroupWrapper.class.getName());
     private static Map<String,GroupWrapper> wrappers = new HashMap<String, GroupWrapper>(10);
-    public static Comparator <Group> COMP_NAME = new NameComparator();
+    public static Comparator <Nameable> COMP_NAME = new NameComparator();
 
     private final static Color SELECTED = new Color(127, 127, 240);
 
@@ -143,6 +143,10 @@ public class GroupWrapper implements Group, Renderable {
         preferences.setFold(!preferences.isFold());
     }
 
+    public Nameable[] toArray() {
+        return contacts.toArray(new Nameable[contacts.size()]);
+    }
+
     public static GroupWrapper create(String group) {
         GroupWrapper result = wrappers.get(GeneralUtils.getSimplifiedName(group));
         if (result==null) {
@@ -180,8 +184,8 @@ public class GroupWrapper implements Group, Renderable {
 
     }
 
-    static class NameComparator implements Comparator<Group> {
-        public int compare(Group o1, Group o2) {
+    static class NameComparator implements Comparator<Nameable> {
+        public int compare(Nameable o1, Nameable o2) {
             return o1.getName().compareToIgnoreCase(o2.getName());
         }
 /*
