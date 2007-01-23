@@ -28,10 +28,7 @@ import com.itbs.util.GeneralUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Provides a basic implementation needed to maintain contacts.
@@ -51,6 +48,8 @@ public class ContactWrapper implements Contact, Renderable {
     public static final Color AWAY = Color.GRAY;
     
     private final static Color SELECTED = new Color(127, 190, 240);
+
+    public static Comparator <Nameable> COMP_NAME = new NameComparator();
 
     /**
      * Minimal Name.
@@ -315,5 +314,15 @@ public class ContactWrapper implements Contact, Renderable {
             super.setWireless(wireless);
         }
     }
-}
+
+    static class NameComparator implements Comparator<Nameable> {
+        public int compare(Nameable o1, Nameable o2) {
+            if (o1 instanceof Contact && o2 instanceof Contact) {
+                return ((Contact) o1).getDisplayName().compareToIgnoreCase(((Contact) o2).getDisplayName());
+            }
+            return o1.getName().compareToIgnoreCase(o2.getName());
+        }
+    }
+
+} // class
 
