@@ -44,6 +44,7 @@ abstract public class AbstractConnection implements Connection {
     private ConnectionProperties properties;
     private ContactFactory contactFactory;
     private GroupFactory groupFactory;
+    private boolean connectionValid;
 
     // ********************   General stuff   ********************
 
@@ -92,6 +93,10 @@ abstract public class AbstractConnection implements Connection {
         disconnectIntentional = false;
     }
 
+    public boolean isConnectionValid() {
+        return connectionValid;
+    }
+
     public void disconnect(boolean intentional) {
         if (intentional)
             disconnectIntentional = true; // one way switch b/c we'll get called by finalization stuff
@@ -132,8 +137,8 @@ abstract public class AbstractConnection implements Connection {
             arrayList.remove(group);
         }
 
-        public Object[] toArray() {
-            return arrayList.toArray();
+        public Group[] toArray() {
+            return arrayList.toArray(new Group[arrayList.size()]);
         }
 
         public void clear() {
@@ -185,6 +190,7 @@ abstract public class AbstractConnection implements Connection {
      * Tells everyone connection was established.
      */
     protected void notifyConnectionEstablished() {
+        connectionValid = true;
         Iterator <ConnectionEventListener >iter = getEventListenerIterator();
         while (iter.hasNext()) {
             iter.next().connectionEstablished(this);

@@ -74,6 +74,7 @@ public interface Connection {
     int getDisconnectCount();
     void incDisconnectCount();
     void resetDisconnectInfo();
+    boolean isConnectionValid();
 
     void reconnect();
     boolean isLoggedIn();
@@ -117,5 +118,4 @@ public interface Connection {
      * Away flag.
      */
     boolean isAway();
-
-}
+} // class
