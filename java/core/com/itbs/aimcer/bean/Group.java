@@ -35,5 +35,6 @@ public interface Group extends Nameable {
     Nameable get(int index);
     Nameable add(Nameable contact);
     boolean remove(Nameable contact);
+    public Nameable[] toArray();
     // inherits String getName() from Nameable
 }

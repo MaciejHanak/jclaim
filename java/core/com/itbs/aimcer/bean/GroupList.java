@@ -31,6 +31,6 @@ public interface GroupList {
     Group get(int index);
     Group add(Group group);
     void remove(Group group);
-    Object[] toArray();
+    Group[] toArray();
     void clear();
 }
