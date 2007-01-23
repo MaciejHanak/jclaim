@@ -25,6 +25,7 @@ import com.itbs.util.GeneralUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,7 @@ import java.util.logging.Logger;
 public class GroupWrapper implements Group, Renderable {
     private static final Logger log = Logger.getLogger(GroupWrapper.class.getName());
     private static Map<String,GroupWrapper> wrappers = new HashMap<String, GroupWrapper>(10);
+    public static Comparator <Group> COMP_NAME = new NameComparator();
 
     private final static Color SELECTED = new Color(127, 127, 240);
 
@@ -52,6 +54,10 @@ public class GroupWrapper implements Group, Renderable {
     private List<Nameable> contacts = new CopyOnWriteArrayList<Nameable>();
     GroupPreferences preferences;
     private SelectableLabel displayComponent;
+
+    /**
+     * Display component for a Group.
+     */
     static class SelectableLabel extends JLabel{
         private boolean selected;
         public boolean isSelected() {
@@ -172,5 +178,19 @@ public class GroupWrapper implements Group, Renderable {
 //            displayComponent.setBackground(ListRenderer.SELECTED_NO_FOCUS);
         return displayComponent;
 
+    }
+
+    static class NameComparator implements Comparator<Group> {
+        public int compare(Group o1, Group o2) {
+            return o1.getName().compareToIgnoreCase(o2.getName());
+        }
+/*
+        public int compare(Object o1, Object o2) {
+            if (o1 instanceof Group && o2 instanceof Group) {
+                return ((Group) o1).getName().compareToIgnoreCase(((Group) o2).getName());
+            }
+            return 0;
+        }
+*/
     }
 }
