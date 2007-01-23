@@ -36,7 +36,7 @@ public class GroupPreferences {
     }
 
     /**
-     * Determines if this contact will be displayed in the list.
+     * Determines if the contacts will be displayed in the list.
      * @return true if hidden.
      */
     public boolean isFold() {
@@ -44,7 +44,7 @@ public class GroupPreferences {
     }
 
     /**
-     * Determines if this contact will be displayed in the list.
+     * Determines if the contacts will be displayed in the list.
      * @param fold true if hidden.
      */
     public void setFold (boolean fold) {
