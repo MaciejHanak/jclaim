@@ -58,21 +58,26 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
     /**
      * Non-blocking call.
      */
-    public void connect() throws SecurityException, Exception {
-        super.connect();
-        sessions.clear();
-        notifyConnectionInitiated();
-        String username = getUserName();
-        if (username.indexOf('@')==-1)
-            throw new SecurityException("MSN usernames must contain '@msn.com' or '@hotmail.com'");
+    public void connect() throws Exception {
+        try {
+            super.connect();
+            sessions.clear();
+            notifyConnectionInitiated();
+            String username = getUserName();
+            if (username.indexOf('@')==-1)
+                throw new SecurityException("MSN usernames must contain '@msn.com' or '@hotmail.com'");
 //        connection = new MSNMessenger(getUserName(), getPassword());
-        connection = new MSNMessenger("", "");
-        connection.setInitialStatus( UserStatus.ONLINE );
-        connection.addMsnListener(new ConnectionListener());
+            connection = new MSNMessenger("", "");
+            connection.setInitialStatus( UserStatus.ONLINE );
+            connection.addMsnListener(new ConnectionListener());
 //        connection.setInitialStatus(UserStatus.INVISIBLE); // todo switch to this when working
-        connection.setInitialStatus(UserStatus.ONLINE);
+            connection.setInitialStatus(UserStatus.ONLINE);
 //        connection.login(getUserName(), getPassword());
-        connection.login(getUserName(), getPassword());
+            connection.login(getUserName(), getPassword());
+        } catch (Exception e) {
+            notifyConnectionFailed(e.getMessage());
+            throw e;
+        }
     }
 
     class ConnectionListener extends MsnAdapter {
@@ -505,6 +510,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
      * Starts a file transfer.
      *
      * @param ftl listener
+     * @throws java.io.IOException on error
      */
     public void initiateFileTransfer(FileTransferListener ftl) throws IOException {
         SwitchboardSession session = getSession(ftl.getContactName());
@@ -522,7 +528,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
      * Sets up file for receival
      *
      * @param ftl            param
-     * @param connectionInfo
+     * @param connectionInfo connection's info needed for transfer
      */
     public void acceptFileTransfer(FileTransferListener ftl, Object connectionInfo) {
         //Todo verify
