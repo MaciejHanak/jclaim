@@ -88,14 +88,15 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             connection.login(getUserName(), getPassword());
             fireConnect();
         } catch (XMPPException e) {
-            log.log(Level.SEVERE, "",e);
+            log.log(Level.INFO, "",e);
             disconnect(false);
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                String error = e.getXMPPError() == null ? e.getMessage() : e.getXMPPError().getMessage();
-                error = error == null ? "" : error;
-                eventHandler.connectionFailed(this, "Connection Failed. " + error);
-//                eventHandler.connectionEstablished(this);
-            }
+            String error = e.getXMPPError() == null ? e.getMessage() : e.getXMPPError().getMessage();
+            error = error == null ? "" : error;
+            notifyConnectionFailed("Connection Failed. " + error);
+        } catch (RuntimeException e) { // Lets see if we see this with Google.
+            log.log(Level.SEVERE, "UNCOUGHT EXCEPTION! PLEASE FIX!", e);
+            disconnect(false);
+            notifyConnectionFailed("Connection Failed. UNUSUAL TERMINATION!" + e.getMessage());
         }
     }
 
