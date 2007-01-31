@@ -35,11 +35,17 @@ import java.net.URLConnection;
  */
 public class WebHelper {
 
+    /** This is the only way to specify timeouts in java for connections.  Sad. */
+    static {
+        System.getProperties().setProperty("sun.net.client.defaultConnectTimeout", ""+ (2 * 60 * 1000));
+        System.getProperties().setProperty("sun.net.client.defaultReadTimeout", ""+ (2 * 60 * 1000));
+    }
+
     /**
      * Returns the page.
      * @param url or the page
      * @return page info
-     * @throws Exception
+     * @throws Exception page fails to load.
      */
     public static String getPage(URL url)
             throws Exception {
@@ -89,7 +95,7 @@ public class WebHelper {
         String response;
         BufferedReader source = new BufferedReader(new InputStreamReader(in));
         StringBuffer buf = new StringBuffer();
-        while ((response = source.readLine()) != null) {
+        while ((response = source.readLine()) != null) {  // timeout should carry us through bad stuff.
             buf.append(response);
         }
 
