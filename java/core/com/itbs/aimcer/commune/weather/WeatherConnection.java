@@ -35,6 +35,8 @@ import java.util.Date;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,10 +48,12 @@ import java.util.logging.Logger;
  * @since Oct 10, 2004
  */
 public class WeatherConnection extends AbstractConnection {
-    private static Logger log = Logger.getLogger(WeatherConnection.class.getName());
+    private static Logger logger = Logger.getLogger(WeatherConnection.class.getName());
     
     private Group weather;
     private Timer timer;
+    private final Lock updateLock = new ReentrantLock();
+
     private static final String TOKEN_PLACE = "class=\"cityTitle\">";
     private static final String TOKEN_TEMP = "id=\"quicklook_current_temps\">";
 //    private static final String TOKEN_ICON = "http://vortex.accuweather.com/phoenix2/images/common/icons/"; //33_31x31.gif
@@ -62,14 +66,19 @@ public class WeatherConnection extends AbstractConnection {
     public WeatherConnection() {
     }
 
-    private synchronized void processSettings() {
-        weather.clear(this);
-        StringTokenizer tok = new StringTokenizer(getProperties().getWeatherZipCodes(), " ;,.#");
-        while (tok.hasMoreElements()) {
-            Contact cw = getContactFactory().create(tok.nextToken(), this);
-            cw.getStatus().setOnline(true);
-            weather.add(cw);
-//            addContact(tok.nextToken());
+    private void processSettings() {
+        try {
+            updateLock.lock();
+            weather.clear(this);
+            StringTokenizer tok = new StringTokenizer(getProperties().getWeatherZipCodes(), " ;,.#");
+            while (tok.hasMoreElements()) {
+                Contact cw = getContactFactory().create(tok.nextToken(), this);
+                cw.getStatus().setOnline(true);
+                weather.add(cw);
+    //            addContact(tok.nextToken());
+            }
+        } finally {
+            updateLock.unlock();
         }
     }
 
@@ -81,33 +90,41 @@ public class WeatherConnection extends AbstractConnection {
         reconnect();
     }
 
-    private synchronized void updateList() {
-        //grab weather for each contact (zip code) listed
-        for (int i = 0; i < weather.size(); i++) {
-            Contact zip = (Contact) weather.get(i);
-            String page;
-            String weather=null;
-            Icon icon = null;
-            try {
-//                page = WebHelper.getPage(new URL("http://www.w2.weather.com/weather/local/" + zip));
-//                page = WebHelper.getPage(new URL("http://www.weather.com/weather/local/" + zip));
-                page = WebHelper.getPage(new URL("http://wwwa.accuweather.com/index-forecast.asp?&partner=accuweather&zipcode="+zip.getName()));
-//                page = WebHelper.getPage(new URL("http://www.weather.com/weather/local/"+zip+"?lswe="+zip+"&lwsa=WeatherLocalUndeclared"));
-//                page = WebHelper.getPage(new URL("http://www.w2.weather.com/weather/local/"+zip+"?lswe="+zip+"&lwsa=WeatherLocalUndeclared"));
-                weather = getWeather(page);
-                icon = getWeatherIcon(page);
-//                log.info("Set " + zip.getName() + " to " + zip.getDisplayName() + " " + zip.oldToString());
-            } catch (Exception e) {
-                log.log(Level.SEVERE, "Failed to get a page", e);
+    private void updateList() {
+        try {
+            if (!updateLock.tryLock()) return;  // no need to go again if old one still hasn't timed out.
+//            updateLock.lockInterruptibly();
+
+            //grab weather for each contact (zip code) listed
+            for (int i = 0; i < weather.size(); i++) {
+                Contact zip = (Contact) weather.get(i);
+                String page;
+                String weather=null;
+                Icon icon = null;
+                try {
+    //                page = WebHelper.getPage(new URL("http://www.w2.weather.com/weather/local/" + zip));
+    //                page = WebHelper.getPage(new URL("http://www.weather.com/weather/local/" + zip));
+                    page = WebHelper.getPage(new URL("http://wwwa.accuweather.com/index-forecast.asp?&partner=accuweather&zipcode="+zip.getName()));
+    //                page = WebHelper.getPage(new URL("http://www.weather.com/weather/local/"+zip+"?lswe="+zip+"&lwsa=WeatherLocalUndeclared"));
+    //                page = WebHelper.getPage(new URL("http://www.w2.weather.com/weather/local/"+zip+"?lswe="+zip+"&lwsa=WeatherLocalUndeclared"));
+                    weather = getWeather(page);
+                    icon = getWeatherIcon(page);
+    //                log.info("Set " + zip.getName() + " to " + zip.getDisplayName() + " " + zip.oldToString());
+                } catch (Exception e) {
+                    logger.log(Level.SEVERE, "Failed to get a page", e);
+                }
+                if (weather != null && weather.length() < 100)
+                    zip.setDisplayName(weather);
+                if (icon != null && icon.getIconHeight()>0 && icon.getIconWidth()>0)
+                    zip.setIcon(icon);
+                if ((weather == null || weather.length() >= 100 || icon == null) && (!zip.getDisplayName().startsWith(PREFIX_OLD))) {
+                    zip.setDisplayName(PREFIX_OLD + zip.getDisplayName());
+                }
             }
-            if (weather != null && weather.length() < 100)
-                zip.setDisplayName(weather);
-            if (icon != null && icon.getIconHeight()>0 && icon.getIconWidth()>0)
-                zip.setIcon(icon);
-            if ((weather == null || weather.length() >= 100 || icon == null) && (!zip.getDisplayName().startsWith(PREFIX_OLD))) {
-                zip.setDisplayName(PREFIX_OLD + zip.getDisplayName());
-            }
+        } finally {
+            updateLock.unlock();
         }
+
     }
 
     /**
@@ -129,7 +146,7 @@ public class WeatherConnection extends AbstractConnection {
             }
             return scaledInstance;
         } catch (MalformedURLException e) {
-            log.log(Level.SEVERE, "Icon URL failed: "+result, e);
+            logger.log(Level.SEVERE, "Icon URL failed: "+result, e);
             return null;
         }
     }
@@ -163,7 +180,7 @@ public class WeatherConnection extends AbstractConnection {
     }
 
     public void disconnect(boolean intentional) {
-        log.fine("Disconnected weather.");
+        logger.fine("Disconnected weather.");
         synchronized(this) {
             if (timer != null)
                 timer.cancel();
@@ -183,11 +200,11 @@ public class WeatherConnection extends AbstractConnection {
             timer.scheduleAtFixedRate(new TimerTask() {
                 public void run() {
                     if (DEBUG)
-                        log.fine("Updating weather..." + new Date());
+                        logger.fine("Updating weather..." + new Date());
                     try {
                         updateList();
                     } catch (Exception e) {
-                        log.log(Level.SEVERE, "Failed to update list", e);
+                        logger.log(Level.SEVERE, "Failed to update list", e);
                     }
                 }
             }, 2000, 30*60*1000); // each half-hour
@@ -199,7 +216,7 @@ public class WeatherConnection extends AbstractConnection {
     }
 
     public void cancel() {
-        log.fine("Cancelled weather.");
+        logger.fine("Cancelled weather.");
         synchronized(this) {
             if (timer != null)
                 timer.cancel();
