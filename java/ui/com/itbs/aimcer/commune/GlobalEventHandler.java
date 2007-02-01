@@ -110,7 +110,8 @@ public class GlobalEventHandler implements ConnectionEventListener {
 
     private synchronized void reconnect(final Connection connection, final String message) {
         if (Main.getFrame().isDisplayable() && !connection.isDisconnectIntentional()) {
-            if (connection.getDisconnectCount() < ClientProperties.INSTANCE.getDisconnectCount()) {
+            if (connection.getDisconnectCount() < ClientProperties.INSTANCE.getDisconnectCount()
+                    && connection.isConnectionValid()) {
                 connection.incDisconnectCount();
                 new Thread("Reconnect for " + connection.getServiceName()) {
                     public void run() {
@@ -230,7 +231,7 @@ public class GlobalEventHandler implements ConnectionEventListener {
     }
 
     public boolean contactRequestReceived(final String user, final MessageSupport connection) {
-        return JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(Main.getFrame(), "Following contact wants to add you to his/her list: " + user + " on " + connection.getServiceName());
+        return JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(Main.getFrame(), "Following contact wants to add you to his/her list: " + user + " on " + connection.getServiceName(), "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
     }
 
 } // class AimHandler
