@@ -650,16 +650,11 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     }
 
     private void fireFailedToConnect() {
-        for (ConnectionEventListener eventHandler : eventHandlers) {
-            eventHandler.connectionFailed(this, "Failed to connect");
-        }
+        notifyConnectionFailed("Failed to connect");
     }
 
     private void fireDisconnect() {
-        log.fine("firing Connection lost.");
-        for (ConnectionEventListener eventHandler : eventHandlers) {
-            eventHandler.connectionLost(this);
-        }
+        notifyConnectionLost();
     }
 
 
