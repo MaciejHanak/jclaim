@@ -67,24 +67,40 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
             user = getContactFactory().create(getUserName(), this);
     }
 
-    //        S E R V E R
+    //      M E S S A G I N G     S E R V E R      I N F O
+    /**
+     * Messaging server address.
+     * @return address
+     */
     public String getServerName() {
         return serverName;
     }
 
+    /**
+     * Sets Messaging server address.
+     * @param address to set
+     */
     public void setServerName(String address) {
         serverName = address;
     }
 
+    /**
+     * Messaging server port.
+     * @return port number
+     */
     public int getServerPort() {
         return serverPort;
     }
 
+    /**
+     * Messaging server port.
+     * @param port number
+     */
     public void setServerPort(int port) {
         serverPort = port;
     }
 
-    //   ^^^     S E R V E R    ^^^
+    //   ^^^     M E S S A G I N G     S E R V E R      I N F O    ^^^
 
     /**
      * Most of the time, one would overwrite it.
