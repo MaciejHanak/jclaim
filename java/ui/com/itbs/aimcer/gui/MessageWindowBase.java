@@ -13,13 +13,13 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -139,6 +139,8 @@ abstract public class MessageWindowBase {
      */
     JComponent getMessage() {
         textPane = new BetterTextPane(ACTION_SEND);
+        textPane.setFont(textPane.getFont().deriveFont(0.0F + ClientProperties.INSTANCE.getFontSize()));
+        textPane.setFont(textPane.getFont().deriveFont(Font.PLAIN)); // this didn't appear to do anything, the font just looks bold, I guess.
 //        textPane.setContentType("text/html");
         if (!ClientProperties.INSTANCE.isEnterSends()) {
             textPane.addModifier(KeyEvent.SHIFT_DOWN_MASK);
