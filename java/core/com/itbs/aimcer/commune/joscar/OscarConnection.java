@@ -46,6 +46,7 @@ import net.kano.joustsim.oscar.oscar.service.Service;
 import net.kano.joustsim.oscar.oscar.service.buddy.BuddyService;
 import net.kano.joustsim.oscar.oscar.service.buddy.BuddyServiceListener;
 import net.kano.joustsim.oscar.oscar.service.icbm.*;
+import net.kano.joustsim.oscar.oscar.service.icbm.dim.Attachment;
 import net.kano.joustsim.oscar.oscar.service.icbm.ft.*;
 import net.kano.joustsim.oscar.oscar.service.icbm.ft.events.RvConnectionEvent;
 import net.kano.joustsim.oscar.oscar.service.icbm.ft.events.TransferringFileEvent;
@@ -627,8 +628,20 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
     class TypingAdapter extends ConversationAdapter implements TypingListener {
             public void gotMessage(Conversation c, final MessageInfo minfo) {
+                String text  = minfo.getMessage().getMessageBody();
+                if (minfo.getMessage() instanceof DirectMessage) {
+                    DirectMessage directMessage = (DirectMessage) minfo.getMessage();
+                    String attachments="";
+                    for (Attachment attachment :directMessage.getAttachments()) {
+                        attachments += attachment.getId() + "  ";
+                    }
+                    if (attachments.length()>0) {
+                        text += "Attachments to the original message (all ignored): " + attachments;
+                    }
+                }
                 Message message = new MessageImpl(getContactFactory().create(minfo.getFrom().getFormatted(), OscarConnection.this),
-                        false, minfo.getMessage().isAutoResponse(), minfo.getMessage().getMessageBody());
+                        false, minfo.getMessage().isAutoResponse(), text);
+
                 for (int i = 0; i < eventHandlers.size(); i++) {
                     try {
                         (eventHandlers.get(i)).messageReceived(OscarConnection.this, message);
@@ -687,9 +700,14 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
     // todo when offline, getIcbmService will return null
     public void processMessage(Message message) {
-        Conversation conversation = connection.getIcbmService().getImConversation(new Screenname(message.getContact().getName()));
-        conversation.sendMessage(new  SimpleMessage(GeneralUtils.makeHTML(message.getText()), message.isAutoResponse()));
+//        Old way:
+//        Conversation conversation = connection.getIcbmService().getImConversation(new Screenname(message.getContact().getName()));
+//        conversation.sendMessage(new  SimpleMessage(GeneralUtils.makeHTML(message.getText()), message.isAutoResponse()));
 //        conversation.close(); // DON'T do that
+        connection.getIcbmService().sendAutomatically(
+                new Screenname(message.getContact().getName()),
+                new  SimpleMessage(GeneralUtils.makeHTML(message.getText()), message.isAutoResponse())
+        ); // send message, use DC if needed.
     }
 
     public void processSecureMessage(Message message) throws IOException {
