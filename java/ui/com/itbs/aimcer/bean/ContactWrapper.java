@@ -24,6 +24,7 @@ import com.itbs.aimcer.commune.Connection;
 import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.gui.ImageCacheUI;
 import com.itbs.aimcer.gui.ListRenderer;
+import com.itbs.gui.GUIUtils;
 import com.itbs.util.GeneralUtils;
 
 import javax.swing.*;
@@ -189,22 +190,26 @@ public class ContactWrapper implements Contact, Renderable {
      * for example contactPreferences: made this call public.
      */
     public void updateDisplayComponent() {
-        if (getStatus().isOnline() && !preferences.isHideFromList()) {
-            displayComponent.setText(getDisplayName());
-            displayComponent.setIcon(getIcon());
-            displayComponent.setFont(NORM);
-            displayComponent.setForeground(getStatus().isAway() ? AWAY : PRESENT);
-            if (connection instanceof MessageSupport)
-                displayComponent.setToolTipText(getName() + " on " + getConnection().getServiceName() + " as " + ((MessageSupport) getConnection()).getUserName() + (getStatus().isAway() ? (" Idle for " + getStatus().getIdleTime() + "m") : ""));
-            else
-                displayComponent.setToolTipText(null);
-        } else {
-            displayComponent.setText(getDisplayName() + (getStatus().isOnline()?" (Online)":" (Offline)"));
-            displayComponent.setIcon(null);
-            displayComponent.setFont(OFF);
-            displayComponent.setForeground(AWAY);
-            displayComponent.setToolTipText("Last Seen: " + (preferences.getLastConnected()==null?"Not yet.":preferences.getLastConnected())); // turn off tooltip
-        }
+        GUIUtils.runOnAWT(new Runnable(){
+            public void run() {
+                if (getStatus().isOnline() && !preferences.isHideFromList()) {
+                    displayComponent.setText(getDisplayName());
+                    displayComponent.setIcon(getIcon());
+                    displayComponent.setFont(NORM);
+                    displayComponent.setForeground(getStatus().isAway() ? AWAY : PRESENT);
+                    if (connection instanceof MessageSupport)
+                        displayComponent.setToolTipText(getName() + " on " + getConnection().getServiceName() + " as " + ((MessageSupport) getConnection()).getUserName() + (getStatus().isAway() ? (" Idle for " + getStatus().getIdleTime() + "m") : ""));
+                    else
+                        displayComponent.setToolTipText(null);
+                } else {
+                    displayComponent.setText(getDisplayName() + (getStatus().isOnline()?" (Online)":" (Offline)"));
+                    displayComponent.setIcon(null);
+                    displayComponent.setFont(OFF);
+                    displayComponent.setForeground(AWAY);
+                    displayComponent.setToolTipText("Last Seen: " + (preferences.getLastConnected()==null?"Not yet.":preferences.getLastConnected())); // turn off tooltip
+                }
+            }
+        });
     } // updateDisplayComponent()
 
 
