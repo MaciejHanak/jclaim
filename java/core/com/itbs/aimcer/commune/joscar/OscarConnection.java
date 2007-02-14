@@ -580,9 +580,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
                 public void sendAutomaticallyFailed(IcbmService service, net.kano.joustsim.oscar.oscar.service.icbm.Message message, Set<Conversation> triedConversations) {
                     log.warning("Automatically Failed message.");
-                    for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                        eventHandler.errorOccured("The service provider has failed to deliver previous message. ", null);
-                    }
+                    notifyErrorOccured("The service provider has failed to deliver previous message. ", null);
                 }
 
                 public void buddyInfoUpdated(IcbmService service, Screenname buddy, IcbmBuddyInfo info) {
@@ -646,9 +644,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                     try {
                         (eventHandlers.get(i)).messageReceived(OscarConnection.this, message);
                     } catch (Exception e) {
-                        for (ConnectionEventListener eventHandler : eventHandlers) {
-                            eventHandler.errorOccured("Failure while receiving a message", e);
-                        }
+                            notifyErrorOccured("Failure while receiving a message", e);
                     }
                 }
             }
@@ -775,17 +771,13 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             aimGroup = findGroup(group);
         }
         if (aimGroup == null) { // still null?
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.errorOccured("Failed to create the group.  Try again.", null);
-            }
+            notifyErrorOccured("Failed to create the group.  Try again.", null);
             return;
         }
         if (aimGroup instanceof MutableGroup) {
             ((MutableGroup) aimGroup).addBuddy(contact.getName());
         } else {
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.errorOccured("This is a special group. Can not add contacts.", null);
-            }
+            notifyErrorOccured("This is a special group. Can not add contacts.", null);
         }
         /*
         // add it for the server
@@ -934,18 +926,14 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             aimGroup = findGroup(group);
         }
         if (aimGroup == null) { // still null?
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.errorOccured("Failed to create the group.  Try again.", null);
-            }
+            notifyErrorOccured("Failed to create the group.  Try again.", null);
             return;
         }
 
         List <Buddy> buddies = new ArrayList<Buddy>();
         Buddy buddy = findBuddyViaGroup(contact, group, false);
         if (buddy == null) {
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.errorOccured("Failed to find buddy " + contact.getName() + " not in target group.  Try again.", null);
-            }
+            notifyErrorOccured("Failed to find buddy " + contact.getName() + " not in target group.  Try again.", null);
             return;
         }
         buddies.add(buddy);

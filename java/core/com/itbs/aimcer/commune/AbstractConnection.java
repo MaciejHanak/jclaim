@@ -189,7 +189,7 @@ abstract public class AbstractConnection implements Connection {
     /**
      * Tells everyone connection was established.
      */
-    protected void notifyConnectionEstablished() {
+    public void notifyConnectionEstablished() {
         connectionValid = true;
         Iterator <ConnectionEventListener >iter = getEventListenerIterator();
         while (iter.hasNext()) {
@@ -200,7 +200,7 @@ abstract public class AbstractConnection implements Connection {
     /**
      * Tells everyone connection was lost.
      */
-    protected void notifyConnectionLost() {
+    public void notifyConnectionLost() {
         Iterator <ConnectionEventListener >iter = getEventListenerIterator();
         while (iter.hasNext()) {
             try {
@@ -214,7 +214,7 @@ abstract public class AbstractConnection implements Connection {
      * Tells everyone connection was lost.
      * @param message message to pass
      */
-    protected void notifyConnectionFailed(String message) {
+    public void notifyConnectionFailed(String message) {
         Iterator <ConnectionEventListener >iter = getEventListenerIterator();
         while (iter.hasNext()) {
             try {
@@ -227,8 +227,10 @@ abstract public class AbstractConnection implements Connection {
     /**
      * Tells everyone connection was lost.
      * @param message message to pass
+     * @param exception error to report
      */
-    protected void notifyErrorOccured(String message, Exception exception) {
+    public void notifyErrorOccured(String message, Exception exception) {
+        message = getServiceName() + " " + getUser() + ": " + message;
         Iterator <ConnectionEventListener >iter = getEventListenerIterator();
         while (iter.hasNext()) {
             try {
