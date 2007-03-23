@@ -138,9 +138,11 @@ public class JmlMsnConnection extends AbstractMessageConnection {
                 }
                 getGroupList().add(gw);
             }
+            
             MsnGroup defaultGroup = connection.getContactList().getDefaultGroup();
             gw = getGroupFactory().create(defaultGroup.getGroupName());
-            
+            getGroupList().add(gw);
+
             MsnContact[] contacts = connection.getContactList().getContacts();
             for (MsnContact friend : contacts) {
                 if (friend.getBelongGroups().length==0) {
