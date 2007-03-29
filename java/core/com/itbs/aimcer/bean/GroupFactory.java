@@ -27,4 +27,5 @@ package com.itbs.aimcer.bean;
 public interface GroupFactory {
     Group create(String group);
     Group create(Group group);
+    GroupList getGroupList();
 }

@@ -115,39 +115,15 @@ abstract public class AbstractConnection implements Connection {
 
 //        disconnectIntentional = false; // seems more appropriate in the notify on connection this way menu disconnect will stop it
     }
+
+
     // ********************   Group List   ********************
-
-    private static GroupList groupList  = new GroupList() {
-        private List<Group> arrayList = new CopyOnWriteArrayList<Group>();
-        public int size() {
-            return arrayList.size();
-        }
-
-        public Group get(int index) {
-            return arrayList.get(index);
-        }
-
-        public Group add(Group group) {
-            if (!arrayList.contains(group)) // no duplicates
-                arrayList.add(group);
-            return group;
-        }
-
-        public void remove(Group group) {
-            arrayList.remove(group);
-        }
-
-        public Group[] toArray() {
-            return arrayList.toArray(new Group[arrayList.size()]);
-        }
-
-        public void clear() {
-            arrayList.clear();
-        }
-    };
-
+    /**
+     * Accessor for compatibility.
+     * @return list of groups.
+     */
     public GroupList getGroupList() {
-        return groupList;
+        return getGroupFactory().getGroupList();
     }
 
     /**

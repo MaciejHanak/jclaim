@@ -45,27 +45,32 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
+ * Main class for the JClaim.
+ * Sets up UI screens, connections and loads properties.
+ *
  * @author Alex Rass
  * @since Sep 9, 2004
  */
 public class Main {
     static String TITLE = "JCLAIM";
-    public static String VERSION = "Version: 4.4.7";
+    public static String VERSION = "Version: 4.4.29";
     public static final String URL_FAQ = "http://www.itbsllc.com/jclaim/User%20Documentation.htm";
     public static final String EMAIL_SUPPORT = "support@itbsllc.com";
     private static final String LICENSE = System.getProperty("client");
     public static final String DEBUG_INFO = "JDK: " + System.getProperty("java.version") + "\n"
                                            + "OS: " + System.getProperty("os.name") + "\n"
                                             + "Program " + Main.VERSION;
-    public static final String ABOUT_MESSAGE = "Java Compliant Logging & Auditing Instant Messenger.\n" +
-                            DEBUG_INFO + "\n\n" +
-                            "This is a Messaging Client Software.\n" +
-                            "Provides a GUI interface for connecting to AIM.\n" +
-                                                  "Follows logging requirements for financial institutions.\n" +
-                                                  "\nhttp://www.jclaim.com\n" +
-                                                  "\nDeveloped by ITBS LLC, Copyright 2004, 2005.  All rights reserved.\n" +
-                                                  "\nTo request a feature or submit a bug, visit 'Contact Us' section on the web site."+
-                                                  (LICENSE==null?"":"\n\nThis version is licensed to: " + LICENSE);
+    public static final String ABOUT_MESSAGE =
+            "Java Compliant Logging & Auditing Instant Messenger.\n" +
+            DEBUG_INFO + "\n\n" +
+            "This is a Messaging Client Software.\n" +
+            "Provides a GUI interface for connecting to IM Services.\n" +
+            "Follows logging requirements for financial institutions.\n" +
+            "\nhttp://www.jclaim.com\n" +
+            "\nDeveloped by ITBS LLC, Copyright 2004, 2005, 2006." +
+            "\nAll rights reserved.\n" +
+            "\nTo request a feature or submit a bug, visit 'Contact Us' section on the web site."+
+           (LICENSE==null?"":"\n\nThis version is licensed to: " + LICENSE);
 
     private static final Logger log = Logger.getLogger(Main.class.getName());
     /** Settings file */
@@ -97,6 +102,51 @@ public class Main {
         public Group create(Group group) {
             return GroupWrapper.create(group);
         }
+
+        /**
+         * Returns the reference to main static list.
+         * Anyone who has sessions:
+         *   should not have this be static, but session based hash.
+         *   basically map the factory based on session.
+         *
+         * @return list of groups.
+         */
+        public GroupList getGroupList() {
+            return groupList;
+        }
+
+        /**
+         * Anyone who has sessions - should not have this be static, but session based hash.
+         */
+        private static GroupList groupList  = new GroupList() {
+            private List<Group> arrayList = new CopyOnWriteArrayList<Group>();
+            public int size() {
+                return arrayList.size();
+            }
+
+            public Group get(int index) {
+                return arrayList.get(index);
+            }
+
+            public Group add(Group group) {
+                if (!arrayList.contains(group)) // no duplicates
+                    arrayList.add(group);
+                return group;
+            }
+
+            public void remove(Group group) {
+                arrayList.remove(group);
+            }
+
+            public Group[] toArray() {
+                return arrayList.toArray(new Group[arrayList.size()]);
+            }
+
+            public void clear() {
+                arrayList.clear();
+            }
+        };
+
     }
 
     public static ContactFactory standardContactFactory = new ContactWrapperFactory();
@@ -127,6 +177,7 @@ public class Main {
         // if all else fails: security manager to null in the first line in you code
         main  = new Main();
         System.setProperty("com.apple.macos.useScreenMenuBar", "true");
+        System.out.println("" + System.getProperty("proxyHost") + System.getProperty("proxyPort") );
         loadProperties();
         LookAndFeelManager.setLookAndFeel(ClientProperties.INSTANCE.getLookAndFeelIndex());
         motherFrame = GUIUtils.createFrame(TITLE);
