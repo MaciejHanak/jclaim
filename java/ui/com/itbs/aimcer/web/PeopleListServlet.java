@@ -231,7 +231,7 @@ public class PeopleListServlet extends HttpServlet {
             // update
             req.getSession(false).putValue(paramName, wrapper);
 
-            GroupList glist = connection.get(0).getGroupList();
+            GroupList glist = connection.get(0).getGroupList(); // this is a hack.  really I should have the group factory access here and use that reference
             for (int i = 0; i < glist.size(); i++) {
                 Group group = glist.get(i);
                 if (group instanceof GroupWrapper)
