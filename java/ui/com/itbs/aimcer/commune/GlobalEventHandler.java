@@ -93,7 +93,7 @@ public class GlobalEventHandler implements ConnectionEventListener {
      * @param message to display.
      */
     public void connectionFailed(final Connection connection, final String message) {
-        log.info("Connection to " + connection.getServiceName() + " failed " + message + "." + connection.getDisconnectCount() + " time(s).");
+        log.info("Connection to " + connection.getServiceName() + " as " + connection.getUser() + " failed " + message + "." + connection.getDisconnectCount() + " time(s).");
         connectionDone();
         handleDisconnect(connection);
         reconnect(connection,  message);
@@ -146,8 +146,8 @@ public class GlobalEventHandler implements ConnectionEventListener {
             Group group = connection.getGroupList().get(i);
             for (int j = 0; j < group.size(); j++) {
                 Nameable contact = group.get(j);
-                if (contact instanceof ContactWrapper) {
-                    ContactWrapper cw = (ContactWrapper) contact;
+                if (contact instanceof Contact) {
+                    Contact cw = (Contact) contact;
                     if (connection == cw.getConnection())
                         cw.getStatus().setOnline(false);
                 }
