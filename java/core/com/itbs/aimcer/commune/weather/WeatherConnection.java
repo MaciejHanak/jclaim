@@ -54,7 +54,7 @@ public class WeatherConnection extends AbstractConnection {
     private Timer timer;
     private final Lock updateLock = new ReentrantLock();
 
-    private static final String TOKEN_PLACE = "class=\"cityTitle\">";
+    private static final String TOKEN_PLACE = "\" class=\"city_heading\">";
     private static final String TOKEN_TEMP = "id=\"quicklook_current_temps\">";
 //    private static final String TOKEN_ICON = "http://vortex.accuweather.com/phoenix2/images/common/icons/"; //33_31x31.gif
     private static final String TOKEN_ICON = "http://vortex.accuweather.com/adc2004/common/images/wxicons/120x90/"; //images/icons/standard/wx/45x45/"; //33_31x31.gif
