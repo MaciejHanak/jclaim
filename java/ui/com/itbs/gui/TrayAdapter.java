@@ -52,6 +52,7 @@ public class TrayAdapter {
     static {
         try {
             alerter = Alerter.newInstance();
+            log.info("Alter support: " + alerter.isAlertSupported());
         } catch (Throwable e) {
             log.log(Level.SEVERE, "Failed to load alerter", e);
         }
@@ -96,7 +97,7 @@ public class TrayAdapter {
         } catch (NoClassDefFoundError e) {
             // failed to load libs, no big deal
             trayIcon = null;
-            log.log(Level.SEVERE, "", e);
+            log.log(Level.SEVERE, "Failed to load Tray Adapter", e);
         }
 
     }
@@ -158,7 +159,7 @@ public class TrayAdapter {
                     alerter.alert(frame);
                 }
             } catch (Throwable e) { // takes care of not found, no dlls etc
-                log.log(Level.SEVERE, "", e);
+                log.log(Level.SEVERE, "Failed to Alert", e);
             }
         } // if alerter loaded
 //            WinAlerter wal = new WinAlerter();
