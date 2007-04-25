@@ -310,7 +310,7 @@
 				<exclude name="*.xsl"/>
 			</packageset>
 
-			<doctitle><![CDATA[<h2>BDAP - Content Management API</h2>]]></doctitle>
+			<doctitle><![CDATA[<h2>JClaim - API</h2>]]></doctitle>
 			<bottom><![CDATA[<i>Copyright &#169; ${TODAY_US} ITBS LLC. All Rights Reserved.</i>]]></bottom>
 
 	    </javadoc>
