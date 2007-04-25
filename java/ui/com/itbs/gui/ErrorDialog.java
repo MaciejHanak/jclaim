@@ -46,6 +46,7 @@ public class ErrorDialog {
      * Instructs the container to display an error screen.
      * This is a blocking call - it MUST NOT RETURN until the error screen has been dismissed.
      *
+     * @param tip topmost component to tie to
      * @param defaultMessage Default error message displayed when the screen comes up
      * @param e actual error
      */
@@ -66,6 +67,7 @@ public class ErrorDialog {
      * Instructs the container to display an error screen.
      * This is a blocking call - it MUST NOT RETURN until the error screen has been dismissed.
      *
+     * @param tip topmost component to tie to
      * @param defaultMessage Default error message displayed when the screen comes up
      * @param detailedMessage More detailed error message
      */
