@@ -46,8 +46,8 @@ public class WinAlerter extends Alerter {
     Logger logger  = Logger.getLogger(WinAlerter.class.getName());
     /**
      * Do not use. Call the Alerter.newInstance() factory method instead.
-     * @throws SecurityException
-     * @throws UnsatisfiedLinkError
+     * @throws SecurityException load failure
+     * @throws UnsatisfiedLinkError load failure
      */
     public WinAlerter() throws SecurityException, UnsatisfiedLinkError {
         if (!isLoaded) {
