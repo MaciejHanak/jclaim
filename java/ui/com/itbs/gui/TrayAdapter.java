@@ -52,7 +52,7 @@ public class TrayAdapter {
     static {
         try {
             alerter = Alerter.newInstance();
-            log.info("Alter support: " + alerter.isAlertSupported());
+            log.fine("Alerter support: " + alerter.isAlertSupported());
         } catch (Throwable e) {
             log.log(Level.SEVERE, "Failed to load alerter", e);
         }
