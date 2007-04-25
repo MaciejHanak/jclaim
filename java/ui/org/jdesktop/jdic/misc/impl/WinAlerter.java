@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -57,7 +58,16 @@ public class WinAlerter extends Alerter {
     private synchronized void loadLib() {
         if (!isLoaded) {
 //            System.out.println("about to load the jdic_misc library");
-            System.loadLibrary("jdic_misc");
+            try {
+                System.loadLibrary("jdic_misc");
+            } catch (RuntimeException e) {
+                logger.log(Level.SEVERE, "Exception loading WinAlerter", e);
+                throw e;
+            } catch (Error e) {
+                logger.log(Level.SEVERE, "Error loading WinAlerter", e);
+                throw e;
+            }
+            logger.log(Level.INFO, "loaded Alerter library");
             delay = (int) getBlinkRate(); //milliseconds
             isLoaded = true;
 //            System.out.println("loaded");
