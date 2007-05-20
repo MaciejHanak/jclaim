@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -84,7 +85,7 @@ public class MessageWindow extends MessageWindowBase {
 
     private final AbstractAction ACTION_ADD, ACTION_INFO, ACTION_LOG, ACTION_PAGE, ACTION_EMAIL;
     private JCheckBox secureIM;
-    private JPanel personalInfo;
+    private JPanel personalInfo, adPanel;
 
     /**
      * Constructor
@@ -126,7 +127,7 @@ public class MessageWindow extends MessageWindowBase {
                                         getConnection().sendMessage(message);
                                     textPane.setText(""); // wipe it
                                 } catch (Exception e1) {
-                                    // todo log if failed to send
+                                    log.log(Level.SEVERE, "Failed to send message", e1);
                                     ErrorDialog.displayError(frame, "Failed to send message", e1);
                                 }
                                 textPane.requestFocus();
@@ -273,13 +274,13 @@ public class MessageWindow extends MessageWindowBase {
     }
 
     public static MessageWindow findWindow(Nameable buddyWrapper) {
-        for(MessageWindow messageWindow: messageWindows) {
-            if (messageWindow.frame.isDisplayable()) { // todo see if this is better than isVisible();
-                if (messageWindow.contactWrapper.equals(buddyWrapper)) {
-                    return messageWindow;
-                }
-            } else {
-                synchronized(messageWindows) {
+        synchronized(messageWindows) {
+            for(MessageWindow messageWindow: messageWindows) {
+                if (messageWindow.frame.isDisplayable()) { // todo see if this is better than isVisible();
+                    if (messageWindow.contactWrapper.equals(buddyWrapper)) {
+                        return messageWindow;
+                    }
+                } else {
                     messageWindows.remove(messageWindow);
                 }
             }
@@ -307,6 +308,10 @@ public class MessageWindow extends MessageWindowBase {
         // if I got here - noone wanted it
         if (messageWindow == null)
             messageWindow = new MessageWindow((ContactWrapper) buddyWrapper);
+        if (ClientProperties.INSTANCE.isEasyOpen() && messageWindow.frame.getState() != Frame.NORMAL) {
+            messageWindow.frame.setState(Frame.NORMAL);
+            GeneralUtils.sleep(1000);
+        }
         if (ClientProperties.INSTANCE.isUseAlert())
             TrayAdapter.alert(messageWindow.frame);
         return messageWindow;
@@ -317,10 +322,6 @@ public class MessageWindow extends MessageWindowBase {
      * @param message msg
      */
     public void feedForBuddy(Message message) {
-//        if (ClientProperties.INSTANCE.isForceFront())
-//            frame.toFront();
-        if (ClientProperties.INSTANCE.isEasyOpen() && frame.getState() != Frame.NORMAL)
-            frame.setState(Frame.NORMAL);
         try {
             addTextToHistoryPanel(message, false);
         } catch (IOException e) {
@@ -361,6 +362,7 @@ public class MessageWindow extends MessageWindowBase {
         panel.add(new BetterButton(ACTION_EMAIL));
         panel.add(new BetterButton(ACTION_PAGE));
         panel.add(new BetterButton(ACTION_LOG));
+
         panel.add(new BetterButton(ACTION_INFO));
 
         // see if we already added this one some place and if so, we don't need the add button
@@ -400,6 +402,11 @@ public class MessageWindow extends MessageWindowBase {
         personalInfo = new PersonalInfoPanel(contactWrapper);
         south.add(personalInfo);
 
+        if (System.getProperty("USE_ADS") != null) {
+            adPanel = new AdPanel();
+            south.add(adPanel);
+        }
+
         return south;
     }
 
@@ -432,6 +439,7 @@ public class MessageWindow extends MessageWindowBase {
              else
                 userIcon.setIcon(contactWrapper.getPicture());
         typingSpace.add(userIcon, BorderLayout.EAST);
+        userIcon.setVisible(contactWrapper.getPreferences().isShowIcon());
         return typingSpace;
     }
 
@@ -448,7 +456,7 @@ public class MessageWindow extends MessageWindowBase {
             appendHistoryText("\nStatus of this contact is offline or unknown. Your message may not get delivered.\n");
 //        historyPane.setCaretPosition(historyPane.getDocument().getLength()); not needed since we do that in appendHistoryText() call
         if (historyPane.getFont().getSize() > 10)
-            StyleConstants.setFontSize(ATT_GRAY, historyPane.getFont().getSize() - 1);
+            StyleConstants.setFontSize(ATT_GRAY, ClientProperties.INSTANCE.getFontSize());
         final JScrollPane jScrollPane = new JScrollPane(historyPane, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         jScrollPane.getVerticalScrollBar().setValue(jScrollPane.getVerticalScrollBar().getMaximum());
 //        jScrollPane.invalidate();
