@@ -93,8 +93,8 @@ public class ContactWrapper implements Contact, Renderable {
         return result;
     }
 
-    public static Object[] toArray() {
-        return wrappers.values().toArray();
+    public static ContactWrapper[] toArray() {
+        return wrappers.values().toArray(new ContactWrapper[wrappers.size()]);
     }
 
     /**
