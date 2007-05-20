@@ -52,6 +52,7 @@ public class MenuManager {
     private static final String COMMAND_EXIT = "Exit";
     private static final String COMMAND_SETTINGS = "Settings...";
     private static final String COMMAND_GREP = "Search...";
+    private static final String COMMAND_FILE_ORDERS = "Manage Orders";
 
     private static final String MENU_CONNECTION         = "Connection";
     private static final String COMMAND_CONNECTION_ADD  = "Add Connection...";
@@ -73,12 +74,13 @@ public class MenuManager {
 
     private static JMenu connectionMenu;
     private static JCheckBoxMenuItem globalAway;
-    private static final String COMMAND_CONN_AWAY = "Away";
-    private static final String COMMAND_CONN_MANAGE = "Manage...";
-    private static final String COMMAND_CONN_LOGIN =  "Login";
-    private static final String COMMAND_CONN_LOGOFF = "Logoff";
-    private static final String COMMAND_CONN_REMOVE = "Remove";
-    private static final String COMMAND_CONN_JOIN =   "Join Chat";
+    private static final String COMMAND_CONN_AWAY =     "Away";
+    private static final String COMMAND_CONN_MANAGE =   "Manage...";
+    private static final String COMMAND_CONN_LOGIN =    "Login";
+    private static final String COMMAND_CONN_LOGOFF =   "Logoff";
+    private static final String COMMAND_CONN_REMOVE =   "Remove";
+    private static final String COMMAND_CONN_JOIN =     "Join Chat";
+    private static final String COMMAND_CONN_SEND_MSG = "Send Message";
 
     protected static JMenuBar getMenuBar()
     {
@@ -89,6 +91,8 @@ public class MenuManager {
         ActionListener eventHandler = new MenuHandler();
         menu.add(ActionAdapter.createMenuItem(COMMAND_SETTINGS, eventHandler, 's'));    //   Settings
         menu.add(ActionAdapter.createMenuItem(COMMAND_GREP, eventHandler, 'p'));    //   Settings
+        if (ClientProperties.INSTANCE.isEnableOrderEntryInSystem())
+            menu.add(ActionAdapter.createMenuItem(COMMAND_FILE_ORDERS, eventHandler, 'm'));   //   Manage Orders
         menu.add(new JSeparator());                                       //   -------------
         menu.add(ActionAdapter.createMenuItem(COMMAND_EXIT, eventHandler,   'x'));      //   Exit
         menuBar.add(menu);                                              // File Menu
@@ -126,6 +130,7 @@ public class MenuManager {
         JMenu submenu = new JMenu(connection.getServiceName() + " - " + connection.getUserName());
         ActionListener connectionMenuEventHandler = new ConnectionMenuEventHandler(connection, submenu);
         final JMenuItem menuItemBuddyAdd = ActionAdapter.createMenuItem(COMMAND_BUDDY_ADD, connectionMenuEventHandler, 'c');
+        final JMenuItem menuItemSendMessage = ActionAdapter.createMenuItem(COMMAND_CONN_SEND_MSG, connectionMenuEventHandler, 's');
         final JMenuItem menuItemLogin = ActionAdapter.createMenuItem(COMMAND_CONN_LOGIN, connectionMenuEventHandler);
         final JMenuItem menuItemLogOff = ActionAdapter.createMenuItem(COMMAND_CONN_LOGOFF, connectionMenuEventHandler);
         final JCheckBoxMenuItem checkMenuItemAway = ActionAdapter.createCheckMenuItem(COMMAND_CONN_AWAY, connectionMenuEventHandler, 'a', connection.isAway());
@@ -134,6 +139,7 @@ public class MenuManager {
         connection.addEventListener(onOffListener);
         submenu.add(checkMenuItemAway); onOffListener.add(checkMenuItemAway, true);
         submenu.add(menuItemBuddyAdd);  onOffListener.add(menuItemBuddyAdd, true); //   Add
+        submenu.add(menuItemSendMessage);  onOffListener.add(menuItemSendMessage, true); //   Send Message
         submenu.add(menuItemLogin);     onOffListener.add(menuItemLogin, false);
         submenu.add(menuItemLogOff);    onOffListener.add(menuItemLogOff, true);
         submenu.addSeparator();
@@ -285,6 +291,8 @@ public class MenuManager {
                     if (result!=null) {
                         new MessageCollaborationWindow((ChatRoomSupport) connRef, result);
                     }
+                } else if (COMMAND_CONN_SEND_MSG.equals(e.getActionCommand())) {
+                    sendMessageDialog(connRef);
                 } else if (COMMAND_CONN_REMOVE.equals(e.getActionCommand())) {
                     int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete " + connRef.getServiceName() + " for " + connRef.getUserName(), "Delete connection?", JOptionPane.YES_NO_OPTION);
                     if (result == JOptionPane.YES_OPTION) {
@@ -464,6 +472,41 @@ public class MenuManager {
             }
         }
     }
+
+    public static void sendMessageDialog(final Connection conn) {
+        final JDialog dialog = new JDialog(Main.getFrame(), "Send Message", true);
+        Container pane = dialog.getContentPane();
+        pane.setLayout(new GridLayout(0, 2));
+        pane.add(PropertiesDialog.getLabel("Contact: ", "Which person to send the file to?"));
+        final JComboBox contact;
+        ContactWrapper[] contactWrappers = ContactWrapper.toArray();
+        List <ContactWrapper> belongingOnes = new ArrayList<ContactWrapper>();
+        for (ContactWrapper contactWrapper : contactWrappers) {
+            if (conn.equals(contactWrapper.getConnection())) {
+                belongingOnes.add(contactWrapper);
+            }
+        }
+        pane.add(contact = new JComboBox(belongingOnes.toArray()));
+        contact.setEditable(true);
+        ActionListener react = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if ("OK".equals(e.getActionCommand())) {
+                    Object result = contact.getSelectedItem();
+                    if (result.toString().trim().length()==0) return;
+                    final ContactWrapper contact = ContactWrapper.create(result.toString(), conn);
+                    MessageWindow.openWindow(contact, true);
+                }
+                dialog.dispose();
+            }
+        };
+        pane.add(new BetterButton(new ActionAdapter("OK", react, 'O')));
+        pane.add(new BetterButton(new ActionAdapter("Cancel", react, 'C')));
+        dialog.pack();
+        GUIUtils.addCancelByEscape(dialog);
+        GUIUtils.moveToScreenCenter(dialog);
+        dialog.setVisible(true);
+//        dialog.toFront();
+    }
     public static void sendFileDialog(ContactWrapper contactWrapper, List <File> fileList) {
         final JDialog dialog = new JDialog(Main.getFrame(), "File to Send", true);
         Container pane = dialog.getContentPane();
@@ -508,8 +551,8 @@ public class MenuManager {
                 dialog.dispose();
             }
         };
-        pane.add(new JButton(new ActionAdapter("OK", react, 'O')));
-        pane.add(new JButton(new ActionAdapter("Cancel", react, 'C')));
+        pane.add(new BetterButton(new ActionAdapter("OK", react, 'O')));
+        pane.add(new BetterButton(new ActionAdapter("Cancel", react, 'C')));
         dialog.pack();
         GUIUtils.addCancelByEscape(dialog);
         GUIUtils.moveToScreenCenter(dialog);
