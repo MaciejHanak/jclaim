@@ -44,33 +44,38 @@ public class SMSWrapper {
      * @param conns All available connections to try (can be null)
      * @param conn Preferred connection to first use. Used to get From preferences. (can not be null)
      * @param to whom
-     * @param message to send
      * @return  true whem message appeared to be sent
      * @throws InvalidDataException when number is wrong
      */
-    public static boolean sendMessage(List<Connection> conns, Connection conn, ContactWrapper to, String message) throws InvalidDataException {
-        if (GeneralUtils.isNotEmpty(conn.getUser().getName()) && GeneralUtils.isNotEmpty(to.getPreferences().getPhone()) && GeneralUtils.isNotEmpty(message)) {
+    public static void sendMessage(List<Connection> conns, Connection conn, ContactWrapper to) throws InvalidDataException {
+        if (GeneralUtils.isNotEmpty(conn.getUser().getName()) && GeneralUtils.isNotEmpty(to.getPreferences().getPhone())) {
             String result="";
+            boolean found = false;
             if (conn instanceof SMSSupport && conn.isLoggedIn()) {
                 result = ((SMSSupport)conn).veryfySupport(to.getPreferences().getPhone());
-                if (result!=null)
-                    throw new InvalidDataException(result);
-                ContactWrapper cw = ContactWrapper.create(to.getPreferences().getPhone(), conn);
-                cw.getPreferences().setName(to.getPreferences().getName());
-                cw.getPreferences().setDisplayName(to.getPreferences().getDisplayName() + " (Phone)");
-                MessageWindow.openWindow(cw, true);
-            } else { // find first available
-                boolean found = false;
+                if (result == null) {
+                    found = true;
+                    ContactWrapper cw = ContactWrapper.create(to.getPreferences().getPhone(), conn);
+                    cw.getPreferences().setName(to.getPreferences().getName());
+                    cw.getPreferences().setDisplayName(to.getPreferences().getDisplayName() + " (Phone)");
+                    MessageWindow.openWindow(cw, true);
+                }
+            }
+            if (!found && conns!=null) { // Search
                 String tempResult;
                 for (Connection connection : conns) {
-                    if (connection instanceof SMSSupport && conn.isLoggedIn()) {
-                        tempResult = ((SMSSupport)conn).veryfySupport(to.getPreferences().getPhone());
+                    if (connection instanceof SMSSupport){
+                        if (!connection.isLoggedIn()) {
+                            result += "Connection " + connection.getUser().getName() + " on " + connection.getServiceName() + " can't be used (not logged in).\n";
+                            continue;
+                        }
+                        tempResult = ((SMSSupport)connection).veryfySupport(to.getPreferences().getPhone());
                         if (tempResult!=null) {
                             result += tempResult + "\n";
                             continue;
                         }
                         found = true;
-                        ContactWrapper cw = ContactWrapper.create(to.getPreferences().getPhone(), conn);
+                        ContactWrapper cw = ContactWrapper.create(to.getPreferences().getPhone(), connection);
                         cw.getPreferences().setName(to.getPreferences().getName());
                         cw.getPreferences().setDisplayName(to.getPreferences().getDisplayName() + " (Phone)");
                         MessageWindow.openWindow(cw, true);
@@ -80,8 +85,7 @@ public class SMSWrapper {
                     throw new InvalidDataException("Failed to send for any one of the following reasons:\n" + result);
                 }
             }
-            return true;
-        } 
+        }
         throw new InvalidDataException("Missing required parameter.");
     }
 
