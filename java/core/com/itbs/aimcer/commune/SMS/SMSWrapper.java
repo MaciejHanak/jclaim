@@ -44,7 +44,6 @@ public class SMSWrapper {
      * @param conns All available connections to try (can be null)
      * @param conn Preferred connection to first use. Used to get From preferences. (can not be null)
      * @param to whom
-     * @return  true whem message appeared to be sent
      * @throws InvalidDataException when number is wrong
      */
     public static void sendMessage(List<Connection> conns, Connection conn, ContactWrapper to) throws InvalidDataException {
