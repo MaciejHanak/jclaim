@@ -73,7 +73,7 @@ import java.util.logging.Logger;
  * @author Alex Rass
  * @since Sep 22, 2004
  */
-public class OscarConnection extends AbstractMessageConnection implements FileTransferSupport, IconSupport {
+public class OscarConnection extends AbstractMessageConnection implements FileTransferSupport, IconSupport, SMSSupport {
     private static Logger log = Logger.getLogger(OscarConnection.class.getName());
     AimConnection connection;
     private AimConnectionProperties connectionProperties = new AimConnectionProperties(null, null); // use to hold on connection settings
@@ -628,6 +628,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             public void gotMessage(Conversation c, final MessageInfo minfo) {
                 String text  = minfo.getMessage().getMessageBody();
                 if (minfo.getMessage() instanceof DirectMessage) {
+                    log.info("Got a DIM message");
                     DirectMessage directMessage = (DirectMessage) minfo.getMessage();
                     String attachments="";
                     for (Attachment attachment :directMessage.getAttachments()) {
@@ -1262,5 +1263,13 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
         public void awaitingAuthChanged(Buddy buddy, boolean oldAwaitingAuth, boolean newAwaitingAuth) {
         }
+    } // class AliasBuddyListener
+
+
+    public String veryfySupport(String id) {
+        if (!GeneralUtils.isNotEmpty(id))
+            return "Number can't be empty";
+        return id.startsWith("+1")?null:"Must start with +1, like: +18005551234";
     }
+
 } // class OscarConnection
