@@ -197,7 +197,7 @@ public class GeneralUtils {
               result+="\n";
            }
         }
-        catch (Exception e) {
+        catch (Exception e) {                                       
            result += "Failed to retrieve rest of the interface information";
         }
         return result;
