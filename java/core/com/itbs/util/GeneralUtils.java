@@ -203,4 +203,20 @@ public class GeneralUtils {
         return result;
      }
 
+    /**
+     * Removes all the crap that isn't the phone number.
+     * @param phone to strip
+     * @return clean number
+     */
+    public static String stripPhone(String phone) {
+        String result="";
+        for (int i = 0; i < phone.length(); i++) {
+            char ca = phone.charAt(i);
+            if (Character.isDigit(ca) || ca=='+')
+              result += ca;
+        }
+        return result;
+    }
+
+
 }
