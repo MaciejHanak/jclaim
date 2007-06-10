@@ -101,7 +101,7 @@ public class WebHelper {
         }
         out.close();
         source.close();
-        // to do this right, really need to cover a bunch more error code, and only look at headers etc. (AR)
+        // to do this right, really need to cover a bunch more error codes, and only look at headers etc. (AR)
         if (buf.indexOf("301 Moved Permanently")>0) { // found that a page has moved
             int indexOfLocation = buf.indexOf("Location:");
             int indexOfContext = buf.indexOf("Content-Length:");
@@ -115,10 +115,12 @@ public class WebHelper {
 
     public static String getPage(String url, String post) throws IOException {
         URLConnection connection = new URL(url).openConnection();
-        connection.setDoOutput(true);
-        PrintStream out = new PrintStream(connection.getOutputStream());
-        out.println(post); // param=value
-        out.close();
+        if (post!=null) {
+            connection.setDoOutput(true);
+            PrintStream out = new PrintStream(connection.getOutputStream());
+            out.println(post); // param=value
+            out.close();
+        }
         String response;
         BufferedReader source = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         StringBuffer buf = new StringBuffer();
