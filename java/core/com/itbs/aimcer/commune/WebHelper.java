@@ -56,6 +56,7 @@ public class WebHelper {
     /**
      * Generic web query method for web page referenced by url.
      * Return the page as a string.
+     *
      * @param host - website
      * @param port - port (80)
      * @param url - url portion of address.
@@ -98,7 +99,17 @@ public class WebHelper {
         while ((response = source.readLine()) != null) {  // timeout should carry us through bad stuff.
             buf.append(response);
         }
-
+        out.close();
+        source.close();
+        // to do this right, really need to cover a bunch more error code, and only look at headers etc. (AR)
+        if (buf.indexOf("301 Moved Permanently")>0) { // found that a page has moved
+            int indexOfLocation = buf.indexOf("Location:");
+            int indexOfContext = buf.indexOf("Content-Length:");
+            if (indexOfContext>0 && indexOfLocation>0) {
+                String newUrl = buf.substring(indexOfLocation+"Location:".length(), indexOfContext).trim();
+                return getPage(new URL(newUrl));
+            }
+        }
         return buf.toString();      // return InputStream to allow client to read resource
     }
 
