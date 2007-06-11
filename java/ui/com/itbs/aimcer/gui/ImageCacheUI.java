@@ -54,6 +54,8 @@ public class ImageCacheUI extends ImageCache {
     public static ImagePair ICON_JABBER, ICON_AIM, ICON_ICQ, ICON_YAHOO, ICON_MSN, ICON_GOOGLE;
     public static ImagePair ICON_JC, ICON_JC_ANIM;
     public static ImagePair ICON_WIRELESS, ICON_EMAIL, ICON_TYPE, ICON_HISTORY, ICON_INFO;
+    
+    public static ImagePair ICON_AD;
 
     static {
         try {
@@ -75,12 +77,24 @@ public class ImageCacheUI extends ImageCache {
             ICON_EMAIL = new ImagePair("email.gif");
             ICON_HISTORY = new ImagePair("history.gif");
             ICON_INFO = new ImagePair("info.gif");
-            ICON_JC = new ImagePair("jc.gif");
-            ICON_JC_ANIM = new ImagePair("jc_anim.gif");
+            if (System.getProperty("USE_ADS") != null) {
+                ICON_JC = new ImagePair("vois.gif");
+                ICON_JC_ANIM = new ImagePair("vois_anim.gif");
+            } else {
+                ICON_JC = new ImagePair("jc.gif");
+                ICON_JC_ANIM = new ImagePair("jc_anim.gif");
+            }
             ICON_TYPE = new ImagePair("typing.gif");
         } catch (IOException e) {
             ErrorDialog.displayError(null, "Could not load image resources", e);
         }
+        
+        try {
+            ICON_AD = new ImagePair("logo_vois.gif");
+        } catch (IOException e) {
+            // noone cares
+        }
+
     }
 
 
