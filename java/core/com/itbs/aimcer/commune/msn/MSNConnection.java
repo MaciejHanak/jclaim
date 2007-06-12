@@ -152,10 +152,28 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
             Contact cw  = getContactFactory().create(friend.getLoginName(), MSNConnection.this);
             cw.getStatus().setOnline(!friend.getStatus().equals(UserStatus.OFFLINE));
             cw.setDisplayName(GeneralUtils.stripHTML(friend.getFormattedFriendlyName()));
-            log.fine("friend " + friend.getStatus() + " group index " + friend.getGroupIndex());
-            Group gw = getGroupFactory().create(connection.getBuddyGroup().getGroupList().getGroup(friend.getGroupIndex()).getName());
-            gw.add(cw);
-            getGroupList().add(gw);
+            try {
+                log.fine("friend " + friend.getStatus() + " group index " + friend.getGroupIndex());
+                Group gw = getGroupFactory().create(connection.getBuddyGroup().getGroupList().getGroup(friend.getGroupIndex()).getName());
+                gw.add(cw);
+                getGroupList().add(gw);
+            } catch (NullPointerException e) { // looking for a bug!
+                String bug = "Bug in msn implementation. ";
+                try {
+                    bug = "Bug in msn implementation: "
+                        + (connection==null?" connection is null":
+                        (connection.getBuddyGroup()==null?"connection.getBuddyGroup()==null":
+                        (connection.getBuddyGroup().getGroupList()==null?"connection.getBuddyGroup().getGroupList() is null":
+                        (friend.getGroupIndex()==null?"friend.getGroupIndex() is null":
+                        (connection.getBuddyGroup().getGroupList().getGroup(friend.getGroupIndex())==null?"connection.getBuddyGroup().getGroupList().getGroup(friend.getGroupIndex()) is null":"unknown problem")))));
+                } catch (NullPointerException ex) {
+                    // DOUGH!
+                }
+                log.log(Level.SEVERE, "Bug!", e);
+                for (ConnectionEventListener eventHandler : eventHandlers) {
+                    eventHandler.errorOccured("Found a bug in MSN protocol, please report back to us:\n"+bug, e);
+                }
+            }
         }
 
         public void instantMessageReceived(SwitchboardSession ss, MsnFriend friend, MimeMessage mime) {
