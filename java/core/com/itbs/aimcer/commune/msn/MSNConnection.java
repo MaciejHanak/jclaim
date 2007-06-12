@@ -154,9 +154,14 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
             cw.setDisplayName(GeneralUtils.stripHTML(friend.getFormattedFriendlyName()));
             try {
                 log.fine("friend " + friend.getStatus() + " group index " + friend.getGroupIndex());
-                Group gw = getGroupFactory().create(connection.getBuddyGroup().getGroupList().getGroup(friend.getGroupIndex()).getName());
-                gw.add(cw);
-                getGroupList().add(gw);
+                rath.msnm.entity.Group msnGroup = connection.getBuddyGroup().getGroupList().getGroup(friend.getGroupIndex());
+                if (msnGroup!=null) {
+                    Group gw = getGroupFactory().create(msnGroup.getName());
+                    gw.add(cw);
+                    getGroupList().add(gw);
+                } else {
+                    // todo SOMETHING!  Default group!?
+                }
             } catch (NullPointerException e) { // looking for a bug!
                 String bug = "Bug in msn implementation. ";
                 try {
