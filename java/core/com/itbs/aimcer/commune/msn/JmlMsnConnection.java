@@ -69,7 +69,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 			switchboard.getMessenger().getOwner().setPersonalMessage(message.getContent());
 
 			sessions.put(friend.getEmail(), switchboard);
-            Message jcMessage = new MessageImpl(getContactFactory().create(friend.getId(), JmlMsnConnection.this),
+            Message jcMessage = new MessageImpl(getContactFactory().create(friend.getEmail().getEmailAddress(), JmlMsnConnection.this),
                     false, false, message.getContent());
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 try {
@@ -165,7 +165,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 			log.fine(messenger + " friend " + friend.getEmail()
 					+ " status changed from " + friend.getOldStatus() + " to "
 					+ friend.getStatus());
-            Contact cw = getContactFactory().create(friend.getId(), JmlMsnConnection.this);
+            Contact cw = getContactFactory().create(friend.getEmail().getEmailAddress(), JmlMsnConnection.this);
             cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
 //            cw.setOnline(true);
             for (ConnectionEventListener eventHandler : eventHandlers) {
