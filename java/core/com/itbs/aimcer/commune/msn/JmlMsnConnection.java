@@ -131,7 +131,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
                 gw = getGroupFactory().create(group.getGroupName());
                 MsnContact[] contacts = group.getContacts();
                 for (MsnContact friend : contacts) {
-                    cw = getContactFactory().create(friend.getId(), JmlMsnConnection.this);
+                    cw = getContactFactory().create(friend.getEmail().getEmailAddress(), JmlMsnConnection.this);
                     cw.getStatus().setOnline(!friend.getStatus().equals(MsnUserStatus.OFFLINE));
                     cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
                     gw.add(cw);
@@ -146,7 +146,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
             MsnContact[] contacts = connection.getContactList().getContacts();
             for (MsnContact friend : contacts) {
                 if (friend.getBelongGroups().length==0) {
-                    cw = getContactFactory().create(friend.getId(), JmlMsnConnection.this);
+                    cw = getContactFactory().create(friend.getEmail().getEmailAddress(), JmlMsnConnection.this);
                     cw.getStatus().setOnline(!friend.getStatus().equals(MsnUserStatus.OFFLINE));
                     cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
                     gw.add(cw);
