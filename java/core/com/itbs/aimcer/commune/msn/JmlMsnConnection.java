@@ -65,10 +65,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 		public void instantMessageReceived(MsnSwitchboard switchboard,
                                            MsnInstantMessage message,
                                            MsnContact friend) {
-			// set personal message
-			switchboard.getMessenger().getOwner().setPersonalMessage(message.getContent());
-
-			sessions.put(friend.getEmail(), switchboard);
+            sessions.put(friend.getEmail(), switchboard);
             Message jcMessage = new MessageImpl(getContactFactory().create(friend.getEmail().getEmailAddress(), JmlMsnConnection.this),
                     false, false, message.getContent());
             for (ConnectionEventListener eventHandler : eventHandlers) {
