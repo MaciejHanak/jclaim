@@ -104,7 +104,11 @@ public class WeatherConnection extends AbstractConnection {
                 try {
     //                page = WebHelper.getPage(new URL("http://www.w2.weather.com/weather/local/" + zip));
     //                page = WebHelper.getPage(new URL("http://www.weather.com/weather/local/" + zip));
-                    page = WebHelper.getPage(new URL("http://wwwa.accuweather.com/index-forecast.asp?&partner=accuweather&zipcode="+zip.getName()));
+
+//                    page = WebHelper.getPage(new URL("http://wwwa.accuweather.com/index-forecast.asp?&partner=accuweather&zipcode="+zip.getName()));
+                    page = WebHelper.getPage(new URL("http://www.accuweather.com/index-forecast.asp?&partner=accuweather&zipcode="+zip.getName()));
+//                    page = WebHelper.getPage(new URL("http://www.accuweather.com/index-forecast.asp?partner=accuweather&traveler=0&zipChg=1&zipChg=1&zipcode=10001&metric=0"));//+zip.getName()));
+
     //                page = WebHelper.getPage(new URL("http://www.weather.com/weather/local/"+zip+"?lswe="+zip+"&lwsa=WeatherLocalUndeclared"));
     //                page = WebHelper.getPage(new URL("http://www.w2.weather.com/weather/local/"+zip+"?lswe="+zip+"&lwsa=WeatherLocalUndeclared"));
                     weather = getWeather(page);
