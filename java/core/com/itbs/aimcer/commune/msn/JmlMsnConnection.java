@@ -126,39 +126,41 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 			log.fine(messenger + " contact list sync completed");
             MsnGroup[] groups = connection.getContactList().getGroups();
             Group gw;
-            Contact cw;
             for (MsnGroup group : groups) {
                 gw = getGroupFactory().create(group.getGroupName());
-                MsnContact[] contacts = group.getContacts();
-                for (MsnContact friend : contacts) {
-                    cw = getContactFactory().create(friend.getEmail().getEmailAddress(), JmlMsnConnection.this);
-                    cw.getStatus().setOnline(!friend.getStatus().equals(MsnUserStatus.OFFLINE));
-                    cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
-                    gw.add(cw);
-                }
-                getGroupList().add(gw);
+                populateContactsFromList(group.getContacts(), gw, false);
             }
-            
+            // And now once for the ones w/o a group.
             MsnGroup defaultGroup = connection.getContactList().getDefaultGroup();
             gw = getGroupFactory().create(defaultGroup.getGroupName());
-            getGroupList().add(gw);
 
-            MsnContact[] contacts = connection.getContactList().getContacts();
-            for (MsnContact friend : contacts) {
-                if (friend.getBelongGroups().length==0) {
-                    cw = getContactFactory().create(friend.getEmail().getEmailAddress(), JmlMsnConnection.this);
-                    cw.getStatus().setOnline(!friend.getStatus().equals(MsnUserStatus.OFFLINE));
-                    cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
-                    gw.add(cw);
-                }
-            }
+            populateContactsFromList(connection.getContactList().getContacts(), gw, true);
 
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 eventHandler.statusChanged(JmlMsnConnection.this);
             }
         }
 
-		public void contactStatusChanged(MsnMessenger messenger,
+        /**
+         * Populates the contact list from MSN's data.
+         * @param contacts to run through
+         * @param gw to assign to.
+         * @param orphansOnly determins if only orphaned contacts be assigned to that group.
+         */
+        private void populateContactsFromList(MsnContact[] contacts, Group gw, boolean orphansOnly) {
+            Contact cw;
+            for (MsnContact friend : contacts) {
+                if (!orphansOnly || friend.getBelongGroups().length==0) { // only orphans
+                    cw = getContactFactory().create(friend.getEmail().getEmailAddress(), JmlMsnConnection.this);
+                    cw.getStatus().setOnline(!friend.getStatus().equals(MsnUserStatus.OFFLINE));
+                    cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
+                    gw.add(cw);
+                }
+            }
+            getGroupList().add(gw);
+        }
+
+        public void contactStatusChanged(MsnMessenger messenger,
 				MsnContact friend) {
 			log.fine(messenger + " friend " + friend.getEmail()
 					+ " status changed from " + friend.getOldStatus() + " to "
@@ -228,6 +230,9 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 	public void addContact(Nameable contact, Group group) {
 		connection.addGroup(group.getName());
         Email email = Email.parseStr(contact.getName());
+        if (email==null) {
+            notifyErrorOccured("Name is not not an email address (MSN requirement).", null);
+        }
         connection.addFriend(email, contact.getName());
         connection.moveFriend(email, "", group.getName()); // this probably needs a fix for default group name.
 
