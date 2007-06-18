@@ -52,10 +52,27 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
     public static final int HTTP=1;
     public static final int DIRECT=2;
     public static final int OTHER=3;
+
+    public int PREFERRED_MODE = DIRECT;
+
+    public final static String SERVER_JAPAN = "cs.yahoo.co.jp";
+    public final static String SERVER_WORLD = "scs.msg.yahoo.com";
+
     private static final String ESCAPE = "\u001B[";
 
     public String getServiceName() {
         return "YAHOO";
+    }
+
+    public YMsgConnection() {
+        // Info is not public (prolly a bug), so have to get it this way.
+        // if the code is changed to change mode, need to inset that there instead.
+        // Doing it here allows us to overwrite it prior to use in connect().
+        if (PREFERRED_MODE == DIRECT) {
+            DirectConnectionHandler dch = new DirectConnectionHandler();
+            setServerName(dch.getHost());
+            setServerPort(dch.getPort());
+        }
     }
 
 /*
@@ -67,18 +84,22 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
     public void connect() throws Exception {
         super.connect();
         notifyConnectionInitiated();
-        int mode = DIRECT;
         // -----Set the connection handler as per command line
-        if (mode == SOCKS)
+        if (PREFERRED_MODE == SOCKS) {
             session = new Session(new SOCKSConnectionHandler("autoproxy", 1080));
-        else if (mode == HTTP)
+        } else if (PREFERRED_MODE == HTTP) {
             session = new Session(new HTTPConnectionHandler("http.pager.yahoo.com", 80));
 //            session = new Session(new HTTPConnectionHandler("proxy", 8080));
-        else if (mode == DIRECT)
-            session = new Session(new DirectConnectionHandler());
+        } else if (PREFERRED_MODE == DIRECT) {
+            // The following line (while ugly) allows us to send japanese users to the right server,
+            // while perserving the ability to override servers for rest of the users.
+            String serverName = (getUserName()!=null && getUserName().endsWith(".jp"))?SERVER_JAPAN:getServerName();
+            DirectConnectionHandler dch = new DirectConnectionHandler(serverName, getServerPort());
+            session = new Session(dch);
             // ports 5050,23,25,80
-        else
+        } else {
             session = new Session();
+        }
         // -----Register a listener
         session.addSessionListener(new SessionHandler());
         log.fine(session.getConnectionHandler().toString());
