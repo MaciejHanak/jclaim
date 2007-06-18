@@ -204,11 +204,11 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
     }
 
     public void addContactGroup(Group group) {
-        //todo implemement code for adding a group
+        //todo Yahoo d/n support this directly. Use addContact... keep checking if new versions implemement code for adding a group
     }
 
     public void removeContactGroup(Group group) {
-        //todo implemement code for removing a group
+        //todo Yahoo d/n support this directly. Use addContact... keep checking if new versions implemement code for removing a group
     }
 
     /**
