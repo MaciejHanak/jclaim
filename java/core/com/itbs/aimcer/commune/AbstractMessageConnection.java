@@ -110,7 +110,7 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
      * @throws Exception exception
      */
     public void connect() throws Exception {
-        setUserName(getUserName()); // update user 
+        setUserName(getUserName()); // update user variable (not same as username, as it is a user object)
     }
 
     public String getPassword() {
