@@ -93,8 +93,8 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
         } else if (PREFERRED_MODE == DIRECT) {
             // The following line (while ugly) allows us to send japanese users to the right server,
             // while perserving the ability to override servers for rest of the users.
-            String serverName = (getUserName()!=null && getUserName().endsWith(".jp"))?SERVER_JAPAN:getServerName();
-            DirectConnectionHandler dch = new DirectConnectionHandler(serverName, getServerPort());
+//            String serverName = (getUserName()!=null && getUserName().endsWith(".jp"))?SERVER_JAPAN:getServerName();
+            DirectConnectionHandler dch = new DirectConnectionHandler(getServerName(), getServerPort());
             session = new Session(dch);
             // ports 5050,23,25,80
         } else {
