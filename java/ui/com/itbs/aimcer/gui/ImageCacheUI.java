@@ -22,6 +22,7 @@ package com.itbs.aimcer.gui;
 
 import com.itbs.aimcer.commune.joscar.ICQConnection;
 import com.itbs.aimcer.commune.joscar.OscarConnection;
+import com.itbs.aimcer.commune.msn.JmlMsnConnection;
 import com.itbs.aimcer.commune.msn.MSNConnection;
 import com.itbs.aimcer.commune.smack.GoogleConnection;
 import com.itbs.aimcer.commune.smack.SmackConnection;
@@ -73,6 +74,7 @@ public class ImageCacheUI extends ImageCache {
             ICON_YAHOO = new ImagePair("yahoo.gif", YMsgConnection.class);
             ICON_GOOGLE = new ImagePair("google.gif", GoogleConnection.class);
             ICON_MSN = new ImagePair("msn.gif", MSNConnection.class);
+            ICON_MSN = new ImagePair("msn.gif", JmlMsnConnection.class);
             ICON_WIRELESS = new ImagePair("wireless.gif");
             ICON_EMAIL = new ImagePair("email.gif");
             ICON_HISTORY = new ImagePair("history.gif");
