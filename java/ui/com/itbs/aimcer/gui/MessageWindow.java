@@ -23,7 +23,6 @@ package com.itbs.aimcer.gui;
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.aimcer.commune.SMS.InvalidDataException;
-import com.itbs.aimcer.commune.SMS.SMSWrapper;
 import com.itbs.gui.*;
 import com.itbs.util.DelayedThread;
 import com.itbs.util.GeneralUtils;
@@ -175,22 +174,12 @@ public class MessageWindow extends MessageWindowBase {
                     Main.complain("Please populate the entry for cell phone on the info panel.");
                     return;
                 }
-                if (textPane.getText().trim().length() == 0) {
-                    Main.complain("Please enter the text to page with.");
-                    return;
-                }
-                int result = JOptionPane.showConfirmDialog(frame, "Page user?", "Confirm", JOptionPane.YES_NO_OPTION);
+                int result = JOptionPane.showConfirmDialog(frame, "This will open a new IM window.\nContinue?", "Confirm", JOptionPane.YES_NO_OPTION);
                 if (result == JOptionPane.YES_OPTION) {
                     try {
-                        Message message = new MessageImpl(contactWrapper, true, "Via Cell: "  + textPane.getText());
-                        addTextToHistoryPanel(message, true);
-
-                        SMSWrapper.sendMessage(getConnection().getUserName(), contactWrapper.getPreferences().getPhone(), textPane.getText().trim());
-                        textPane.setText(""); // wipe it
+                        sendSMSMessage(Main.getConnections(),  getConnection(), contactWrapper);
                     } catch (InvalidDataException ex) {
                         Main.complain(ex.getMessage());
-                    } catch (IOException ex) {
-                        Main.complain(ex.getMessage(), ex);
                     }
                 } // if Yes
             }
@@ -310,7 +299,7 @@ public class MessageWindow extends MessageWindowBase {
             messageWindow = new MessageWindow((ContactWrapper) buddyWrapper);
         if (ClientProperties.INSTANCE.isEasyOpen() && messageWindow.frame.getState() != Frame.NORMAL) {
             messageWindow.frame.setState(Frame.NORMAL);
-            GeneralUtils.sleep(1000);
+            GeneralUtils.sleep(500); // this isn't helping either
         }
         if (ClientProperties.INSTANCE.isUseAlert())
             TrayAdapter.alert(messageWindow.frame);
@@ -693,4 +682,54 @@ public class MessageWindow extends MessageWindowBase {
         }
 
     } // class
+    /**
+     * Sends message via any available media.
+     * @param conns All available connections to try (can be null)
+     * @param conn Preferred connection to first use. Used to get From preferences. (can not be null)
+     * @param to whom
+     * @throws InvalidDataException when number is wrong
+     */
+    public static void sendSMSMessage(List<Connection> conns, Connection conn, ContactWrapper to) throws InvalidDataException {
+        if (GeneralUtils.isNotEmpty(conn.getUser().getName()) && GeneralUtils.isNotEmpty(to.getPreferences().getPhone())) {
+            String result="";
+            boolean found = false;
+            if (conn instanceof SMSSupport && conn.isLoggedIn()) {
+                result = ((SMSSupport)conn).veryfySupport(GeneralUtils.stripPhone(to.getPreferences().getPhone()));
+                if (result == null) {
+                    found = true;
+                    ContactWrapper cw = (ContactWrapper) conn.getContactFactory().create(GeneralUtils.stripPhone(to.getPreferences().getPhone()), conn);
+                    cw.getPreferences().setName(to.getPreferences().getName());
+                    cw.getPreferences().setDisplayName((to.getPreferences().getDisplayName()==null?to.getName():to.getPreferences().getDisplayName()) + " (Phone)");
+                    MessageWindow.openWindow(cw, true);
+                }
+            }
+            if (!found && conns!=null) { // Search
+                String tempResult;
+                for (Connection connection : conns) {
+                    if (connection instanceof SMSSupport){
+                        if (!connection.isLoggedIn()) {
+                            result += "Connection " + connection.getUser().getName() + " on " + connection.getServiceName() + " can't be used (not logged in).\n";
+                            continue;
+                        }
+                        tempResult = ((SMSSupport)connection).veryfySupport(GeneralUtils.stripPhone(to.getPreferences().getPhone()));
+                        if (tempResult!=null) {
+                            result += tempResult + "\n";
+                            continue;
+                        }
+                        found = true;
+                        ContactWrapper cw = (ContactWrapper) connection.getContactFactory().create(GeneralUtils.stripPhone(to.getPreferences().getPhone()), connection);
+                        cw.getPreferences().setName(to.getPreferences().getName());
+                        cw.getPreferences().setDisplayName(to.getPreferences().getDisplayName() + " (Phone)");
+                        MessageWindow.openWindow(cw, true);
+                    }
+                }
+                if (!found) {
+                    throw new InvalidDataException("Failed to send for any one of the following reasons:\n" + result);
+                }
+            }
+        } else {
+            throw new InvalidDataException("Missing required parameter.");
+        }
+    }
+
 } // class MessageWindow
