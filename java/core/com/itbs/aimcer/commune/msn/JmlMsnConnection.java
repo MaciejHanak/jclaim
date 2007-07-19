@@ -17,6 +17,8 @@ import java.util.logging.Logger;
 
 /**
  * This implementation provides a MSN Messenger connection using the JML and JClaim libraries.
+ * <p>
+ * Implementation Note: Some people prefer friend.getDisplayName() v.s. friend.getFriendlyName().
  *
  * @author Chris Chiappone, Alex Rass
  * @since Oct, 2006
@@ -147,9 +149,17 @@ public class JmlMsnConnection extends AbstractMessageConnection {
         private void populateContactsFromList(MsnContact[] contacts, Group gw, boolean orphansOnly) {
             Contact cw;
             for (MsnContact friend : contacts) {
+
                 if (!orphansOnly || friend.getBelongGroups().length==0) { // only orphans
+
+                    boolean online = MsnUserStatus.OFFLINE != friend.getStatus() &&
+                            MsnUserStatus.HIDE != friend.getStatus();
+                    // a lot of statuses which all mean "away"
+                    boolean away = online && MsnUserStatus.ONLINE != friend.getStatus();
+
                     cw = getContactFactory().create(friend.getEmail().getEmailAddress(), JmlMsnConnection.this);
-                    cw.getStatus().setOnline(!friend.getStatus().equals(MsnUserStatus.OFFLINE));
+                    cw.getStatus().setOnline(online);
+                    cw.getStatus().setAway(away);
                     cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
                     gw.add(cw);
                 }
@@ -164,9 +174,14 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 					+ friend.getStatus());
             Contact cw = getContactFactory().create(friend.getEmail().getEmailAddress(), JmlMsnConnection.this);
             cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
-//            cw.setOnline(true);
+
+            boolean online = MsnUserStatus.OFFLINE != friend.getStatus() &&
+                    MsnUserStatus.HIDE != friend.getStatus();
+            // a lot of statuses which all mean "away"
+            boolean away = online && MsnUserStatus.ONLINE != friend.getStatus();
+            
             for (ConnectionEventListener eventHandler : eventHandlers) {
-                (eventHandler).statusChanged(JmlMsnConnection.this, cw, true, false, 0);
+                (eventHandler).statusChanged(JmlMsnConnection.this, cw, online, away, 0);
             }
 
         }
