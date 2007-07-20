@@ -36,7 +36,7 @@ import com.itbs.aimcer.commune.ymsg.YMsgConnection;
  *
  * @author Alex Rass
  */
-class ServiceProvider {
+public class ServiceProvider {
     String name;
     Class classRef;
 
@@ -66,11 +66,11 @@ class ServiceProvider {
         return name;
     }
 
-    MessageSupport getInstance() throws IllegalAccessException, InstantiationException {
+    public MessageSupport getInstance() throws IllegalAccessException, InstantiationException {
         return (MessageSupport) classRef.newInstance();
     }
 
-    static ServiceProvider[] getProviders() {
+    public static ServiceProvider[] getProviders() {
         return providers;
     }
 } // class ServiceProvider
