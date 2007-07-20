@@ -26,6 +26,10 @@ import org.jivesoftware.smack.XMPPException;
 
 /**
  * Provides secure Jabber connectivity.
+ * <p>
+ * This connection does not guarantee SSL. (TLC).  It simply directs to an SSL port and allows unsigned certificates.
+ * If authentication fails, it will still allow less secure connections.
+ * If you want to ENSURE connection is secure, test isSecure() on native connection object after the connect.
  *
  * @author Alex Rass
  * @since Aug 31, 2005
