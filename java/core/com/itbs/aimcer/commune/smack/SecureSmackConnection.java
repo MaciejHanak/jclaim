@@ -20,7 +20,7 @@
 
 package com.itbs.aimcer.commune.smack;
 
-import org.jivesoftware.smack.SSLXMPPConnection;
+import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 
@@ -38,10 +38,12 @@ public class SecureSmackConnection extends SmackConnection {
     }
 
     protected XMPPConnection getNewConnection() throws XMPPException {
-        return new SSLXMPPConnection(
+        ConnectionConfiguration connectionConfiguration = new ConnectionConfiguration(
                 System.getProperty("JABBER_HOST", getServerName()),
                 Integer.getInteger("JABBER_PORT_SSL", getServerPort())
-                );
+        );
+        connectionConfiguration.setSelfSignedCertificateEnabled(true);
+        return  new XMPPConnection(connectionConfiguration);
     }
 
     /**
