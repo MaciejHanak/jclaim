@@ -38,7 +38,6 @@ import org.jivesoftware.smackx.muc.SubjectUpdatedListener;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,10 +62,10 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     }
 
     protected XMPPConnection getNewConnection() throws XMPPException {
-        return new XMPPConnection(
+        return new XMPPConnection(new ConnectionConfiguration(
                 System.getProperty("JABBER_HOST", getServerName()),
                 Integer.getInteger("JABBER_PORT", getServerPort())
-                );
+                ));
     }
     /**
      * Non-blocking call.
@@ -85,6 +84,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
         try {
             connection = getNewConnection();
 //            connection.loginAnonymously();
+            connection.connect();
             connection.login(getUserName(), getPassword());
             fireConnect();
         } catch (XMPPException e) {
@@ -109,25 +109,48 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             public void connectionClosedOnError(Exception e) {
                 notifyConnectionLost();
             }
+
+            /**
+             * The connection will retry to reconnect in the specified number of seconds.
+             *
+             * @param seconds remaining seconds before attempting a reconnection.
+             */
+            public void reconnectingIn(int seconds) {
+                //TODO Change
+            }
+
+            /**
+             * The connection has reconnected successfully to the server. Connections will
+             * reconnect to the server when the previous socket connection was abruptly closed.
+             */
+            public void reconnectionSuccessful() {
+                //TODO Change
+            }
+
+            /**
+             * An attempt to connect to the server has failed. The connection will keep trying
+             * reconnecting to the server in a moment.
+             *
+             * @param e the exception that caused the reconnection to fail.
+             */
+            public void reconnectionFailed(Exception e) {
+                //TODO Change
+            }
         });
           //////////////////////
          // Allow All to Add //
         /////////////////////
-        connection.getRoster().setSubscriptionMode(Roster.SUBSCRIPTION_ACCEPT_ALL);
+        connection.getRoster().setSubscriptionMode(Roster.SubscriptionMode.accept_all);
 
           ///////////////////
          // get user list //
         //////////////////
         Group lastGroup;
         Contact contact;
-        Iterator iter = connection.getRoster().getGroups();
-        while (iter.hasNext()) {
-            RosterGroup rosterGroup = (RosterGroup) iter.next();
+        for (RosterGroup rosterGroup : connection.getRoster().getGroups()) {
             getGroupList().add(lastGroup = getGroupFactory().create(rosterGroup.getName()));
             lastGroup.clear(this); // b/c of reconnect
-            Iterator entries = rosterGroup.getEntries();
-            while (entries.hasNext()) {
-                RosterEntry rosterEntry = (RosterEntry) entries.next();
+            for (RosterEntry rosterEntry : rosterGroup.getEntries()) {
                 contact = getContactFactory().create(rosterEntry.getUser(), this);
                 if (rosterEntry.getName() != null) {
                     contact.setDisplayName(rosterEntry.getName());
@@ -136,12 +159,12 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             }
         } // while
 
-          /////////////////////
+        /////////////////////
          // Handle Messages //
         ////////////////////
         // Create a packet filter to listen for new messages from a particular
         // user. We use an AndFilter to combine two other filters.
-        PacketFilter filter = new MessageTypeFilter(org.jivesoftware.smack.packet.Message.Type.CHAT);
+        PacketFilter filter = new MessageTypeFilter(org.jivesoftware.smack.packet.Message.Type.chat);
         // Next, create a packet listener. We use an anonymous inner class for brevity.
         PacketListener messageListener = new PacketListener() {
             public void processPacket(Packet packet) {
@@ -177,34 +200,26 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
 
 
         connection.getRoster().addRosterListener(new RosterListener() {
-            public void entriesAdded(Collection addresses) {
+            public void entriesAdded(Collection<String> addresses) {
                 // Ignore event for now
             }
 
-            public void entriesUpdated(Collection addresses) {
+            public void entriesUpdated(Collection<String> addresses) {
                 // Ignore event for now
             }
 
-            public void entriesDeleted(Collection addresses) {
+            public void entriesDeleted(Collection<String> addresses) {
                 // Ignore event for now
             }
 
-            /** keep for compatibility with earlier versions. */
-            public void rosterModified() {
-            }
-
-            public void presenceChanged(String user) {
-                user = normalizeName(user);
-                // If the presence is unavailable then "null" will be printed,
-                // which is fine for this example.
-                Presence presence = connection.getRoster().getPresence(user);
-                Contact contact = getContactFactory().create(user, SmackConnection.this);
-                for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                    eventHandler.statusChanged(SmackConnection.this,
-                            contact, presence != null, presence == null || presence.getType() == Presence.Type.UNAVAILABLE, 0);
+            public void presenceChanged(Presence presence) {
+                Contact contact = getContactFactory().create(normalizeName(presence.getFrom()), SmackConnection.this);
+                for (ConnectionEventListener eventHandler : eventHandlers) {
+                    eventHandler.statusChanged(SmackConnection.this, contact, presence.isAvailable(), presence.isAway(), 0);
                 }
             }
-        });
+
+        }); // class RosterListener
 
         // File transfers support:
         fileTransferManager = new FileTransferManager(connection);
@@ -235,13 +250,13 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
 
     public void disconnect(boolean intentional) {
         if (connection!=null)
-            connection.close();
+            connection.disconnect();
         super.disconnect(intentional);
     }
 
     public void reconnect() {
         try {
-            connection.close();
+            connection.disconnect();
             connect();
         } catch (Exception e) {
 //            GeneralUtils.sleep(1000);
@@ -258,7 +273,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
      */
     public void cancel() {
         if (!isLoggedIn())
-            connection.close();
+            connection.disconnect();
     }
 
     public void setTimeout(int timeout) {
@@ -278,23 +293,19 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     }
 
     /**
-     * Used to fix the usernames for the jabber protocol.
+     * Used to fix the usernames for the jabber protocol.<br>
      * Usernames need server name.
      * @param name of the user's account to fix
      * @return name, including server.
      */
     protected String fixUserName(String name) {
         if (name.indexOf('@')>-1) return name;
-        return name + "@jabber.org";
+        return name + "@" + getServerName();
     }
 
     public void removeContact(Nameable contact) {
-        Iterator iter = connection.getRoster().getGroups();
-        while (iter.hasNext()) {
-            RosterGroup rosterGroup = (RosterGroup) iter.next();
-            Iterator entries = rosterGroup.getEntries();
-            while (entries.hasNext()) {
-                RosterEntry rosterEntry = (RosterEntry) entries.next();
+        for (RosterGroup rosterGroup : connection.getRoster().getGroups()) {
+            for (RosterEntry rosterEntry : rosterGroup.getEntries()) {
                 if (rosterEntry.getName().equals(contact.getName())) {
                     try {
                         rosterGroup.removeEntry(rosterEntry);
@@ -350,9 +361,9 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
      */
     public void setAway(boolean away) {
         if (connection != null) {
-            Presence presence = new Presence(Presence.Type.AVAILABLE);
-            if (away) {
-                presence.setMode(Presence.Mode.AWAY);
+            Presence presence = new Presence(Presence.Type.available);
+            if (away) { // change default values to:
+                presence.setMode(Presence.Mode.away);
                 presence.setStatus(getProperties().getIamAwayMessage());
             }
             connection.sendPacket(presence);
@@ -367,7 +378,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
      * @throws java.io.IOException problems
      */
     protected void processMessage(Message message) throws IOException {
-        Chat chat = connection.createChat(message.getContact().getName());
+        Chat chat = connection.getChatManager().createChat(message.getContact().getName(), null); 
         try {
             chat.sendMessage(message.getText());
         } catch (XMPPException e) {

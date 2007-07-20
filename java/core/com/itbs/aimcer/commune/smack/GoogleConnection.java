@@ -22,7 +22,7 @@ package com.itbs.aimcer.commune.smack;
 
 import com.itbs.aimcer.bean.Group;
 import com.itbs.aimcer.bean.Nameable;
-import org.jivesoftware.smack.GoogleTalkConnection;
+import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 
@@ -34,7 +34,8 @@ import org.jivesoftware.smack.XMPPException;
  */
 public class GoogleConnection extends SmackConnection {
     protected XMPPConnection getNewConnection() throws XMPPException {
-        return new GoogleTalkConnection();
+        ConnectionConfiguration configuration = new ConnectionConfiguration("talk.google.com", 5222, "gmail.com");
+        return new XMPPConnection(configuration);
     }
 
     /**
