@@ -98,16 +98,20 @@ public class WebHelper {
         StringBuffer buf = new StringBuffer();
         while ((response = source.readLine()) != null) {  // timeout should carry us through bad stuff.
             buf.append(response);
+            buf.append("\n");
         }
         out.close();
         source.close();
         // to do this right, really need to cover a bunch more error codes, and only look at headers etc. (AR)
         if (buf.indexOf("301 Moved Permanently")>0) { // found that a page has moved
-            int indexOfLocation = buf.indexOf("Location:");
-            int indexOfContext = buf.indexOf("Content-Length:");
-            if (indexOfContext>0 && indexOfLocation>0) {
-                String newUrl = buf.substring(indexOfLocation+"Location:".length(), indexOfContext).trim();
-                return getPage(new URL(newUrl));
+            int indexOfLocation = buf.indexOf("\nLocation:");
+            if (indexOfLocation>0) {
+                indexOfLocation += "\nLocation:".length();
+                int len = buf.indexOf("\n", indexOfLocation);
+                if (len>0) {
+                    String newUrl = buf.substring(indexOfLocation, len).trim();
+                    return getPage(new URL(newUrl));
+                }
             }
         }
         return buf.toString();      // return InputStream to allow client to read resource
