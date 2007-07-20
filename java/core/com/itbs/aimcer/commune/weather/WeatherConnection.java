@@ -54,16 +54,70 @@ public class WeatherConnection extends AbstractConnection {
     private Timer timer;
     private final Lock updateLock = new ReentrantLock();
 
-    private static final String TOKEN_PLACE = "\" class=\"city_heading\">";
-    private static final String TOKEN_TEMP = "id=\"quicklook_current_temps\">";
-//    private static final String TOKEN_ICON = "http://vortex.accuweather.com/phoenix2/images/common/icons/"; //33_31x31.gif
-    private static final String TOKEN_ICON = "http://vortex.accuweather.com/adc2004/common/images/wxicons/120x90/"; //images/icons/standard/wx/45x45/"; //33_31x31.gif
+    TokenProvider currentProvider = new WeatherCom();
     public static final String TOKEN_HOURLY = "http://www.weather.com/weather/hourbyhour/"; // + zip
+//http://www.weather.com/outlook/travel/businesstraveler/hourbyhour/08837
+
     /** Used to prefix the display string when updates fail */
     private static final String PREFIX_OLD = "<HTML>Old: ";
     private static final boolean DEBUG = false;
 
     public WeatherConnection() {
+    }
+
+    interface TokenProvider {
+        String getPlace();
+        String getTemp();
+        String getIcon();
+        /** Used to get hourly weather */
+        URL getHourlyURL(String zip) throws MalformedURLException;
+        /** Used to get current weather */
+        URL getURL(String zip) throws MalformedURLException;
+    }
+
+    class AccuWeatherCom implements TokenProvider {
+        public String getPlace() {
+            return "\" class=\"city_heading\">";
+        }
+
+        public String getTemp() {
+            return "id=\"quicklook_current_temps\">";
+        }
+
+        public String getIcon() {
+            return "http://vortex.accuweather.com/adc2004/common/images/wxicons/120x90/"; //images/icons/standard/wx/45x45/"; //33_31x31.gif
+        }
+
+
+        public URL getHourlyURL(String zip) throws MalformedURLException {
+            return new URL(TOKEN_HOURLY+zip);
+        }
+
+        public URL getURL(String zip) throws MalformedURLException {
+            return new URL("http://www.accuweather.com/index-forecast.asp?&partner=accuweather&zipcode="+zip);
+        }
+    }
+
+    class WeatherCom implements TokenProvider {
+        public String getPlace() {
+            return "TODAY'S WEATHER for ";
+        }
+
+        public String getTemp() {
+            return " CLASS=obsTempTextA>";
+        }
+
+        public String getIcon() {
+            return "http://image.weather.com/web/common/wxicons/";
+        }
+
+        public URL getHourlyURL(String zip) throws MalformedURLException {
+            return new URL(TOKEN_HOURLY+zip);
+        }
+
+        public URL getURL(String zip) throws MalformedURLException {
+            return new URL("http://www.weather.com/weather/local/"+zip);
+        }
     }
 
     private void processSettings() {
@@ -102,15 +156,7 @@ public class WeatherConnection extends AbstractConnection {
                 String weather=null;
                 Icon icon = null;
                 try {
-    //                page = WebHelper.getPage(new URL("http://www.w2.weather.com/weather/local/" + zip));
-    //                page = WebHelper.getPage(new URL("http://www.weather.com/weather/local/" + zip));
-
-//                    page = WebHelper.getPage(new URL("http://wwwa.accuweather.com/index-forecast.asp?&partner=accuweather&zipcode="+zip.getName()));
-                    page = WebHelper.getPage(new URL("http://www.accuweather.com/index-forecast.asp?&partner=accuweather&zipcode="+zip.getName()));
-//                    page = WebHelper.getPage(new URL("http://www.accuweather.com/index-forecast.asp?partner=accuweather&traveler=0&zipChg=1&zipChg=1&zipcode=10001&metric=0"));//+zip.getName()));
-
-    //                page = WebHelper.getPage(new URL("http://www.weather.com/weather/local/"+zip+"?lswe="+zip+"&lwsa=WeatherLocalUndeclared"));
-    //                page = WebHelper.getPage(new URL("http://www.w2.weather.com/weather/local/"+zip+"?lswe="+zip+"&lwsa=WeatherLocalUndeclared"));
+                    page = WebHelper.getPage(currentProvider.getURL(zip.getName()));
                     weather = getWeather(page);
                     icon = getWeatherIcon(page);
     //                log.info("Set " + zip.getName() + " to " + zip.getDisplayName() + " " + zip.oldToString());
@@ -137,10 +183,10 @@ public class WeatherConnection extends AbstractConnection {
      * @return icon
      */
     private Icon getWeatherIcon(final String page) {
-        int index = page.indexOf(TOKEN_ICON);
-        String result = getSection(index + TOKEN_ICON.length(), page);
+        int index = page.indexOf(currentProvider.getIcon());
+        String result = getSection(index + currentProvider.getIcon().length(), page);
         try {
-            final URL url = new URL( TOKEN_ICON + result);
+            final URL url = new URL(currentProvider.getIcon() + result);
 
             ImageIcon scaledInstance;
             scaledInstance = ImageCache.getImage(url.getFile());
@@ -156,12 +202,12 @@ public class WeatherConnection extends AbstractConnection {
     }
 
 
-    private static String getWeather(final String page) {
-        int index = page.indexOf(TOKEN_PLACE);
+    private String getWeather(final String page) {
+        int index = page.indexOf(currentProvider.getPlace());
 //        int index = page.indexOf("Current Conditions for ");
-        String result = getSection(index + TOKEN_PLACE.length(), page);
-        index = page.indexOf(TOKEN_TEMP, index);
-        result += " - <b>"+(getSection(index+TOKEN_TEMP.length(), page))+"</b>";
+        String result = getSection(index + currentProvider.getPlace().length(), page);
+        index = page.indexOf(currentProvider.getTemp(), index);
+        result += " - <b>"+(getSection(index+currentProvider.getTemp().length(), page))+"</b>";
         return "<HTML>"+ result.replaceAll("&nbsp;", " ").trim() + "</HTML>";
     }
 
