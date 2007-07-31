@@ -32,59 +32,67 @@ package javax.servlet;
 
 import java.io.IOException;
 
-/// The servlet interface.
-// <P>
-// Servlets are little Java programs that can be hooked into a
-// server and run in response to requests.
-// <P>
-// Servlet has to be an interface so that things that must inherit
-// from another object, such as RMI, can also be Servlets.  However,
-// most of the time a Servlet will not need to be anything else, and
-// it will be somewhat more convenient to extend GenericServlet.
-// <P>
-// This is taken from JavaSoft's Servlet API documentation.
-// <P>
-// <A HREF="/resources/classes/Acme/Serve/servlet/Servlet.java">Fetch the software.</A><BR>
-// <A HREF="/resources/classes/Acme.tar.gz">Fetch the entire Acme package.</A>
-// <P>
-// @see javax.servlet.GenericServlet
-// @see javax.servlet.http.HttpServlet
-// @see Acme.Serve.SampleServlet
-// @see Acme.Serve.Serve
-
+/** The servlet interface.
+* <P>
+* Servlets are little Java programs that can be hooked into a
+* server and run in response to requests.
+* <P>
+* Servlet has to be an interface so that things that must inherit
+* from another object, such as RMI, can also be Servlets.  However,
+* most of the time a Servlet will not need to be anything else, and
+* it will be somewhat more convenient to extend GenericServlet.
+* <P>
+* This is taken from JavaSoft's Servlet API documentation.
+* <P>
+* <A HREF="/resources/classes/Acme/Serve/servlet/Servlet.java">Fetch the software.</A><BR>
+* <A HREF="/resources/classes/Acme.tar.gz">Fetch the entire Acme package.</A>
+* <P>
+* @see javax.servlet.GenericServlet
+* @see javax.servlet.http.HttpServlet
+* @see SampleServlet
+* @see Acme.Serve.Serve
+*/
 public interface Servlet
     {
 
-    /// Initializes the servlet.
-    // This is called by the system when the servlet is first loaded.
-    // @param config servlet initialization information
-    // @exception ServletException when an exception has occurred
+    /** Initializes the servlet.
+    * This is called by the system when the servlet is first loaded.
+    * @param config servlet initialization information
+    * @exception ServletException when an exception has occurred
+    */
     public void init( ServletConfig config ) throws ServletException;
 
-    /// Returns a servlet config object, which contains any initialization
-    // parameters and startup configuration for this servlet.
+    /** Returns a servlet config object, which contains any initialization
+     * parameters and startup configuration for this servlet.
+     * @return config object
+     */
     public ServletConfig getServletConfig();
 
-    /// Services a single request from the client.
-    // <P>
-    // Note that the server only creates a single instance of your Servlet
-    // subclass, and calls the service() method of that one instance multiple
-    // times, possibly at the same time in different threads.  This is somewhat
-    // unusual in the Java world.  The implication is that any instance
-    // variables in your class behave more like class variables - they are
-    // shared among multiple concurrent calls.  So, be careful.
-    // @param req the servlet request
-    // @param req the servlet response
-    // @exception ServletException when a servlet exception has occurred
-    // @exception IOException when an I/O exception has occurred
+    /** Services a single request from the client.
+    * <P>
+    * Note that the server only creates a single instance of your Servlet
+    * subclass, and calls the service() method of that one instance multiple
+    * times, possibly at the same time in different threads.  This is somewhat
+    * unusual in the Java world.  The implication is that any instance
+    * variables in your class behave more like class variables - they are
+    * shared among multiple concurrent calls.  So, be careful.
+    * @param req the servlet request
+    * @param res the servlet response
+    * @exception ServletException when a servlet exception has occurred
+    * @exception IOException when an I/O exception has occurred
+    */
     public void service( ServletRequest req, ServletResponse res ) throws ServletException, IOException;
 
-    /// Returns a string containing information about the author, version, and
-    // copyright of the servlet.
+    /**
+     * Returns a string containing information about the author, version, and
+     * copyright of the servlet.
+     * @return string
+     */
     public String getServletInfo();
 
-    /// Destroys the servlet and cleans up whatever resources are being held.
-    // This is called by the system when the servlet is being destroyed.
+    /** Destroys the servlet and cleans up whatever resources are being held.
+     * This is called by the system when the servlet is being destroyed.
+     */
     public void destroy();
 
     }
