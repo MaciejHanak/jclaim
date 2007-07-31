@@ -69,7 +69,7 @@ public class HelpServlet extends HttpServlet {
      * Services a single HTTP request from the client.
      *
      * @param req the HTTP request
-     * @param req the HTTP response
+     * @param res the HTTP response
      * @throws javax.servlet.ServletException
      *                             when a Servlet exception has occurred
      * @throws java.io.IOException when an I/O exception has occurred
