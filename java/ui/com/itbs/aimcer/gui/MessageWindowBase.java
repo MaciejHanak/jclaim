@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ *  Provides base methods for any messaging window (so far).
  *
  * @author Alex Rass
  * @since Jul 23, 2006 12:20:07 PM
@@ -140,7 +141,7 @@ abstract public class MessageWindowBase {
     JComponent getMessage() {
         textPane = new BetterTextPane(ACTION_SEND);
         textPane.setFont(textPane.getFont().deriveFont(0.0F + ClientProperties.INSTANCE.getFontSize()));
-        textPane.setFont(textPane.getFont().deriveFont(Font.PLAIN)); // this didn't appear to do anything, the font just looks bold, I guess.
+//        textPane.setFont(textPane.getFont().deriveFont(Font.PLAIN)); // this didn't appear to do anything, the font just looks bold, I guess.
 //        textPane.setContentType("text/html");
         if (!ClientProperties.INSTANCE.isEnterSends()) {
             textPane.addModifier(KeyEvent.SHIFT_DOWN_MASK);
