@@ -19,6 +19,7 @@ import java.util.logging.Logger;
  * This implementation provides a MSN Messenger connection using the JML and JClaim libraries.
  * <p>
  * Implementation Note: Some people prefer friend.getDisplayName() v.s. friend.getFriendlyName().
+ * That's why getMSNName() is intoduced.
  *
  * @author Chris Chiappone, Alex Rass
  * @since Oct, 2006
@@ -160,7 +161,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
                     cw = getContactFactory().create(friend.getEmail().getEmailAddress(), JmlMsnConnection.this);
                     cw.getStatus().setOnline(online);
                     cw.getStatus().setAway(away);
-                    cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
+                    cw.setDisplayName(GeneralUtils.stripHTML(getMSNName(friend)));
                     gw.add(cw);
                 }
             }
@@ -173,7 +174,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 					+ " status changed from " + friend.getOldStatus() + " to "
 					+ friend.getStatus());
             Contact cw = getContactFactory().create(friend.getEmail().getEmailAddress(), JmlMsnConnection.this);
-            cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
+            cw.setDisplayName(GeneralUtils.stripHTML(getMSNName(friend)));
 
             boolean online = MsnUserStatus.OFFLINE != friend.getStatus() &&
                     MsnUserStatus.HIDE != friend.getStatus();
@@ -222,7 +223,11 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 
 	}
 
-	protected void initMessenger(MsnMessenger messenger) {
+    protected String getMSNName(MsnContact friend) {
+        return friend.getDisplayName();
+    }
+
+    protected void initMessenger(MsnMessenger messenger) {
 		messenger.getOwner().setInitStatus(MsnUserStatus.ONLINE);
 		messenger.addListener(new ConnectionListener());
 	}
