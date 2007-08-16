@@ -56,5 +56,14 @@ public class ServletException extends Exception {
     public ServletException(String s) {
         super(s);
     }
+    /**
+     * Constructs a ServletException with the specified detail message.
+     * A detail message is a String that describes this particular exception.
+     *
+     * @param e root cause
+     */
+    public ServletException(Throwable e) {
+        super(e);
+    }
 
 }
