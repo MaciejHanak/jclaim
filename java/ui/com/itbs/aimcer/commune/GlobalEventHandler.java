@@ -42,6 +42,11 @@ public class GlobalEventHandler implements ConnectionEventListener {
     }
 
     public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
+        if (online && !away && contact instanceof ContactWrapper) {
+            ContactWrapper cw = (ContactWrapper) contact;
+            if (cw.getPreferences().isNotifyOnConnect())
+            Main.showTooltip(contact.getDisplayName() + " came online.");
+        }
         // List model takes care of this.
         //   ((ContactWrapper)contact).setAway(away);
         //   ((ContactWrapper)contact).setOnline(online);
