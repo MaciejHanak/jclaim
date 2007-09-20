@@ -124,7 +124,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
              * reconnect to the server when the previous socket connection was abruptly closed.
              */
             public void reconnectionSuccessful() {
-                //TODO Change
+                notifyConnectionEstablished();
             }
 
             /**
