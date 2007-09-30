@@ -1,18 +1,13 @@
 package com.itbs.aimcer.commune.daim;
 
-import com.itbs.aimcer.bean.Contact;
-import com.itbs.aimcer.bean.Group;
-import com.itbs.aimcer.bean.Message;
-import com.itbs.aimcer.bean.Nameable;
-import com.itbs.aimcer.commune.AbstractMessageConnection;
-import com.itbs.aimcer.commune.ConnectionInfo;
-import com.itbs.aimcer.commune.FileTransferListener;
-import com.itbs.aimcer.commune.IconSupport;
+import com.itbs.aimcer.bean.*;
+import com.itbs.aimcer.commune.*;
 import com.itbs.util.GeneralUtils;
 import org.walluck.oscar.AIMConnection;
 import org.walluck.oscar.AIMConstants;
 import org.walluck.oscar.AIMSession;
 import org.walluck.oscar.client.Buddy;
+import org.walluck.oscar.client.Oscar;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,10 +20,10 @@ import java.util.logging.Logger;
  * @author Alex Rass
  * @since Sep 22, 2004
  */
-public class DaimConnection extends AbstractMessageConnection implements IconSupport { //FileTransferSupport, 
+public class DaimConnection extends AbstractMessageConnection implements IconSupport, FileTransferSupport {
     private static Logger log = Logger.getLogger(DaimConnection.class.getName());
     AIMSession connection = null;
-    DaimOscar oscar = new DaimOscar(this);
+    Oscar oscar = new Oscar();
     ConnectionInfo connectionInfo = new ConnectionInfo(AIMConstants.LOGIN_SERVER_DEFAULT, AIMConstants.LOGIN_PORT);
 
     public String getServiceName() {
@@ -95,8 +90,10 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
         }
 
         oscar.setPassword(getPassword());
+//        connection.registerListener(); 
         connection.init();
-        oscar.login(connectionInfo, connection, getUserName());
+        // todo can't specify connection info, figure that out.
+        oscar.login(connection, getUserName());
     }
 
 
@@ -156,6 +153,22 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
             }
         }
 */
+        return null;
+    }
+    /**
+     * Finds a group.  Helper.
+     * @param contact to find by
+     * @return group or null
+     */
+    Group findGroupViaBuddy(com.itbs.aimcer.bean.Nameable contact) {
+        GroupList list = getGroupList();
+        for (int i = list.size(); i>0; i--) {
+            Group group = list.get(i);
+            for (int j = group.size(); j>0; j--) {
+                if (group.get(j).getName().equalsIgnoreCase(contact.getName()))
+                    return group;
+            }
+        }
         return null;
     }
 
@@ -226,8 +239,12 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
      * @param contact to remove
      */
     public void removeContact(final Nameable contact) {
-        // findGroup
-//        oscar.removeBuddy(connection, contact.getName(), findgroup);
+        Group group = findGroupViaBuddy(contact);
+        try {
+            oscar.removeBuddy(connection, contact.getName(), group.getName());
+        } catch (IOException e) {
+            notifyErrorOccured("Error while removing contact", e);
+        }
     } // removeContact
 
     /**
@@ -236,6 +253,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
      * todo implement
      */
     public void addContactGroup(com.itbs.aimcer.bean.Group group) {
+        // nothing needed
 //        connection.getSsiService().getBuddyList().addGroup(group.getName());
     }
 
@@ -249,17 +267,21 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
 
     /**
      *
-     * @param contact
-     * @param group
+     * @param contact to move
+     * @param group to move to
      * todo implement
      */
     public void moveContact(Nameable contact, com.itbs.aimcer.bean.Group group) {
-//        oscar.moveBuddy(connection, contact.getName(), oldGroup.trim(), group.getName());
+        try {
+            oscar.moveBuddy(connection, contact.getName(), findGroupViaBuddy(contact).getName(), group.getName());
+        } catch (IOException e) {
+            notifyErrorOccured("Error while removing contact", e);
+        }
     }
 
 
     public void initiateFileTransfer(final FileTransferListener ftl) throws IOException {
-//        oscar.sendFile(sess, sn, file);
+        oscar.sendFile(connection, ftl.getContactName(), ftl.getFile().getAbsolutePath());
 /*
         OutgoingFileTransfer oft = connection.getIcbmService().getRvConnectionManager().createOutgoingFileTransfer(new Screenname(ftl.getContactName()));
         oft.addEventListener(new DaimConnection.FileTransferEventListener(ftl));
@@ -275,6 +297,9 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
     }
 
 
+    public void acceptFileTransfer(FileTransferListener ftl, Object connectionInfo) {
+        //TODO Change
+    }
 
     public void requestPictureForUser(final Contact contact) {
     } // requestPictureForUser
