@@ -3,11 +3,18 @@ package com.itbs.aimcer.commune.daim;
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.util.GeneralUtils;
+import com.itbs.util.ParseUtils;
 import org.walluck.oscar.AIMConnection;
 import org.walluck.oscar.AIMConstants;
 import org.walluck.oscar.AIMSession;
+import org.walluck.oscar.UserInfo;
+import org.walluck.oscar.channel.aolim.AOLIM;
+import org.walluck.oscar.client.AbstractOscarClient;
 import org.walluck.oscar.client.Buddy;
+import org.walluck.oscar.client.DaimLoginEvent;
 import org.walluck.oscar.client.Oscar;
+import org.walluck.oscar.handlers.icq.ICQSMSMessage;
+import org.walluck.oscar.tools.LoginTool;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,8 +29,7 @@ import java.util.logging.Logger;
  */
 public class DaimConnection extends AbstractMessageConnection implements IconSupport, FileTransferSupport {
     private static Logger log = Logger.getLogger(DaimConnection.class.getName());
-    AIMSession connection = null;
-    Oscar oscar = new Oscar();
+    DaimClient connection = new DaimClient();
     ConnectionInfo connectionInfo = new ConnectionInfo(AIMConstants.LOGIN_SERVER_DEFAULT, AIMConstants.LOGIN_PORT);
 
     public String getServiceName() {
@@ -43,13 +49,15 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
     }
 
     public void setAway(boolean away) {
+/*
         if (connection!=null) {
             try {
-                oscar.setAwayAIM(connection, away?getProperties().getIamAwayMessage():null);
+                oscar.setAwayAIM(connection.getSession(), away?getProperties().getIamAwayMessage():null);
             } catch (IOException e) {
                 notifyErrorOccured("Failed to set away.", e);
             }
         }
+*/
         super.setAway(away);
     }
 
@@ -79,21 +87,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
         if (getUserName() == null || getPassword() == null) {
             throw new SecurityException("Login information was not available");
         }
-        connection = new AIMSession();
-        oscar.setSN(getUserName());
-        connection.setSN(getUserName());
-
-        // this paragraph should be in icq. but what the hell!
-        char first = getUserName().charAt(0);
-        if (Character.isDigit(first)) {
-            connection.setICQ(true);
-        }
-
-        oscar.setPassword(getPassword());
-//        connection.registerListener(); 
-        connection.init();
-        // todo can't specify connection info, figure that out.
-        oscar.login(connection, getUserName());
+        connection.login(getUserName(), getPassword());
     }
 
 
@@ -108,7 +102,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
 
     public void disconnect(boolean intentional) {
         if (connection!=null) {
-            AIMConnection.killAllInSess(connection);
+            AIMConnection.killAllInSess(connection.getSession());
             connection = null;
         }
         super.disconnect(intentional);
@@ -128,7 +122,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
 
     public void processMessage(Message message) {
         try {
-            oscar.sendIM(connection, message.getContact().getName(), message.getText(), oscar.getAIMCaps());
+            connection.sendIM(message.getContact().getName(), message.getText(), Oscar.getICQCaps());
         } catch (IOException e) {
             notifyErrorOccured("Failed to send", e);
         }
@@ -227,7 +221,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
      */
     public void addContact(final Nameable contact, final com.itbs.aimcer.bean.Group group) {
         try {
-            oscar.addBuddy(connection, contact.getName(), group.getName());
+            connection.addBuddy(contact.getName(), group.getName());
         } catch (IOException e) {
             notifyErrorOccured("Failed to add buddy.", e);
         }
@@ -241,7 +235,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
     public void removeContact(final Nameable contact) {
         Group group = findGroupViaBuddy(contact);
         try {
-            oscar.removeBuddy(connection, contact.getName(), group.getName());
+            connection.removeBuddy(contact.getName(), group.getName());
         } catch (IOException e) {
             notifyErrorOccured("Error while removing contact", e);
         }
@@ -273,7 +267,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
      */
     public void moveContact(Nameable contact, com.itbs.aimcer.bean.Group group) {
         try {
-            oscar.moveBuddy(connection, contact.getName(), findGroupViaBuddy(contact).getName(), group.getName());
+            connection.moveBuddy(contact.getName(), findGroupViaBuddy(contact).getName(), group.getName());
         } catch (IOException e) {
             notifyErrorOccured("Error while removing contact", e);
         }
@@ -281,7 +275,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
 
 
     public void initiateFileTransfer(final FileTransferListener ftl) throws IOException {
-        oscar.sendFile(connection, ftl.getContactName(), ftl.getFile().getAbsolutePath());
+        connection.sendFile(ftl.getContactName(), ftl.getFile());
 /*
         OutgoingFileTransfer oft = connection.getIcbmService().getRvConnectionManager().createOutgoingFileTransfer(new Screenname(ftl.getContactName()));
         oft.addEventListener(new DaimConnection.FileTransferEventListener(ftl));
@@ -320,4 +314,155 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
     public void uploadPicture(final File picture) {
     } // uploadPicture
 
+    /**
+     * Doing this internally so I have access to all the variables and methods available directly in DaimConnection.
+     */
+    class DaimClient extends AbstractOscarClient  {
+
+        public DaimClient() {
+            super();
+        }
+
+        AIMSession getSession() {
+            return session;
+        }
+
+
+        public void loginDone(DaimLoginEvent dle) {
+            notifyConnectionEstablished();
+        }
+
+        public void loginError(DaimLoginEvent dle) {
+            String errorMsg;
+            switch (dle.getErrorCode()) {
+                    case LoginTool.AIM_LOGINERROR_WRONGAUTH:
+                            errorMsg = "Incorrect nickname or password.";
+                            break;
+                    case LoginTool.AIM_LOGINERROR_ACCOUNTSUSPENDED:
+                            errorMsg = "Your account is currently suspended.";
+                            break;
+                    case LoginTool.AIM_LOGINERROR_UNAVAILABLE:
+                            errorMsg = "The AOL Instant Messenger service is "
+                                    + "temporarily unavailable.";
+                            break;
+                    case LoginTool.AIM_LOGINERROR_CONNECTIONFLOOD:
+                            errorMsg = "You have been connecting and disconnecting too "
+                                    + "frequently. If you continue to try, you will need "
+                                    + "to wait even longer.";
+                            break;
+                    case LoginTool.AIM_LOGINERROR_OLDCLIENT:
+                            errorMsg = "The client version you are using is too old. "
+                                    + "Please upgrade.";
+                            break;
+                    default:
+                            errorMsg = "Unknown.";
+                            break;
+            }
+
+            notifyConnectionFailed(errorMsg); 
+        }
+
+        public void incomingIM(Buddy buddy, UserInfo from, AOLIM args) {
+            Message message = new MessageImpl(getContactFactory().create(buddy.getName(), DaimConnection.this),
+            false, (args.getFlags() & AIMConstants.AIM_IMFLAGS_AWAY) != 0, args.getMsg());  // todo the away flag d/n look right
+
+            for (ConnectionEventListener eventHandler : eventHandlers) {
+                try {
+                    eventHandler.messageReceived(DaimConnection.this, message);
+                } catch (Exception e) {
+                    notifyErrorOccured("Failure while receiving a message", e);
+                }
+            }
+        }
+
+        public void incomingICQ(UserInfo from, int uin, int args, String msg) {
+            Message message = new MessageImpl(getContactFactory().create(from.getSN(), DaimConnection.this),
+            false, from.getIdleTime()>0, msg);  // todo the away flag d/n look right
+
+            for (ConnectionEventListener eventHandler : eventHandlers) {
+                try {
+                    eventHandler.messageReceived(DaimConnection.this, message);
+                } catch (Exception e) {
+                    notifyErrorOccured("Failure while receiving an ICQ message", e);
+                }
+            }
+        }
+
+        public void receivedICQSMS(UserInfo from, int uin, ICQSMSMessage msg, boolean massmessage) {
+            Message message = new MessageImpl(getContactFactory().create(from.getSN(), DaimConnection.this),
+            false, massmessage, msg.getText());
+
+
+            for (ConnectionEventListener eventHandler : eventHandlers) {
+                try {
+                    eventHandler.messageReceived(DaimConnection.this, message);
+                } catch (Exception e) {
+                    notifyErrorOccured("Failure while receiving an ICQ message", e);
+                }
+            }
+        }
+
+        private void removeOldBuddies() {
+            for (int i = 0; i < getGroupList().size(); i++) {
+                Group group = getGroupList().get(i);
+                for (int j = 0; j < group.size(); j++) {
+                    Nameable contact = group.get(j);
+                    if (contact instanceof Contact) {
+                        Contact cw = (Contact) contact;
+                        if (DaimConnection.this == cw.getConnection()) {
+                            group.remove(contact);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void newBuddyList(Buddy[] buddies) {
+            removeOldBuddies();
+            for (Buddy buddy:buddies) {
+                Group bGroup = getGroupFactory().create(buddy.getProperty(Buddy.GROUP).toString());
+                bGroup.add(getContactFactory().create(buddy.getName(), DaimConnection.this));
+                getGroupFactory().getGroupList().add(bGroup);
+            } // that should reorder it.
+
+            for (ConnectionEventListener eventHandler : eventHandlers) {
+                try {
+                    eventHandler.statusChanged(DaimConnection.this);
+                } catch (Exception e) {
+                    notifyErrorOccured("Failure while receiving an ICQ message", e);
+                }
+            }
+        }
+
+        public void buddyOffline(String sn, Buddy buddy) {
+            for (ConnectionEventListener eventHandler : eventHandlers) {
+                try {
+                    eventHandler.statusChanged(DaimConnection.this, getContactFactory().create(buddy.getName(), DaimConnection.this), false, true, 0);
+                } catch (Exception e) {
+                    notifyErrorOccured("Failure while receiving an ICQ message", e);
+                }
+            }
+        }
+
+        public void buddyOnline(String sn, Buddy buddy) {
+            for (ConnectionEventListener eventHandler : eventHandlers) {
+                try {
+                    int idle = ParseUtils.getInt(buddy.getProperty(Buddy.IDLE_TIME));
+                    eventHandler.statusChanged(DaimConnection.this, getContactFactory().create(buddy.getName(), DaimConnection.this), true, buddy.isTrue(Buddy.STATE, Buddy.BUDDY_STATE_AWAY), idle);
+                } catch (Exception e) {
+                    notifyErrorOccured("Failure while receiving an ICQ message", e);
+                }
+            }
+        }
+
+        public void sendFile(String contactName, File file) {
+            filtool.sendFile(contactName,  file.getAbsolutePath());
+        }
+
+        public void typingNotification(String sn, short typing) {
+            for (ConnectionEventListener eventHandler : eventHandlers) {
+                    eventHandler.typingNotificationReceived(DaimConnection.this, getContactFactory().create(sn, DaimConnection.this));
+            }
+        }
+    }
 } // class OscarConnection

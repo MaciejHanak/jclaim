@@ -1,10 +1,5 @@
 package com.itbs.aimcer.commune.daim;
 
-import com.itbs.aimcer.bean.Message;
-import org.walluck.oscar.client.Oscar;
-
-import java.io.IOException;
-
 /**
  * @author Alex Rass on Jul 9, 2005
  */
@@ -15,6 +10,7 @@ public class DaimICQConnection extends DaimConnection {
     }
 
 
+/*
     public void setAway(boolean away) {
         if (connection!=null) {
             try {
@@ -25,6 +21,8 @@ public class DaimICQConnection extends DaimConnection {
         }
         super.setAway(away);
     }
+*/
+/*
     public void processMessage(Message message) {
         try {
             oscar.sendIM(connection, message.getContact().getName(), message.getText(), Oscar.getICQCaps());
@@ -32,5 +30,6 @@ public class DaimICQConnection extends DaimConnection {
             notifyErrorOccured("Failed to send", e);
         }
     }
+*/
 
 }
