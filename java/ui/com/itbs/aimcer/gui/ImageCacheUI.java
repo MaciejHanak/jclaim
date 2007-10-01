@@ -20,6 +20,7 @@
 
 package com.itbs.aimcer.gui;
 
+import com.itbs.aimcer.commune.daim.DaimConnection;
 import com.itbs.aimcer.commune.joscar.ICQConnection;
 import com.itbs.aimcer.commune.joscar.OscarConnection;
 import com.itbs.aimcer.commune.msn.JmlMsnConnection;
@@ -60,6 +61,8 @@ public class ImageCacheUI extends ImageCache {
 
     static {
         try {
+            // List out all image pairs.
+            // Repeating is ok as long as the last assignment is the one you want to use for defaults.
             ICON_DELETE = new ImagePair("trash.gif");
             ICON_PLUS = new ImagePair("plus.gif");
             ICON_PLUS_PRESSED = new ImagePair("plus_down.gif");
@@ -70,11 +73,12 @@ public class ImageCacheUI extends ImageCache {
             ICON_RELOAD_PRESSED = new ImagePair("reload_down.gif");
             ICON_JABBER = new ImagePair("jabber.gif", SmackConnection.class);
             ICON_AIM = new ImagePair("aim.gif", OscarConnection.class);
+                       new ImagePair("aim.gif", DaimConnection.class);
             ICON_ICQ = new ImagePair("icq.gif", ICQConnection.class);
             ICON_YAHOO = new ImagePair("yahoo.gif", YMsgConnection.class);
             ICON_GOOGLE = new ImagePair("google.gif", GoogleConnection.class);
             ICON_MSN = new ImagePair("msn.gif", MSNConnection.class);
-            ICON_MSN = new ImagePair("msn.gif", JmlMsnConnection.class);
+                       new ImagePair("msn.gif", JmlMsnConnection.class);
             ICON_WIRELESS = new ImagePair("wireless.gif");
             ICON_EMAIL = new ImagePair("email.gif");
             ICON_HISTORY = new ImagePair("history.gif");
