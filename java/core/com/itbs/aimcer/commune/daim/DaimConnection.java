@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  * @author Alex Rass
  * @since Sep 22, 2004
  */
-public class DaimConnection extends AbstractMessageConnection implements IconSupport, FileTransferSupport {
+public class DaimConnection extends AbstractMessageConnection implements IconSupport, FileTransferSupport, SMSSupport {
     private static Logger log = Logger.getLogger(DaimConnection.class.getName());
     DaimClient connection = new DaimClient();
     ConnectionInfo connectionInfo = new ConnectionInfo(AIMConstants.LOGIN_SERVER_DEFAULT, AIMConstants.LOGIN_PORT);
@@ -470,4 +470,11 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
             }
         }
     }
+
+    public String veryfySupport(String id) {
+        if (!GeneralUtils.isNotEmpty(id))
+            return "Number can't be empty";
+        return id.startsWith("+1")?null:"Must start with +1, like: +18005551234";
+    }
+
 } // class OscarConnection
