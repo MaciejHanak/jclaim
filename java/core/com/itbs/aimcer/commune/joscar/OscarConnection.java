@@ -641,11 +641,11 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                 Message message = new MessageImpl(getContactFactory().create(minfo.getFrom().getFormatted(), OscarConnection.this),
                         false, minfo.getMessage().isAutoResponse(), text);
 
-                for (int i = 0; i < eventHandlers.size(); i++) {
+                for (ConnectionEventListener eventHandler : eventHandlers) {
                     try {
-                        (eventHandlers.get(i)).messageReceived(OscarConnection.this, message);
+                        eventHandler.messageReceived(OscarConnection.this, message);
                     } catch (Exception e) {
-                            notifyErrorOccured("Failure while receiving a message", e);
+                        notifyErrorOccured("Failure while receiving a message", e);
                     }
                 }
             }
