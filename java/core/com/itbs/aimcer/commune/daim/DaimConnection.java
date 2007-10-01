@@ -4,10 +4,7 @@ import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.util.GeneralUtils;
 import com.itbs.util.ParseUtils;
-import org.walluck.oscar.AIMConnection;
-import org.walluck.oscar.AIMConstants;
-import org.walluck.oscar.AIMSession;
-import org.walluck.oscar.UserInfo;
+import org.walluck.oscar.*;
 import org.walluck.oscar.channel.aolim.AOLIM;
 import org.walluck.oscar.client.AbstractOscarClient;
 import org.walluck.oscar.client.Buddy;
@@ -87,6 +84,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
         if (getUserName() == null || getPassword() == null) {
             throw new SecurityException("Login information was not available");
         }
+        connection = new DaimClient();
         connection.login(getUserName(), getPassword());
     }
 
@@ -363,7 +361,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
         }
 
         public void incomingIM(Buddy buddy, UserInfo from, AOLIM args) {
-            Message message = new MessageImpl(getContactFactory().create(buddy.getName(), DaimConnection.this),
+            Message message = new MessageImpl(getContactFactory().create(AIMUtil.normalize(buddy.getName()), DaimConnection.this),
             false, (args.getFlags() & AIMConstants.AIM_IMFLAGS_AWAY) != 0, args.getMsg());  // todo the away flag d/n look right
 
             for (ConnectionEventListener eventHandler : eventHandlers) {
@@ -421,7 +419,9 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
             removeOldBuddies();
             for (Buddy buddy:buddies) {
                 Group bGroup = getGroupFactory().create(buddy.getProperty(Buddy.GROUP).toString());
-                bGroup.add(getContactFactory().create(buddy.getName(), DaimConnection.this));
+                Contact contact = getContactFactory().create(AIMUtil.normalize(buddy.getName()), DaimConnection.this);
+                contact.setDisplayName(buddy.getName());
+                bGroup.add(contact);
                 getGroupFactory().getGroupList().add(bGroup);
             } // that should reorder it.
 
@@ -435,9 +435,11 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
         }
 
         public void buddyOffline(String sn, Buddy buddy) {
+            Contact contact = getContactFactory().create(AIMUtil.normalize(buddy.getName()), DaimConnection.this);
+
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 try {
-                    eventHandler.statusChanged(DaimConnection.this, getContactFactory().create(buddy.getName(), DaimConnection.this), false, true, 0);
+                    eventHandler.statusChanged(DaimConnection.this, contact, false, true, 0);
                 } catch (Exception e) {
                     notifyErrorOccured("Failure while receiving an ICQ message", e);
                 }
@@ -445,10 +447,11 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
         }
 
         public void buddyOnline(String sn, Buddy buddy) {
+            Contact contact = getContactFactory().create(AIMUtil.normalize(buddy.getName()), DaimConnection.this);
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 try {
                     int idle = ParseUtils.getInt(buddy.getProperty(Buddy.IDLE_TIME));
-                    eventHandler.statusChanged(DaimConnection.this, getContactFactory().create(buddy.getName(), DaimConnection.this), true, buddy.isTrue(Buddy.STATE, Buddy.BUDDY_STATE_AWAY), idle);
+                    eventHandler.statusChanged(DaimConnection.this, contact, true, buddy.isTrue(Buddy.STATE, Buddy.BUDDY_STATE_AWAY), idle);
                 } catch (Exception e) {
                     notifyErrorOccured("Failure while receiving an ICQ message", e);
                 }
@@ -460,8 +463,10 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
         }
 
         public void typingNotification(String sn, short typing) {
+            Contact contact = getContactFactory().create(AIMUtil.normalize(sn), DaimConnection.this);
+            
             for (ConnectionEventListener eventHandler : eventHandlers) {
-                    eventHandler.typingNotificationReceived(DaimConnection.this, getContactFactory().create(sn, DaimConnection.this));
+                    eventHandler.typingNotificationReceived(DaimConnection.this, contact);
             }
         }
     }
