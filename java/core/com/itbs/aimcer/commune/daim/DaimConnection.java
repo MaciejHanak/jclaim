@@ -11,7 +11,6 @@ import org.walluck.oscar.client.Buddy;
 import org.walluck.oscar.client.DaimLoginEvent;
 import org.walluck.oscar.client.Oscar;
 import org.walluck.oscar.handlers.icq.ICQSMSMessage;
-import org.walluck.oscar.tools.LoginTool;
 
 import java.io.File;
 import java.io.IOException;
@@ -331,32 +330,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
         }
 
         public void loginError(DaimLoginEvent dle) {
-            String errorMsg;
-            switch (dle.getErrorCode()) {
-                    case LoginTool.AIM_LOGINERROR_WRONGAUTH:
-                            errorMsg = "Incorrect nickname or password.";
-                            break;
-                    case LoginTool.AIM_LOGINERROR_ACCOUNTSUSPENDED:
-                            errorMsg = "Your account is currently suspended.";
-                            break;
-                    case LoginTool.AIM_LOGINERROR_UNAVAILABLE:
-                            errorMsg = "The AOL Instant Messenger service is "
-                                    + "temporarily unavailable.";
-                            break;
-                    case LoginTool.AIM_LOGINERROR_CONNECTIONFLOOD:
-                            errorMsg = "You have been connecting and disconnecting too "
-                                    + "frequently. If you continue to try, you will need "
-                                    + "to wait even longer.";
-                            break;
-                    case LoginTool.AIM_LOGINERROR_OLDCLIENT:
-                            errorMsg = "The client version you are using is too old. "
-                                    + "Please upgrade.";
-                            break;
-                    default:
-                            errorMsg = "Unknown.";
-                            break;
-            }
-
+            String errorMsg = dle.getErrorMsg()==null?"Unknown":dle.getErrorMsg();
             notifyConnectionFailed(errorMsg); 
         }
 
