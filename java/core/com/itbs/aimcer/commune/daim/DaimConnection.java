@@ -25,7 +25,7 @@ import java.util.logging.Logger;
  */
 public class DaimConnection extends AbstractMessageConnection implements IconSupport, FileTransferSupport, SMSSupport {
     private static Logger log = Logger.getLogger(DaimConnection.class.getName());
-    DaimClient connection = new DaimClient();
+    DaimClient connection;
     ConnectionInfo connectionInfo = new ConnectionInfo(AIMConstants.LOGIN_SERVER_DEFAULT, AIMConstants.LOGIN_PORT);
 
     public String getServiceName() {
@@ -106,7 +106,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
     }
 
     public boolean isLoggedIn() {
-        return connection!=null;
+        return connection!=null;   // todo make sure connection is connected.
     }
 
     public void cancel() {
@@ -118,10 +118,14 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
     }
 
     public void processMessage(Message message) {
-        try {
-            connection.sendIM(message.getContact().getName(), message.getText(), Oscar.getICQCaps());
-        } catch (IOException e) {
-            notifyErrorOccured("Failed to send", e);
+        if (connection != null) {
+            try {
+                connection.sendIM(message.getContact().getName(), message.getText(), Oscar.getICQCaps());
+            } catch (IOException e) {
+                notifyErrorOccured("Failed to send", e);
+            }
+        } else {
+            notifyErrorOccured("Not connected.", null);
         }
     }
 
