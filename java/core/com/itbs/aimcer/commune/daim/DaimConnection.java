@@ -78,13 +78,19 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
     }
 
     final public void connect() throws Exception {
-        super.connect();
-        notifyConnectionInitiated();
-        if (getUserName() == null || getPassword() == null) {
-            throw new SecurityException("Login information was not available");
+        try {
+            super.connect();
+            notifyConnectionInitiated();
+            if (getUserName() == null || getPassword() == null) {
+                throw new SecurityException("Login information was not available");
+            }
+            connection = new DaimClient();
+            connection.login(getUserName(), getPassword());
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Failed to login", e);
+            connection = null;
+            notifyConnectionFailed(e.getMessage());
         }
-        connection = new DaimClient();
-        connection.login(getUserName(), getPassword());
     }
 
 
