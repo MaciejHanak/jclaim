@@ -116,10 +116,8 @@ public class JmlMsnConnection extends AbstractMessageConnection {
             MsnInstantMessage msnInstantMessage = new MsnInstantMessage();
             if (message.getContent() != null) {
                 msnInstantMessage.setContent(message.getContentAsString());
-            } else {
-                msnInstantMessage.setContent("No message content.");
+                instantMessageReceived(switchboard, msnInstantMessage, friend);
             }
-            instantMessageReceived(switchboard, msnInstantMessage, friend);
         }
 
 		public void contactListInitCompleted(MsnMessenger messenger) {
