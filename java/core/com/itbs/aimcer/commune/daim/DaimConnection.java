@@ -3,7 +3,6 @@ package com.itbs.aimcer.commune.daim;
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.util.GeneralUtils;
-import com.itbs.util.ParseUtils;
 import org.walluck.oscar.*;
 import org.walluck.oscar.channel.aolim.AOLIM;
 import org.walluck.oscar.client.AbstractOscarClient;
@@ -434,7 +433,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
             Contact contact = getContactFactory().create(AIMUtil.normalize(buddy.getName()), DaimConnection.this);
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 try {
-                    int idle = ParseUtils.getInt(buddy.getProperty(Buddy.IDLE_TIME));
+                    int idle = GeneralUtils.getInt(buddy.getProperty(Buddy.IDLE_TIME));
                     eventHandler.statusChanged(DaimConnection.this, contact, true, buddy.isTrue(Buddy.STATE, Buddy.BUDDY_STATE_AWAY), idle);
                 } catch (Exception e) {
                     notifyErrorOccured("Failure while receiving an ICQ message", e);

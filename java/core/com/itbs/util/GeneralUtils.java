@@ -218,5 +218,19 @@ public class GeneralUtils {
         return result;
     }
 
-
+    /**
+     * Convenience method to get integers out of any object.
+     * All errors are returned as 0;
+     * @param property to parse
+     * @return result or 0;
+     */
+    public static int getInt(Object property) {
+        if (property == null)
+            return 0;
+        try {
+            return Integer.parseInt(property.toString());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
 }

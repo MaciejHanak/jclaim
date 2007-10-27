@@ -78,7 +78,7 @@ public final class ParseUtils {
                 key = source.substring(keyLocation+SPECIAL_CHAR_START.length(), secondLocation);
                 value = fields.get(key);
                 value = value==null?"":value;
-                source = replace(source, SPECIAL_CHAR_START + key + SPECIAL_CHAR_END, value);
+                source = GeneralUtils.replace(source, SPECIAL_CHAR_START + key + SPECIAL_CHAR_END, value);
             } else { // abandoned start char
                 // todo blow up, or something.  for now, just loose the junk
                 source = source.substring(0, keyLocation)+source.substring(keyLocation+1);
@@ -86,49 +86,5 @@ public final class ParseUtils {
             }
         }
         return source;
-    }
-
-    /**
-     * Recursively search within input for any segment match searchFor exactly,
-     * replaceWith will be replaced.
-     * Replaced string will not be searched again.
-     * So searchFor could be a substring of replaceWith, without running into overflow error.
-     *
-     * @param input original String to be replaced
-     * @param searchFor String to be replaced in the original String
-     * @param replaceWith String to be replaced with in the target String
-     * @return the resulting string
-     */
-    public static String replace(final String input, final String searchFor, final String replaceWith)
-    {
-        if (input == null)
-        {
-            return "";
-        }
-        String current = input;
-        final int pos = current.indexOf(searchFor);
-        if (pos != -1)
-        {
-            current = current.substring(0, pos) + replaceWith
-                + replace(current.substring(pos + searchFor.length()),
-                          searchFor, replaceWith);
-        }
-        return current;
-    }
-
-    /**
-     * Convenience method to get integers out of any object.
-     * All errors are returned as 0;
-     * @param property to parse
-     * @return result or 0;
-     */
-    public static int getInt(Object property) {
-        if (property == null)
-            return 0;
-        try {
-            return Integer.parseInt(property.toString());
-        } catch (NumberFormatException e) {
-            return 0;
-        }
     }
 }
