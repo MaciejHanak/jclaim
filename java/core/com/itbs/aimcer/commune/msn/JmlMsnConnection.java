@@ -111,10 +111,14 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 
 		public void unknownMessageReceived(MsnSwitchboard switchboard,
 				MsnUnknownMessage message, MsnContact friend) {
-			log.fine(switchboard + " recv unknown message " + message);
+			log.fine(switchboard + " recv unknown message: " + message);
             
             MsnInstantMessage msnInstantMessage = new MsnInstantMessage();
-            msnInstantMessage.setContent(message.getContentAsString());
+            if (message.getContent() != null) {
+                msnInstantMessage.setContent(message.getContentAsString());
+            } else {
+                msnInstantMessage.setContent("No message content.");
+            }
             instantMessageReceived(switchboard, msnInstantMessage, friend);
         }
 
