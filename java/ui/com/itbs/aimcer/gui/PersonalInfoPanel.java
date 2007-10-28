@@ -120,6 +120,24 @@ public class PersonalInfoPanel extends JPanel {
         }));
         checkBox.setSelected(preferences.isHideFromList());
         linePanel.add(checkBox);
+        checkBox = new JCheckBox(new ActionAdapter("Always Show", "Always show even if offline.", new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                preferences.setShowInList(!preferences.isShowInList());
+                ((JCheckBox) e.getSource()).setSelected(preferences.isShowInList());
+                contact.updateDisplayComponent(); //nicely enough - right on AWT thread
+            }
+        }));
+        checkBox.setSelected(preferences.isShowInList());
+        linePanel.add(checkBox);
+        checkBox = new JCheckBox(new ActionAdapter("Notify", "Popup message notification.", new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                preferences.setNotifyOnConnect(!preferences.isNotifyOnConnect());
+                ((JCheckBox) e.getSource()).setSelected(preferences.isNotifyOnConnect());
+                contact.updateDisplayComponent(); //nicely enough - right on AWT thread
+            }
+        }));
+        checkBox.setSelected(preferences.isNotifyOnConnect());
+        linePanel.add(checkBox);
         checkBox = new JCheckBox(new ActionAdapter("Show Icon", "Always offline.", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 preferences.setShowIcon(!preferences.isShowIcon());

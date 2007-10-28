@@ -74,7 +74,7 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
                 Nameable b = group.get(contactCount);
                 if (b instanceof ContactWrapper) {
                     contactWrapper = (ContactWrapper) b;//ContactWrapper.create(b, connection.get(connIndex));
-                    if (contactWrapper.getStatus().isOnline() || !ClientProperties.INSTANCE.isHideOffline())
+                    if (contactWrapper.getStatus().isOnline() || !ClientProperties.INSTANCE.isHideOffline() || contactWrapper.getPreferences().isShowInList())
                         sum++;
                 }
             }
@@ -94,7 +94,7 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
         int count = 0;
         GroupWrapper groupWrapper;
         ContactWrapper contactWrapper;
-        Group[] groups = connection.getGroupList().toArray(); // using trick that it's static
+        Group[] groups = connection.getGroupList().toArray(); // using trick that it's static for the UI
         if (ClientProperties.INSTANCE.isSortContactList()) {
             Arrays.sort(groups, GroupWrapper.COMP_NAME);
         }
@@ -119,7 +119,7 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
             for (Nameable contact : contacts) {
                 if (contact instanceof ContactWrapper) {
                     contactWrapper = (ContactWrapper) contact;//ContactWrapper.create(b, connection.get(connIndex));
-                    if (contactWrapper.getStatus().isOnline() || !ClientProperties.INSTANCE.isHideOffline()) {
+                    if (contactWrapper.getStatus().isOnline() || !ClientProperties.INSTANCE.isHideOffline() || contactWrapper.getPreferences().isShowInList()) {
                         if (index == count)
                             return contactWrapper;
                         count++;

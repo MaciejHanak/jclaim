@@ -42,6 +42,7 @@ public class ContactPreferences {
     private Rectangle windowBounds;
     private int verticalSeparation = -1;
     private boolean hideFromList;
+    private boolean showInList;
     private boolean notifyOnConnect;
     private boolean infoPanelVisible;
     private boolean orderPanelVisible;
@@ -104,6 +105,22 @@ public class ContactPreferences {
      */
     public void setHideFromList(boolean hideFromList) {
         this.hideFromList = hideFromList;
+    }
+
+    /**
+     * Show in the list even if contact list doesn't show offline.
+     * @return true if contact is to always be shown.
+     */
+    public boolean isShowInList() {
+        return showInList;
+    }
+
+    /**
+     * Show in the list even if contact list doesn't show offline. 
+     * @param showInList true if contact is to always be shown.
+     */
+    public void setShowInList(boolean showInList) {
+        this.showInList = showInList;
     }
 
     /**
