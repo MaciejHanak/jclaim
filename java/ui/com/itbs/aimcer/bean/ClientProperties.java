@@ -130,6 +130,8 @@ public class ClientProperties implements ConnectionProperties {
     private String soundSend="1";
     private String soundNewWindow="";
 
+    private String forwardee="";
+
 
     private String databaseDriver = System.getProperty("DB_DRIVER");
     private String databaseURL = System.getProperty("DB_URL");
@@ -848,5 +850,22 @@ public class ClientProperties implements ConnectionProperties {
 
     public void setSortContactList(boolean sortContactList) {
         this.sortContactList = sortContactList;
+    }
+
+
+    /**
+     * For forwarding messages.
+     * @return name
+     */
+    public String getForwardee() {
+        return forwardee;
+    }
+
+    /**
+     * For forwarding messages.
+     * @param forwardee name
+     */
+    public void setForwardee(String forwardee) {
+        this.forwardee = forwardee;
     }
 }
