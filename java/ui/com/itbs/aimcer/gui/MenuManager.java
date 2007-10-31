@@ -65,6 +65,7 @@ public class MenuManager {
     private static final String COMMAND_GLOBAL_AWAY     = "Away All";
     private static final String COMMAND_LOGIN           = "Login All";
     private static final String COMMAND_LOGOUT          = "Logout All";
+    private static final String COMMAND_FORWARD         = "Forward To...";
 
     private static final String MENU_HELP               = "Help";
     private static final String COMMAND_HELP_FAQ        = "FAQ";
@@ -74,6 +75,7 @@ public class MenuManager {
 
     private static JMenu connectionMenu;
     private static JCheckBoxMenuItem globalAway;
+    private static JCheckBoxMenuItem globalForward;
     private static final String COMMAND_CONN_AWAY =     "Away";
     private static final String COMMAND_CONN_MANAGE =   "Manage...";
     private static final String COMMAND_CONN_LOGIN =    "Login";
@@ -106,6 +108,7 @@ public class MenuManager {
         connectionMenu.add(ActionAdapter.createMenuItem(COMMAND_BUDDY_REMOVE, eventHandler, 'r'));   //   Remove
         connectionMenu.addSeparator();
         connectionMenu.add(globalAway = ActionAdapter.createCheckMenuItem(COMMAND_GLOBAL_AWAY, eventHandler, 'a', ClientProperties.INSTANCE.isIamAway()));// Global Away
+        connectionMenu.add(globalForward = ActionAdapter.createCheckMenuItem(COMMAND_FORWARD, eventHandler, 'f', Main.isForwarding()));// Global Forward
         connectionMenu.add(ActionAdapter.createMenuItem(COMMAND_PICTURE_SEND, eventHandler, 'p'));   //   Set Picture
         connectionMenu.add(ActionAdapter.createMenuItem(COMMAND_PICTURE_RESET, eventHandler, 'c'));   //   Clear Picture
         connectionMenu.add(ActionAdapter.createMenuItem(COMMAND_LOGIN, eventHandler, 'i'));    //   Logout
@@ -166,6 +169,61 @@ public class MenuManager {
                 Main.getConnections().get(i).setAway(away);
         }
     }
+
+    private static void setForwardingContact() {
+        // If we are already forwarding... clear it.
+        globalForward.setSelected(Main.isForwarding()); // to stop default behavior
+        if (Main.isForwarding()) {
+            Main.setForwardingContact(null);
+            globalForward.setSelected(false);
+            globalForward.setText(COMMAND_FORWARD);
+//            globalForward.invalidate();
+            return;
+        }
+        final JDialog dialog = new JDialog(Main.getFrame(), "Fordard All Messages To:", true);
+        Container pane = dialog.getContentPane();
+        pane.setLayout(new GridLayout(0, 2));
+        pane.add(PropertiesDialog.getLabel("Contact: ", "Which person to send the messages to?"));
+        final JComboBox contact;
+        ContactWrapper[] contactWrappers = ContactWrapper.toArray();
+        pane.add(contact = new JComboBox(contactWrappers));
+        for (ContactWrapper wrapper : contactWrappers) {
+            if (wrapper.toString().equalsIgnoreCase(ClientProperties.INSTANCE.getForwardee())) {
+                contact.setSelectedItem(wrapper);
+            }
+        }
+        ActionListener react = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if ("OK".equals(e.getActionCommand())) {
+                    final ContactWrapper wrapper = (ContactWrapper) contact.getSelectedItem();
+                    new Thread() {
+                        public void run() {
+
+                            if (wrapper.getConnection() instanceof MessageSupport) {
+                                Main.setForwardingContact(wrapper);                                
+                                globalForward.setSelected(Main.isForwarding());
+                                globalForward.setText("Forwarded to " + wrapper.getDisplayName());
+                            } else {
+                                Main.complain("This protocol for this contact does not support messages - "+wrapper.getConnection().getServiceName());
+                            }
+                        }
+                    }.start();
+                } else {
+                    Main.setForwardingContact(null);
+                    globalForward.setSelected(false);
+                    globalForward.setText(COMMAND_FORWARD);
+                }
+                dialog.dispose();
+            }
+        };
+        pane.add(new BetterButton(new ActionAdapter("OK", react, 'O')));
+        pane.add(new BetterButton(new ActionAdapter("Cancel", react, 'C')));
+        dialog.pack();
+        GUIUtils.addCancelByEscape(dialog);
+        GUIUtils.moveToScreenCenter(dialog);
+        dialog.setVisible(true);
+    }
+
     /**
      * Monitors connection so it can turn menu items on and off.
      */
@@ -277,8 +335,10 @@ public class MenuManager {
                 } else if (COMMAND_CONN_LOGIN.equals(e.getActionCommand())) {
                     if (connRef.isLoggedIn())
                         JOptionPane.showMessageDialog(Main.getFrame(), "Already connected.");
-                    else
+                    else {
+                        connRef.resetDisconnectInfo();
                         connRef.connect();
+                    }
                 } else if (COMMAND_CONN_LOGOFF.equals(e.getActionCommand())) {
                     connRef.disconnect(true);
                 } else if (COMMAND_BUDDY_ADD.equals(e.getActionCommand())) {
@@ -338,6 +398,7 @@ public class MenuManager {
                         } else {
                             if (COMMAND_LOGIN.equals(command))
                                 try {
+                                    Main.getConnections().get(i).resetDisconnectInfo();
                                     Main.getConnections().get(i).connect();
                                 } catch (Exception e1) {
                                     Main.complain("Failed to connect " + Main.getConnections().get(i) + " for user " + Main.getConnections().get(i).getUser(), e1);
@@ -354,6 +415,8 @@ public class MenuManager {
                 properties.setVisible(true);
             } else if (COMMAND_GLOBAL_AWAY.equals(command)) {
                 setGlobalAway(globalAway.isSelected());
+            } else if (COMMAND_FORWARD.equals(command)) {
+                setForwardingContact();
             } else if (COMMAND_CONNECTION_ADD.equals(command)) {
                 new LoginPanel(null).setVisible(true);
             } else if (COMMAND_FILE_SEND.equals(command)) {
@@ -471,6 +534,7 @@ public class MenuManager {
                 JOptionPane.showMessageDialog(Main.getFrame(), Main.ABOUT_MESSAGE, "About:", JOptionPane.INFORMATION_MESSAGE);
             }
         }
+
     }
 
     public static void sendMessageDialog(final Connection conn) {
@@ -576,13 +640,18 @@ public class MenuManager {
         }
     }
 
+    /**
+     * Used to return 3-touple value back to UI.
+     */
     static class Returned {
         Group group;
         String contact;
+        String comment;
 
-        public Returned(Group selectedGroup, String text) {
+        public Returned(Group selectedGroup, String selectedContact, String selectedComment) {
             group = selectedGroup;
-            contact = text;
+            contact = selectedContact;
+            this.comment = selectedComment;
         }
     }
     /**
@@ -592,11 +661,15 @@ public class MenuManager {
      * @param defaultName name of contact
      */
     static void addContact(Connection conn, final Frame parent, String defaultName) {
-        Returned selectedGroup = genericPrompter(conn, parent, defaultName, "Add contact?");
-        if (selectedGroup!=null) {
+        Returned result = genericPrompter(conn, parent, defaultName, "Add contact?");
+        if (result!=null) {
             try {
-                conn.getGroupList().add(selectedGroup.group);
-                conn.addContact(ContactWrapper.create(selectedGroup.contact, conn), selectedGroup.group);
+                conn.getGroupList().add(result.group);
+                ContactWrapper contactWrapper = ContactWrapper.create(result.contact, conn);
+                conn.addContact(contactWrapper, result.group);
+                if (result.comment.length()>0) { // if contact already existed, don't want to loose comment.
+                    contactWrapper.getPreferences().setNotes(result.comment);
+                }
             } catch (Exception e) {
                 ErrorDialog.displayError(parent, "Failed to add contact. \n" + e.getMessage(), e);
             }
@@ -606,7 +679,7 @@ public class MenuManager {
 
     static Returned genericPrompter(Connection conn, final Frame parent, String defaultContactName, String title) {
         final boolean showContact = defaultContactName != null;
-        final JTextComponent contactName;
+        final JTextComponent contactName, comment;
         final JComboBox groupBox;
         final JDialog dialog = new JDialog(parent, title, true);
         Container pane = dialog.getContentPane();
@@ -623,10 +696,13 @@ public class MenuManager {
         pane.add(groupBox);
 
         contactName = new BetterTextField();
+        comment = new BetterTextPane();
         if (showContact) {
             pane.add(PropertiesDialog.getLabel("Name: ", "Which contact to add"));
             pane.add(contactName);
             contactName.setText(defaultContactName);
+            pane.add(PropertiesDialog.getLabel("Comment: ", "Optional comment"));
+            pane.add(comment);
         }
         ActionListener react = new ActionListener() {
             boolean ok = false;
@@ -662,7 +738,7 @@ public class MenuManager {
                     selectedGroup = (Group) groupBox.getSelectedItem();
                 else
                     selectedGroup = conn.getGroupFactory().create((String)groupBox.getSelectedItem());
-                return new Returned(selectedGroup, contactName.getText());
+                return new Returned(selectedGroup, contactName.getText().trim(), comment.getText().trim());
         }
         return null;
     }
