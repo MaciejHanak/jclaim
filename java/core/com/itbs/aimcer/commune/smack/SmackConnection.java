@@ -134,7 +134,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
              * @param e the exception that caused the reconnection to fail.
              */
             public void reconnectionFailed(Exception e) {
-                //TODO Change
+                notifyConnectionLost();
             }
         });
           //////////////////////
@@ -249,8 +249,10 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     }
 
     public void disconnect(boolean intentional) {
-        if (connection!=null)
+        if (connection!=null) {
             connection.disconnect();
+            connection = null;  // they don't quite get it, so we have to.
+        }
         super.disconnect(intentional);
     }
 
@@ -360,13 +362,16 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
      * @param away true if so
      */
     public void setAway(boolean away) {
-        if (connection != null) {
+        if (connection != null && connection.isConnected()) {
             Presence presence = new Presence(Presence.Type.available);
             if (away) { // change default values to:
                 presence.setMode(Presence.Mode.away);
                 presence.setStatus(getProperties().getIamAwayMessage());
             }
             connection.sendPacket(presence);
+        } else {
+            // Shouldn't be calling us for this unless smth broke inside smack lib again.
+            notifyConnectionFailed("Connection unavailable.");
         }
         super.setAway(away);
     }
