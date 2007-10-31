@@ -22,10 +22,7 @@ package com.itbs.aimcer.gui;
 
 import com.itbs.aimcer.LoggerEventListener;
 import com.itbs.aimcer.bean.*;
-import com.itbs.aimcer.commune.Connection;
-import com.itbs.aimcer.commune.ConnectionEventListener;
-import com.itbs.aimcer.commune.GlobalEventHandler;
-import com.itbs.aimcer.commune.MessageSupport;
+import com.itbs.aimcer.commune.*;
 import com.itbs.aimcer.commune.weather.WeatherConnection;
 import com.itbs.aimcer.web.ServerStarter;
 import com.itbs.gui.*;
@@ -53,7 +50,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public class Main {
     static String TITLE = "JCLAIM";
-    public static String VERSION = "Version: 4.4.29";
+    public static String VERSION = "Version: 4.4.40";
     public static final String URL_FAQ = "http://www.itbsllc.com/jclaim/User%20Documentation.htm";
     public static final String EMAIL_SUPPORT = "support@itbsllc.com";
     private static final String LICENSE = System.getProperty("client");
@@ -67,7 +64,7 @@ public class Main {
             "Provides a GUI interface for connecting to IM Services.\n" +
             "Follows logging requirements for financial institutions.\n" +
             "\nhttp://www.jclaim.com\n" +
-            "\nDeveloped by ITBS LLC, Copyright 2004, 2005, 2006." +
+            "\nDeveloped by ITBS LLC, Copyright 2004 - 2007." +
             "\nAll rights reserved.\n" +
             "\nTo request a feature or submit a bug, visit 'Contact Us' section on the web site."+
            (LICENSE==null?"":"\n\nThis version is licensed to: " + LICENSE);
@@ -84,12 +81,36 @@ public class Main {
     private static java.util.List <Connection> connections = new CopyOnWriteArrayList<Connection>();
     public static LoggerEventListener logger;
     private GlobalEventHandler globalEventHandler;
+    private MessageForwarder messageForwarder;
     private static Main main;
 
     private PeopleScreen peopleScreen;
     private StatusPanel statusBar;
-
+    
     public static GroupFactory standardGroupFactory = new GroupWrapperFactory();
+
+    /**
+     * Provides a way to set a forwarder. 
+     * @param contact if null - removes the listeneers all together. Otherwise sets forwarding contact.
+     */
+    public static void setForwardingContact(Contact contact) {
+        main.messageForwarder.setForwardContact(contact);
+        if (contact!=null) { // update settings
+            ClientProperties.INSTANCE.setForwardee(contact.toString());
+        }
+        for (Connection connection:Main.getConnections()) {
+            if (contact==null) {
+                connection.removeEventListener(main.messageForwarder);
+            } else if (connection instanceof MessageSupport) {
+                connection.addEventListener(main.messageForwarder);
+            }
+        }
+    }
+
+    public static boolean isForwarding() {
+        return main.messageForwarder!=null && main.messageForwarder.getForwardContact()!=null;
+    }
+
     static class GroupWrapperFactory implements GroupFactory {
         public GroupWrapperFactory() {
 //            new Exception("creating gwf").printStackTrace();
@@ -118,34 +139,7 @@ public class Main {
         /**
          * Anyone who has sessions - should not have this be static, but session based hash.
          */
-        private static GroupList groupList  = new GroupList() {
-            private List<Group> arrayList = new CopyOnWriteArrayList<Group>();
-            public int size() {
-                return arrayList.size();
-            }
-
-            public Group get(int index) {
-                return arrayList.get(index);
-            }
-
-            public Group add(Group group) {
-                if (!arrayList.contains(group)) // no duplicates
-                    arrayList.add(group);
-                return group;
-            }
-
-            public void remove(Group group) {
-                arrayList.remove(group);
-            }
-
-            public Group[] toArray() {
-                return arrayList.toArray(new Group[arrayList.size()]);
-            }
-
-            public void clear() {
-                arrayList.clear();
-            }
-        };
+        private static GroupList groupList  = new GroupListImpl();
 
     }
 
@@ -196,6 +190,7 @@ public class Main {
             }
         });
         main.globalEventHandler = new GlobalEventHandler();
+        main.messageForwarder = new MessageForwarder();
 
         try {
             // addConnection what you loaded
@@ -357,6 +352,7 @@ public class Main {
 
     public static synchronized void saveProperties() {
         try {
+            
             CONFIG_FILE_SAV.delete();
             final OutputStream out = new GZIPOutputStream(new FileOutputStream(CONFIG_FILE_SAV));
             XMLEncoder e = new XMLEncoder(out);
@@ -375,9 +371,10 @@ public class Main {
             e.close();
             out.flush();
             out.close();
+            Thread.yield();
             // save, rename to old.
-            CONFIG_FILE.delete();
-            CONFIG_FILE_SAV.renameTo(CONFIG_FILE);
+            if (!CONFIG_FILE.delete()) { log.severe("Failed to delete " + CONFIG_FILE);  Main.complain("Failed to delete old config file."); }
+            if (!CONFIG_FILE_SAV.renameTo(CONFIG_FILE)) { log.severe("Failed to rename " + CONFIG_FILE_SAV + " to " + CONFIG_FILE); Main.complain("Failed to rename config file."); }
         } catch (Exception ex) {
             Main.complain("Failed to save config file.", ex);
         }
