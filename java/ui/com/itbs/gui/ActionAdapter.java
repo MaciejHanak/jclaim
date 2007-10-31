@@ -75,8 +75,7 @@ final public class ActionAdapter extends AbstractAction {
         callBack.actionPerformed(e);
     }
 
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (obj instanceof ActionEvent)
             return getValue(Action.NAME).equals(((ActionEvent)obj).getActionCommand());
         else if (obj instanceof AbstractAction)
@@ -90,6 +89,7 @@ final public class ActionAdapter extends AbstractAction {
         JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem(new ActionAdapter(command, eventHandler));
         menuItem.setMnemonic(mnemonic);
         menuItem.setSelected(checked);
+        menuItem.setActionCommand(command);
         return menuItem;
     }
     
