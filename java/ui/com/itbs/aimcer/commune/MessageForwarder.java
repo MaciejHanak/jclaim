@@ -12,7 +12,7 @@ import com.itbs.aimcer.bean.Nameable;
  */
 public class MessageForwarder implements ConnectionEventListener {
     private Contact forwardContact;
-    private static final int MAX_LEN = 80;
+    private static final int MAX_LEN = 80; // 50 characters are gone due to fillers.
 
     public void setForwardContact(Contact forwardContact) {
         this.forwardContact = forwardContact;
