@@ -158,7 +158,7 @@ public class PersonalInfoPanel extends JPanel {
                 preferences.setNotes(((JTextComponent)e.getSource()).getText());
             }
         });
-        add(symbol);
+        add(new JScrollPane(symbol));
         setVisible(preferences.isInfoPanelVisible());
     }
 }
