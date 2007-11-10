@@ -136,7 +136,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
             MsnGroup defaultGroup = connection.getContactList().getDefaultGroup();
             gw = getGroupFactory().create(defaultGroup.getGroupName());
 
-            populateContactsFromList(connection.getContactList().getContacts(), gw, true);
+            populateContactsFromList(connection.getContactList().getContactsInList(MsnList.FL), gw, true);
 
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 eventHandler.statusChanged(JmlMsnConnection.this);
@@ -147,7 +147,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
          * Populates the contact list from MSN's data.
          * @param contacts to run through
          * @param gw to assign to.
-         * @param orphansOnly determins if only orphaned contacts be assigned to that group.
+         * @param orphansOnly determins if only orphaned contacts be assigned to that group. false = everyone, true=only orphans
          */
         private void populateContactsFromList(MsnContact[] contacts, Group gw, boolean orphansOnly) {
             Contact cw;
