@@ -113,6 +113,7 @@ public class GeneralUtils {
         temp = replace(temp, "&gt;",   ">");
         temp = replace(temp, "&quot;", "\"");
         temp = replace(temp, "&amp;",  "&");
+        temp = replace(temp, "&#39;",  "'"); // macs do this
         temp = replace(temp, "%20",    " ");
         temp = replace(temp, "%22",    "\"");
         temp = replace(temp, "&nbsp;", " ");
