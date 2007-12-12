@@ -28,6 +28,7 @@ import com.itbs.aimcer.commune.msn.MSNConnection;
 import com.itbs.aimcer.commune.smack.GoogleConnection;
 import com.itbs.aimcer.commune.smack.SmackConnection;
 import com.itbs.aimcer.commune.ymsg.YMsgConnection;
+import com.itbs.aimcer.commune.ymsg.YMsgOpenConnection;
 import com.itbs.gui.ErrorDialog;
 import com.itbs.util.ClassUtil;
 import com.itbs.util.ImageCache;
@@ -76,6 +77,7 @@ public class ImageCacheUI extends ImageCache {
                        new ImagePair("aim.gif", DaimConnection.class);
             ICON_ICQ = new ImagePair("icq.gif", ICQConnection.class);
             ICON_YAHOO = new ImagePair("yahoo.gif", YMsgConnection.class);
+                         new ImagePair("yahoo.gif", YMsgOpenConnection.class);
             ICON_GOOGLE = new ImagePair("google.gif", GoogleConnection.class);
             ICON_MSN = new ImagePair("msn.gif", MSNConnection.class);
                        new ImagePair("msn.gif", JmlMsnConnection.class);
