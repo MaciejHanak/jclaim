@@ -174,7 +174,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
             notifyConnectionFailed(msg);
         } catch(InterruptedIOException e) {
             notifyConnectionFailed("Timeout during connection.\n" + e.getMessage());
-        } catch(IOException e) {
+        } catch(Exception e) {
             log.log(Level.SEVERE, "Problem connecting", e);
             notifyConnectionFailed("Problem connecting.\n" + e.getMessage());
         }

@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  * Support for Yahoo medium.
  *
  * @author Alex Rass
- * @since Mar 26, 2005
+ * @since Dec 12, 2007
  */
 public class YMsgOpenConnection extends AbstractMessageConnection implements FileTransferSupport {
     private static final Logger log = Logger.getLogger(YMsgOpenConnection.class.getName());
@@ -151,7 +151,7 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
             notifyConnectionFailed(msg);
         } catch(InterruptedIOException e) {
             notifyConnectionFailed("Timeout during connection.\n" + e.getMessage());
-        } catch(IOException e) {
+        } catch(Exception e) {
             log.log(Level.SEVERE, "Problem connecting", e);
             notifyConnectionFailed("Problem connecting.\n" + e.getMessage());
         }
