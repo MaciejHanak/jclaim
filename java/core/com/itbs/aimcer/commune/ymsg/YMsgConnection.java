@@ -385,7 +385,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
     /**
      * Request to cancel the file transfer in progress.
      */
-    public void rejectFileTransfer() {
+    public void rejectFileTransfer(Object connectionInfo) {
     }
 
     // *****************************************************************
