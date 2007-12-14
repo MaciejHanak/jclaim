@@ -64,6 +64,9 @@
 
     <property name="file.yahoo.o.jar" value="${dir.dist}/ymsg.jar"/>
     <property name="file.yahoo.lib.jar" value="${dir.lib}/ymsg_network_v0_6.jar"/>
+    
+    <property name="file.openyahoo.o.jar" value="${dir.dist}/openymsg.jar"/>
+    <property name="file.openyahoo.lib.jar" value="${dir.lib}/openymsg.jar"/>
 
     <property name="file.jdic.o.jar" value="${dir.dist}/jdic.jar"/>
     <property name="file.jdic.lib.jar" value="${dir.lib}/jdic.jar"/>
@@ -140,6 +143,7 @@
         <delete file="${file.smackx.o.jar}"/>
         <delete file="${file.jdic.o.jar}"/>
         <delete file="${file.yahoo.o.jar}"/>
+        <delete file="${file.openyahoo.o.jar}"/>
         <delete file="${file.msn.o.jar}"/>
         <delete file="${file.jml.o.jar}"/>
         <delete file="${file.cindy.o.jar}"/>
@@ -239,6 +243,9 @@
 
         <pack200 src="${file.yahoo.lib.jar}" destfile="${file.yahoo.o.jar}"	repack="true"/>
         <signjar jar="${file.yahoo.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
+
+        <pack200 src="${file.openyahoo.lib.jar}" destfile="${file.openyahoo.o.jar}"	repack="true"/>
+        <signjar jar="${file.openyahoo.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.jdic.lib.jar}" destfile="${file.jdic.o.jar}"	repack="true"/>
         <signjar jar="${file.jdic.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
