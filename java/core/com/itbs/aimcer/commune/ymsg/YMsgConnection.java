@@ -58,6 +58,9 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
     public final static String SERVER_JAPAN = "cs.yahoo.co.jp";
     public final static String SERVER_WORLD = "scs.msg.yahoo.com";
 
+    /** Encoding support. */
+    public String encoding = "UTF-8";
+
     private static final String ESCAPE = "\u001B[";
 
     public String getServiceName() {
@@ -74,6 +77,31 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
             setServerPort(dch.getPort());
         }
     }
+
+    /**
+     * Defines encoding used by the connection.
+     * Needs to be set prior to connection.
+     * @param encoding to set to
+     */
+    public void setEncoding(String encoding) {
+        if (encoding==null) throw new NullPointerException("Encoding should never be null");
+        this.encoding = encoding;
+    }
+
+    /**
+     * Defines encoding used by the connection.
+     * Needs to be set prior to connection.
+     */
+    public String getEncoding() {
+//        return "SHIFT_JIS";
+//        return "UTF-16";
+        return encoding;
+    }
+
+    //      M E S S A G I N G     S E R V E R      I N F O
+//    public String getServerName() {
+//        return SERVER_JAPAN;
+//    }
 
 /*
     public String getSupportAccount() {
@@ -94,7 +122,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
             // The following line (while ugly) allows us to send japanese users to the right server,
             // while perserving the ability to override servers for rest of the users.
 //            String serverName = (getUserName()!=null && getUserName().endsWith(".jp"))?SERVER_JAPAN:getServerName();
-            DirectConnectionHandler dch = new DirectConnectionHandler(getServerName(), getServerPort());
+            DirectConnectionHandler dch = new DirectConnectionHandler(getServerName(), getServerPort(), getEncoding());
             session = new Session(dch);
             // ports 5050,23,25,80
         } else {
@@ -572,7 +600,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
             final String text = (event.getEmailAddress()==null?"":("Yahoo! mail from: " + event.getEmailAddress() + "\n"))
                     + (event.getSubject()==null?"":("Subject: " + event.getSubject() + "\n"))
                     + "Unread Email Count: " + event.getMailCount();
-            if (EMPTY_EMAIL_STATE.equals(text) || emailState.equals(text)) { // same as empty or last
+            if (EMPTY_EMAIL_STATE.equals(text)) { // || emailState.equals(text)) { // same as empty or last
                 return;
             }
             emailState = text;
