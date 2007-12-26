@@ -59,6 +59,7 @@ public class JazzyInterface {
     private static final String wordsEnglish []= {
             "Alex",
             "cancelled",
+            "behavior",
             "Charlotte",
             "Chloe",
             "Daniel",
