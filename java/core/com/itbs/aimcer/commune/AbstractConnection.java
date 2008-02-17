@@ -172,6 +172,22 @@ abstract public class AbstractConnection implements Connection {
             iter.next().connectionEstablished(this);
         }
     }
+    /**
+     * Notifies of an email received.
+     * @param message that was received.
+     */
+    public void notifyEmailReceived(Message message) {
+        connectionValid = true;
+        Iterator <ConnectionEventListener >iter = getEventListenerIterator();
+        while (iter.hasNext()) {
+            try {
+                iter.next().emailReceived((MessageSupport)this, message);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Failed to notify.", e);
+                notifyErrorOccured("Failed to notify.", e);
+            }
+        }
+    }
 
     /**
      * Tells everyone connection was lost.
