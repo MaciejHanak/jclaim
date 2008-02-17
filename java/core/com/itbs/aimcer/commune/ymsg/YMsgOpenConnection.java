@@ -558,15 +558,7 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
             emailState = text;
 
             Message message = new MessageImpl(getContactFactory().create(getUserName(), YMsgOpenConnection.this), false, text);
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                try {
-                    eventHandler.emailReceived(YMsgOpenConnection.this, message);
-                } catch (Exception exc) {
-                    for (ConnectionEventListener eventListener: eventHandlers) {
-                        eventListener.errorOccured("Error processing email.", exc);
-                    }
-                }
-            }
+            notifyEmailReceived(message);
         }
     } // class SessionHandler
 

@@ -100,15 +100,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
         {
             final String text = "Unread Email Count: " + unread;
             Message message = new MessageImpl(getContactFactory().create(getUserName(), MSNConnection.this), false, text);
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                try {
-                    eventHandler.emailReceived(MSNConnection.this, message);
-                } catch (Exception e) {
-                    for (ConnectionEventListener eventListener: eventHandlers) {
-                        eventListener.errorOccured("Error processing message.", e);
-                    }
-                }
-            }
+            notifyEmailReceived(message);
         }
 
         public void userOnline(MsnFriend friend) {
