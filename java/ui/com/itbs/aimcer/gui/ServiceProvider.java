@@ -30,6 +30,7 @@ import com.itbs.aimcer.commune.smack.GoogleConnection;
 import com.itbs.aimcer.commune.smack.SecureSmackConnection;
 import com.itbs.aimcer.commune.smack.SmackConnection;
 import com.itbs.aimcer.commune.ymsg.YMsgConnection;
+import com.itbs.aimcer.commune.ymsg.YMsgOpenConnection;
 
 /**
  *  Manages the list of available services.
@@ -46,15 +47,18 @@ public class ServiceProvider {
     static ServiceProvider[] providers = {
 //        new ServiceProvider(UTestFakeConnection.class, "Fake"),
         new ServiceProvider(OscarConnection.class,       "AIM - Oscar"   ),
+//        new ServiceProvider(DaimConnection.class,        "DAIM - Oscar"   ),
         new ServiceProvider(ICQConnection.class,         "ICQ"           ),
 //        new ServiceProvider(AIMConnection.class,       "AIM - Oscar 2" ),
         new ServiceProvider(YMsgConnection.class,        "Yahoo!"        ),
+        new ServiceProvider(YMsgOpenConnection.class,    "Yahoo! (2)"    ),
         new ServiceProvider(JmlMsnConnection.class,      "MSN (JML)"     ),
         new ServiceProvider(MSNConnection.class,         "MSN (JMSN-Old)"),
         new ServiceProvider(GoogleConnection.class,      "Google Talk"   ),
         new ServiceProvider(SmackConnection.class,       "Jabber"        ),
         new ServiceProvider(SecureSmackConnection.class, "Secure Jabber" ),
         new ServiceProvider(JAIMConnection.class,        "AIM - TOC"     ),
+//        new ServiceProvider(NateConnection.class,        "Nate"          ),
     };
 
     ServiceProvider(Class provider, String name) {
