@@ -54,6 +54,7 @@ public class NateConnection extends AbstractMessageConnection {
 //            connection.loginAnonymously();
             connection.login(getUserName(), getPassword());
             fireConnect();
+            connection.fireBuddyListModified();
         } catch (Exception e) {
             log.log(Level.INFO, "Login exception ",e);
             disconnect(false);
@@ -66,7 +67,7 @@ public class NateConnection extends AbstractMessageConnection {
             public void instanceMessageReceived(InstanceMessage instanceMessage) {
                 try { // try and not kill Smack!
                     Message message;
-                    String from = normalizeName(instanceMessage.getFrom());
+                    String from = instanceMessage.getFrom();
                     message = new MessageImpl(getContactFactory().create(from, NateConnection.this),
                                 false, false, instanceMessage.getMessage());
                     for (int i = 0; i < eventHandlers.size(); i++) {
@@ -102,11 +103,13 @@ public class NateConnection extends AbstractMessageConnection {
             }
 
             public void userOnline(NateFriend nateFriend) {
-                //TODO Change
+                Contact contact = getContactFactory().create(nateFriend.getID(), NateConnection.this);
+                contact.getStatus().setOnline(true);
             }
 
             public void userOffline(NateFriend nateFriend) {
-                //TODO Change
+                Contact contact = getContactFactory().create(nateFriend.getID(), NateConnection.this);
+                contact.getStatus().setOnline(false);
             }
 
             public void switchboardSessionStarted(SwitchBoardSession switchBoardSession) {
@@ -174,7 +177,7 @@ public class NateConnection extends AbstractMessageConnection {
             }
 
             public void buddyListModified() {
-                //TODO Change
+                buddyListInit(connection.getBuddyGroup());
             }
 
             public void addFailed(int i) {
@@ -182,7 +185,8 @@ public class NateConnection extends AbstractMessageConnection {
             }
 
             public void renameNotify(NateFriend nateFriend) {
-                //TODO Change
+                Contact contact = getContactFactory().create(nateFriend.getID(), NateConnection.this);
+                contact.setDisplayName(nateFriend.getNameNick());
             }
 
             public void allListUpdated() {
@@ -227,10 +231,12 @@ public class NateConnection extends AbstractMessageConnection {
             }
 
             public void killed() {
+                log.info("Killed");
                 //TODO Change
             }
 
             public void OwnerStatusUpdated() {
+                log.info("OwnerStatusUpdated");
                 //TODO Change
             }
 
@@ -255,14 +261,6 @@ public class NateConnection extends AbstractMessageConnection {
 */
 
     } // fireConnect
-
-    private String normalizeName(String userName) {
-        int index = userName.indexOf('/');
-        if (index > 0 ) { // yes, 0
-            return userName.substring(0, index);
-        }
-        return userName;
-    }
 
     public void disconnect(boolean intentional) {
         if (connection!=null) {
@@ -317,17 +315,6 @@ public class NateConnection extends AbstractMessageConnection {
             }
         }
         group.add(contact);
-    }
-
-    /**
-     * Used to fix the usernames for the jabber protocol.<br>
-     * Usernames need server name.
-     * @param name of the user's account to fix
-     * @return name, including server.
-     */
-    protected String fixUserName(String name) {
-        if (name.indexOf('@')>-1) return name;
-        return name + "@" + getServerName();
     }
 
     public void removeContact(Nameable contact) {
@@ -398,26 +385,6 @@ public class NateConnection extends AbstractMessageConnection {
     protected void processSecureMessage(Message message) throws IOException {
         processMessage(message); // todo go secure at some point
     }
-
-/*
-    public void createAccount(AccountInfo accountInfo) {
-        Registration registration = new Registration();
-        Map <String, String> attributes = new HashMap<String, String>(2);
-        attributes.put("name", accountInfo.getUserName());
-        attributes.put("password", accountInfo.getPassword());
-        registration.setAttributes(attributes);
-        // todo populate other fields
-        connection.sendPacket(registration);
-    }
-
-    public AccountInfo getAccountInfo() {
-        Registration registration = new Registration();
-        connection.sendPacket(registration);
-        AccountInfo accountInfo = new AccountInfo(registration.getUsername(), registration.getPassword());
-        // todo collect other fields
-        return accountInfo;
-    }
-*/
 
     public String getDefaultIconName() {
         return "jabber.gif";
