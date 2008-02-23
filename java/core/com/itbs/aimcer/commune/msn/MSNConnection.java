@@ -488,12 +488,18 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
         final MimeMessage msg = new MimeMessage(message.getText());
         msg.setKind(MimeMessage.KIND_MESSAGE);
         SwitchboardSession ss = getSession(message.getContact().getName());
-        try {
-            ss.sendInstantMessage(msg);
-        } catch (NullPointerException e) { // this catches both problems
-            sessions.remove(message.getContact().getName());
+        if (ss==null) {
             for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.errorOccured("Failed to send your message, try again.", null);
+                eventHandler.errorOccured("Failed to send your message, try again. (Creating Session failed)", null);
+            }
+        } else {
+            try {
+                ss.sendInstantMessage(msg);
+            } catch (NullPointerException e) { // this catches both problems
+                sessions.remove(message.getContact().getName());
+                for (ConnectionEventListener eventHandler : eventHandlers) {
+                    eventHandler.errorOccured("Failed to send your message, try again.", null);
+                }
             }
         }
     } // processMessage()
