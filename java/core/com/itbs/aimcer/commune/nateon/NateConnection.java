@@ -198,7 +198,7 @@ public class NateConnection extends AbstractMessageConnection {
             }
 
             public void notifyUnreadMail(Properties properties, int i) {
-                notifyEmailReceived(new MessageImpl(getContactFactory().create(getUserName(), NateConnection.this), false, ""+properties.stringPropertyNames()));
+                notifyEmailReceived(new MessageImpl(getContactFactory().create(getUserName(), NateConnection.this), false, properties.toString()));
             }
 
             public void buddyListInit(GroupList groupList) {
