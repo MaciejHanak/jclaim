@@ -57,7 +57,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 
 		public void loginCompleted(MsnMessenger messenger) {
 			log.fine(messenger + " login complete ");
-			notifyConnectionEstablished();
+//			notifyConnectionEstablished(); needs to be done later. Thanks Joseph.
 		}
 
 		public void logout(MsnMessenger messenger) {
@@ -122,6 +122,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 
 		public void contactListInitCompleted(MsnMessenger messenger) {
 			log.fine(messenger + " contact list init completeted");
+			notifyConnectionEstablished();
 		}
 
 		public void contactListSyncCompleted(MsnMessenger messenger) {
