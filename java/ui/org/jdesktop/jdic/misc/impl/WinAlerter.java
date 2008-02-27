@@ -88,9 +88,9 @@ public class WinAlerter extends Alerter {
         loop.schedule(new TimerTask() {
             public void run() {
                 GeneralUtils.sleep(200); // slow it down a bit
-                logger.finest("WA: focused: " + frame.isFocused() + " dislayable: " + frame.isDisplayable() + " visible: " + frame.isVisible());
+//                logger.info(frame.getTitle() +": focused: " + frame.isFocused() + " dislayable: " + frame.isDisplayable() + " visible: " + frame.isVisible() + " focusOwner: " + frame.isFocusOwner() + " showing: " + frame.isShowing() + " valid: " + frame.isValid() + " active: " + frame.isActive());
 //                if (!frame.isFocusOwner()) {    // bug fix
-                if (frame.isDisplayable() && !frame.isFocused()) { //frame.isVisible() && 
+                if (frame.isDisplayable() && !(frame.isFocused() && frame.isActive())) { //frame.isVisible() &&        )) {//  
                     alertWindows(frame);
                 } else {
                     loop.cancel();

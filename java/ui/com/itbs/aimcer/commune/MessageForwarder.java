@@ -36,7 +36,9 @@ public class MessageForwarder implements ConnectionEventListener {
 //            incoming message         not and auto-response        forwarder is set        and connection for it is good                       and supports messages                                 and message is not from a forwardee
         if (!message.isOutgoing() && !message.isAutoResponse() && forwardContact != null && forwardContact.getConnection().isLoggedIn() && forwardContact.getConnection() instanceof MessageSupport && !message.getContact().equals(forwardContact)) {
             // recompose using new data.
-            String newText = message.getContact() + ": " + message.getPlainText();
+            Contact cw = connection.getContactFactory().get(message.getContact().toString(), connection);
+
+            String newText = ((cw!=null)?cw.getDisplayName():message.getContact()) + ": " + message.getPlainText();
             Message newMessage = new MessageImpl(forwardContact, true, newText.substring(0, Math.min(MAX_LEN, newText.length())));
             ((MessageSupport)(forwardContact.getConnection())).sendMessage(newMessage);
         }

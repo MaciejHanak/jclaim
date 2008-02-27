@@ -18,24 +18,37 @@
  *
  */
 
-package com.itbs.aimcer.bean;
+package com.itbs.gui;
 
+import com.itbs.aimcer.gui.UTestFrameTest;
 
+import javax.swing.*;
+import javax.swing.text.html.HTMLEditorKit;
+import java.awt.*;
 
 /**
- * Maintains the list of groups.
- * <p>
- * Common implementation is one group list for all session.
- * Or feel free to create a group list for each connection. But then you have to do more work when displaying groups.
- *
- * @author Alex Rass
- * @since Sep 22, 2004
+ * @author Administrator / Alex Rass
+ * @since May 9, 2006
  */
-public interface GroupList {
-    int size();
-    Group get(int index);
-    Group add(Group group);
-    void remove(Group group);
-    Group[] toArray();
-    void clear();
+public class UTestHTMLDocLinkDetector extends UTestFrameTest {
+    JEditorPane comp = new JEditorPane();
+
+
+
+
+    public void testMain() throws Exception {
+        comp.setText("This is the story\nof the hare who\nlost his spectacles.");
+        comp.setEditorKit(new HTMLEditorKit());
+        comp.setDocument(new HTMLDocLinkDetector(comp));
+        window.setLayout(new BorderLayout());
+        window.add(new JScrollPane(comp), BorderLayout.CENTER);
+
+        window.setSize(500, 400);
+        window.setVisible(true);
+        waitForMe(10000);
+    }
+
+    public void testLinks() throws Exception {
+
+    }
 }

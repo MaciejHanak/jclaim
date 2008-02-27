@@ -1612,7 +1612,8 @@ class ServeInputStream extends ServletInputStream {
     }
 
     public int read(byte[] b, int off, int len) throws IOException {
-        return in.read(b, off, len);
+        int i = in.read(b, off, Math.min(len, in.available()));
+        return i==0?-1:i;
     }
 
     public int available() throws IOException {

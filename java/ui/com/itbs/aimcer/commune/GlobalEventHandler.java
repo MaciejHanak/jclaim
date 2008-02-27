@@ -98,7 +98,7 @@ public class GlobalEventHandler implements ConnectionEventListener {
      * @param message to display.
      */
     public void connectionFailed(final Connection connection, final String message) {
-        log.info("Connection to " + connection.getServiceName() + " as " + connection.getUser() + " failed " + message + "." + connection.getDisconnectCount() + " time(s).");
+        log.info("Connection to " + connection.getServiceName() + " as " + connection.getUser() + " failed " + message + ". " + connection.getDisconnectCount() + " time(s).");
         connectionDone();
         handleDisconnect(connection);
         reconnect(connection,  message);
@@ -236,7 +236,9 @@ public class GlobalEventHandler implements ConnectionEventListener {
     }
 
     public boolean contactRequestReceived(final String user, final MessageSupport connection) {
-        return JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(Main.getFrame(), "Following contact wants to add you to his/her list: " + user + " on " + connection.getServiceName(), "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        String msg = "Following contact wants to add you to his/her list: " + user + " on " + connection.getServiceName();
+        log.info(msg);  // in case we miss it
+        return JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(Main.getFrame(), msg, "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
     }
 
 } // class AimHandler

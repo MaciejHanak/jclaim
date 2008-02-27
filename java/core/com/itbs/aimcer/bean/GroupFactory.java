@@ -21,11 +21,15 @@
 package com.itbs.aimcer.bean;
 
 /**
+ * Class for maintaining groups.
  * @author Alex Rass
  * @since Feb 12, 2006
  */
 public interface GroupFactory {
+    /** Creates a group */
     Group create(String group);
+    /** Creates a group */
     Group create(Group group);
+    /** Returns a group list. */
     GroupList getGroupList();
 }

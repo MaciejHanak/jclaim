@@ -22,6 +22,7 @@ package com.itbs.aimcer.gui;
 
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
+import com.itbs.aimcer.gui.order.OrderEntryLog;
 import com.itbs.gui.*;
 import com.itbs.newgrep.Grep;
 import org.jdesktop.jdic.desktop.Desktop;
@@ -454,6 +455,8 @@ public class MenuManager {
                         ((IconSupport) connection).uploadPicture(chooser.getSelectedFile());
                 }
                 // send to each connection
+            } else if (COMMAND_FILE_ORDERS.equals(command)) {
+                OrderEntryLog.getInstance().showFrame();
             } else if (COMMAND_BUDDY_MOVE.equals(command)) {
                 if (pleaseLogIn()) return;
                 JList list = Main.getPeoplePanel().getList();

@@ -24,6 +24,7 @@ import com.itbs.aimcer.LoggerEventListener;
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.aimcer.commune.weather.WeatherConnection;
+import com.itbs.aimcer.gui.order.OrderEntryLog;
 import com.itbs.aimcer.web.ServerStarter;
 import com.itbs.gui.*;
 
@@ -50,7 +51,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public class Main {
     static String TITLE = "JCLAIM";
-    public static String VERSION = "Version: 4.4.40";
+    public static String VERSION = "Version: 4.4.42";
     public static final String URL_FAQ = "http://www.itbsllc.com/jclaim/User%20Documentation.htm";
     public static final String EMAIL_SUPPORT = "support@itbsllc.com";
     private static final String LICENSE = System.getProperty("client");
@@ -274,6 +275,12 @@ public class Main {
         connection.addEventListener(logger); // if logger is before MW, we see it log the incoming msg first
         JList list = main.peopleScreen.getList();
         connection.addEventListener((ConnectionEventListener) list.getModel()); // is also self-added
+        connection.addEventListener(OrderEntryLog.getInstance());
+        if (ClientProperties.INSTANCE.isEnableOrderEntryInSystem())
+            if (ClientProperties.INSTANCE.isShowOrderEntry())
+                connection.addEventListener(OrderEntryLog.getInstance());
+            else
+                connection.removeEventListener(OrderEntryLog.getInstance());
         MenuManager.addConnection(connection);
         if (!connections.contains(connection)) {
             connections.add(connection); // as long as it logged in ok

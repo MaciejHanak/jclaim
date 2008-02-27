@@ -158,7 +158,9 @@ public class PersonalInfoPanel extends JPanel {
                 preferences.setNotes(((JTextComponent)e.getSource()).getText());
             }
         });
-        add(new JScrollPane(symbol));
+        JScrollPane scrollPane = new JScrollPane(symbol);
+        scrollPane.setPreferredSize(new Dimension(-1, 150)); 
+        add(scrollPane);
         setVisible(preferences.isInfoPanelVisible());
     }
 }

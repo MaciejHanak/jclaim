@@ -94,7 +94,7 @@ public class GroupWrapper implements Group, Renderable {
         int count = 0;
         for (Nameable nameable: contacts) {
             if (nameable instanceof ContactWrapper) {
-                if (((ContactWrapper)nameable).getStatus().isOnline()) {
+                if (((ContactWrapper)nameable).getStatus().isOnline() || ((ContactWrapper)nameable).getPreferences().isShowInList()) {
                     count++;
                 }
             }

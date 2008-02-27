@@ -23,6 +23,9 @@ package com.itbs.aimcer.gui;
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.aimcer.commune.SMS.InvalidDataException;
+import com.itbs.aimcer.gui.order.IOIEntryPanel;
+import com.itbs.aimcer.gui.order.OrderEntryLog;
+import com.itbs.aimcer.gui.order.OrderEntryPanel;
 import com.itbs.gui.*;
 import com.itbs.util.DelayedThread;
 import com.itbs.util.GeneralUtils;
@@ -48,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,6 +72,8 @@ public class MessageWindow extends MessageWindowBase {
         return cel;
     }
 
+    /** Locks */
+    private static final ReentrantLock lock = new ReentrantLock();
 
     /** Target Audience */
     final private ContactWrapper contactWrapper;
@@ -82,9 +88,9 @@ public class MessageWindow extends MessageWindowBase {
         return (MessageSupport) contactWrapper.getConnection();
     }
 
-    private final AbstractAction ACTION_ADD, ACTION_INFO, ACTION_LOG, ACTION_PAGE, ACTION_EMAIL;
+    private final AbstractAction ACTION_ADD, ACTION_ORDER, ACTION_INFO, ACTION_LOG, ACTION_PAGE, ACTION_EMAIL;
     private JCheckBox secureIM;
-    private JPanel personalInfo, adPanel;
+    private JPanel orderEntry, personalInfo, adPanel;
 
     /**
      * Constructor
@@ -141,6 +147,15 @@ public class MessageWindow extends MessageWindowBase {
                 }
             }
         }, 'A');
+        ACTION_ORDER = new ActionAdapter("Order", "Make an order", new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                workExtraPanel(orderEntry);
+                if (orderEntry.isVisible() && ClientProperties.INSTANCE.isOrderCausesShowManageScreen()) { // bring up the screen
+                    OrderEntryLog.getInstance().showFrame();
+                    frame.toFront();
+                }
+            }
+        }, 'O');
         ACTION_INFO = new ActionAdapter(ImageCacheUI.ICON_INFO.getIcon(), "Personal Info", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 workExtraPanel(personalInfo);
@@ -230,11 +245,14 @@ public class MessageWindow extends MessageWindowBase {
     }
 
     private void onWindowClose() {
-        synchronized(messageWindows) {
+        lock.lock();
+        try {
             savePosition();
             frame.setVisible(false);
             frame.dispose();
             messageWindows.remove(this);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -257,13 +275,17 @@ public class MessageWindow extends MessageWindowBase {
     }
 
     private static void registerScreen(MessageWindow messageWindow) {
-        synchronized(messageWindows) {
+        lock.lock();
+        try {
             messageWindows.add(messageWindow);
+        } finally {
+            lock.unlock();
         }
     }
 
     public static MessageWindow findWindow(Nameable buddyWrapper) {
-        synchronized(messageWindows) {
+        lock.lock();
+        try {
             for(MessageWindow messageWindow: messageWindows) {
                 if (messageWindow.frame.isDisplayable()) { // todo see if this is better than isVisible();
                     if (messageWindow.contactWrapper.equals(buddyWrapper)) {
@@ -273,6 +295,8 @@ public class MessageWindow extends MessageWindowBase {
                     messageWindows.remove(messageWindow);
                 }
             }
+        } finally {
+            lock.unlock();
         }
         return null;
     }
@@ -284,26 +308,32 @@ public class MessageWindow extends MessageWindowBase {
      * @param forceToFront to force or not to force (properties are checked inside)
      * @return reference to the window
      */
-    public static synchronized MessageWindow openWindow(Nameable buddyWrapper, boolean forceToFront) {
-        MessageWindow messageWindow = findWindow(buddyWrapper);
-        if (messageWindow!=null) {
-            if (ClientProperties.INSTANCE.isForceFront() || forceToFront) {
-                if (!messageWindow.frame.isVisible())
-                    messageWindow.frame.setVisible(true);
-                messageWindow.frame.setState(Frame.NORMAL);
-                messageWindow.frame.toFront();
+    public static MessageWindow openWindow(Nameable buddyWrapper, boolean forceToFront) {
+        lock.lock();
+        try {
+            MessageWindow messageWindow = findWindow(buddyWrapper);
+            if (messageWindow!=null) {
+                if (ClientProperties.INSTANCE.isForceFront() || forceToFront) {
+                    if (!messageWindow.frame.isVisible())
+                        messageWindow.frame.setVisible(true);
+                    messageWindow.frame.setState(Frame.NORMAL);
+                    messageWindow.frame.toFront();
+                }
             }
+            // if I got here - noone wanted it
+            if (messageWindow == null)
+                messageWindow = new MessageWindow((ContactWrapper) buddyWrapper);
+            if (ClientProperties.INSTANCE.isEasyOpen() && messageWindow.frame.getState() != Frame.NORMAL) {
+                messageWindow.frame.setState(Frame.NORMAL);
+                GeneralUtils.sleep(500); // this isn't helping either
+            }
+            if (ClientProperties.INSTANCE.isUseAlert())
+                TrayAdapter.alert(messageWindow.frame);
+            return messageWindow;
+        } finally {
+            lock.unlock();
         }
-        // if I got here - noone wanted it
-        if (messageWindow == null)
-            messageWindow = new MessageWindow((ContactWrapper) buddyWrapper);
-        if (ClientProperties.INSTANCE.isEasyOpen() && messageWindow.frame.getState() != Frame.NORMAL) {
-            messageWindow.frame.setState(Frame.NORMAL);
-            GeneralUtils.sleep(500); // this isn't helping either
-        }
-        if (ClientProperties.INSTANCE.isUseAlert())
-            TrayAdapter.alert(messageWindow.frame);
-        return messageWindow;
+
     }
 
     /**
@@ -323,6 +353,8 @@ public class MessageWindow extends MessageWindowBase {
         contactWrapper.getPreferences().setVerticalSeparation(splitPane.getDividerLocation());
         // these are just getting set for the heck of it. looked like a good place.
         contactWrapper.getPreferences().setInfoPanelVisible(personalInfo.isVisible());
+        if (orderEntry != null)
+            contactWrapper.getPreferences().setOrderPanelVisible(orderEntry.isVisible());
         offUIExecutor.execute(new Runnable() { public void run () { Main.saveProperties(); } });
     }
 
@@ -351,6 +383,9 @@ public class MessageWindow extends MessageWindowBase {
         panel.add(new BetterButton(ACTION_EMAIL));
         panel.add(new BetterButton(ACTION_PAGE));
         panel.add(new BetterButton(ACTION_LOG));
+        if (ClientProperties.INSTANCE.isEnableOrderEntryInSystem())
+            if (ClientProperties.INSTANCE.isShowOrderEntry())
+                panel.add(new BetterButton(ACTION_ORDER));
 
         panel.add(new BetterButton(ACTION_INFO));
 
@@ -387,6 +422,18 @@ public class MessageWindow extends MessageWindowBase {
             panel.add(secureIM = new JCheckBox("Secure"));
         panel.add(new BetterButton(ACTION_SEND));
         south.add(panel);
+        if (ClientProperties.INSTANCE.isEnableOrderEntryInSystem()) {
+            if (orderEntry == null && ClientProperties.INSTANCE.isShowOrderEntry()) {
+                if (contactWrapper.getName().endsWith(IOIEntryPanel.NAME_ENDS_WITH))
+                    orderEntry = new IOIEntryPanel(getConnection(), contactWrapper, this);
+                else
+                    orderEntry = new OrderEntryPanel(getConnection(), contactWrapper, this);
+                orderEntry.setVisible(contactWrapper.getPreferences().isOrderPanelVisible());  // activated by order button.
+            }
+            if (orderEntry != null && ClientProperties.INSTANCE.isShowOrderEntry()) {
+                south.add(orderEntry);
+            }
+        }
 
         personalInfo = new PersonalInfoPanel(contactWrapper);
         south.add(personalInfo);
@@ -693,6 +740,7 @@ public class MessageWindow extends MessageWindowBase {
         if (GeneralUtils.isNotEmpty(conn.getUser().getName()) && GeneralUtils.isNotEmpty(to.getPreferences().getPhone())) {
             String result="";
             boolean found = false;
+            // Check default one first
             if (conn instanceof SMSSupport && conn.isLoggedIn()) {
                 result = ((SMSSupport)conn).veryfySupport(GeneralUtils.stripPhone(to.getPreferences().getPhone()));
                 if (result == null) {

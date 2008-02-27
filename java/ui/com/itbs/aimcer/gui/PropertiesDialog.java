@@ -1,8 +1,29 @@
+/*
+ * Copyright (c) 2006, ITBS LLC. All Rights Reserved.
+ *
+ *     This file is part of JClaim.
+ *
+ *     JClaim is free software; you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation; version 2 of the License.
+ *
+ *     JClaim is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with JClaim; if not, find it at gnu.org or write to the Free Software
+ *     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ */
+
 package com.itbs.aimcer.gui;
 
 import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.aimcer.commune.Connection;
 import com.itbs.aimcer.commune.ConnectionEventListener;
+import com.itbs.aimcer.gui.order.OrderEntryLog;
 import com.itbs.aimcer.web.ServerStarter;
 import com.itbs.gui.*;
 import com.itbs.util.SoundHelper;
@@ -20,7 +41,12 @@ import java.io.File;
 import java.util.Iterator;
 
 /**
- * @author Created by Alex Rass on Sep 9, 2004
+ * Used for editing program's properties.
+ *
+ * Uses multiple tabs for organization.
+ * 
+ * @author Alex Rass
+ * @since Sep 9, 2004
  */
 final public class PropertiesDialog extends JDialog implements ActionListener {
 //    private static final Dimension PROPERTIES_SIZE = new Dimension(400, 300);;
@@ -36,6 +62,7 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
     private final JCheckBox showTime = new JCheckBox("", ClientProperties.INSTANCE.isShowTime());
     private final JCheckBox ignoreSystem = new JCheckBox("", ClientProperties.INSTANCE.isIgnoreSystemMessages());
     private final JCheckBox iamAway = new JCheckBox("", ClientProperties.INSTANCE.isIamAway());
+    private final JCheckBox sortContactList = new JCheckBox("", ClientProperties.INSTANCE.isSortContactList());
     private final JTextComponent iamAwayMessage = new BetterTextField(ClientProperties.INSTANCE.getIamAwayMessage().trim());
     private final JTextComponent disclaimer = new BetterTextField(ClientProperties.INSTANCE.getDisclaimerMessage().trim());
     private final JTextComponent disclaimerDelay = new BetterTextField(""+(ClientProperties.INSTANCE.getDisclaimerInterval()/1000/60));
@@ -44,6 +71,9 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
     private final JCheckBox showStatusbar = new JCheckBox("", ClientProperties.INSTANCE.isStatusbarAlwaysVisible());
     private final JCheckBox showWeather = new JCheckBox("", ClientProperties.INSTANCE.isShowWeather());
     private final JTextComponent weather = new BetterTextField(ClientProperties.INSTANCE.getWeatherZipCodes().trim());
+    private final JCheckBox showOrderEntry = new JCheckBox("", ClientProperties.INSTANCE.isShowOrderEntry());
+    private final JCheckBox orderCausesShowManageScreen = new JCheckBox("", ClientProperties.INSTANCE.isOrderCausesShowManageScreen());
+    private final JCheckBox allowCommissionEntry = new JCheckBox("", ClientProperties.INSTANCE.isAllowCommissionEntry());
     private final JCheckBox spellCheck = new JCheckBox("", ClientProperties.INSTANCE.isSpellCheck());
     private final JCheckBox spellCheckAllowSlang = new JCheckBox("", ClientProperties.INSTANCE.isSpellCheckAllowSlang());
     private final JComboBox lookAndFeelIndex = LookAndFeelManager.getLookAndFeelCombo(ClientProperties.INSTANCE.getLookAndFeelIndex());
@@ -117,8 +147,19 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
         }
     }
 
+    private void makeNumberic(JTextComponent tc) {
+        String text = tc.getText();
+        tc.setDocument(new BetterTextField.NumberDocument());
+        tc.setText(text);
+    }
     public PropertiesDialog(JFrame parent) {
         super(parent, "Settings", true);
+        makeNumberic(disconnectRetries);
+        makeNumberic(fontSize);
+        makeNumberic(scrollBackSize);
+        makeNumberic(disclaimerDelay);
+        makeNumberic(serverPort);
+
         populateThis(getContentPane());
         GUIUtils.addCancelByEscape(this);
 //        SwingUtilities.invokeLater(new Runnable() {
@@ -141,6 +182,8 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
         props.add(hide);
         props.add(getLabel("Hide Empty Groups: ", "Hides empty groups (only when 'Hide Offline' is checked)", hideGroups));
         props.add(hideGroups);
+        props.add(getLabel("Sort Contacts: ", "Sort entire list, groups and contacts within.", sortContactList));
+        props.add(sortContactList);
         props.add(getLabel("Status Bar: ", "Makes status bar always visible", showStatusbar));
         props.add(showStatusbar);
         props.add(getLabel("Show Weather: ", "Select if you want the weather to show", showWeather));
@@ -189,6 +232,14 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
         props.add(getLabel("Allow Slang: ", "Spell checker allows slang tems", spellCheckAllowSlang));
         props.add(spellCheckAllowSlang);
         spellCheck.addActionListener(new TurnOffDependents(new JComponent[] {spellCheckAllowSlang}));
+        if (ClientProperties.INSTANCE.isEnableOrderEntryInSystem()) {
+            props.add(getLabel("Show Order Entry: ", "Select if you want the enter and send orders", showOrderEntry));
+            props.add(showOrderEntry);
+            props.add(getLabel("Auto Show Order Entry: ", "Will cause Order Entry to popup when Order buton is used", orderCausesShowManageScreen));
+            props.add(orderCausesShowManageScreen);
+            props.add(getLabel("Show Commission Field: ", "Will cause Order Entry to show Commission field", allowCommissionEntry));
+            props.add(allowCommissionEntry);
+        }
         props.add(getLabel("Font Size: ", "How big to make the list.  Defaults to 10.", fontSize));
         props.add(new ThinPanel(fontSize, new JLabel("pt.")));
         props.add(getLabel("History Size: ", "How long is the histoty list.  1 - 10.", scrollBackSize));
@@ -329,6 +380,7 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
                 doAction();
             }
         }.start();
+        setVisible(false);
     }
 
     private void doAction() {
@@ -356,12 +408,16 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
             ClientProperties.INSTANCE.setEnterSends(enterSends.isSelected());
             ClientProperties.INSTANCE.setIgnoreSystemMessages(ignoreSystem.isSelected());
             ClientProperties.INSTANCE.setIamAway(iamAway.isSelected());
+            ClientProperties.INSTANCE.setSortContactList(sortContactList.isSelected());
             ClientProperties.INSTANCE.setIamAwayMessage(iamAwayMessage.getText());
             ClientProperties.INSTANCE.setWeatherZipCodes(weather.getText());
             ClientProperties.INSTANCE.setStatusbarAlwaysVisible(showStatusbar.isSelected());
             ClientProperties.INSTANCE.setShowWeather(showWeather.isSelected());
+            ClientProperties.INSTANCE.setShowOrderEntry(showOrderEntry.isSelected());
             ClientProperties.INSTANCE.setSpellCheck(spellCheck.isSelected());
             ClientProperties.INSTANCE.setSpellCheckAllowSlang(spellCheckAllowSlang.isSelected());
+            ClientProperties.INSTANCE.setOrderCausesShowManageScreen(orderCausesShowManageScreen.isSelected());
+            ClientProperties.INSTANCE.setAllowCommissionEntry(allowCommissionEntry.isSelected());
             ClientProperties.INSTANCE.setLookAndFeelIndex(lookAndFeelIndex.getSelectedIndex());
             ClientProperties.INSTANCE.setHTTPServerEnabled(serverEnable.isSelected());
             ClientProperties.INSTANCE.setHTTPServerPort(serverPort.getText());
@@ -396,6 +452,10 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
                     continue;
                 // Used to throw CME, but now switched to a safer list implementation.
 //                synchronized(connection) { // otherwise we get concurrent modification in while loop below
+                    if (ClientProperties.INSTANCE.isShowOrderEntry())
+                        connection.addEventListener(OrderEntryLog.getInstance());
+                    else
+                        connection.removeEventListener(OrderEntryLog.getInstance());
 //                }
                 Iterator iter = connection.getEventListenerIterator();
                 while (iter.hasNext()) {
