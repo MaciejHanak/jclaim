@@ -1272,4 +1272,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         return id.startsWith("+1")?null:"Must start with +1, like: +18005551234";
     }
 
+    // todo To find maximums for stuff:
+    // todo (01:08)klea: look for a snac ending with LimitsCmd
+    // todo (01:08)klea: or something
+    // todo (01:08)klea: like SnacTypeLimitsCmd
+
 } // class OscarConnection
