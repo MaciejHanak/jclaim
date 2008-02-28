@@ -25,6 +25,8 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.io.File;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,6 +38,10 @@ import java.util.logging.Logger;
  */
 public class SoundHelper {
     private static final Logger log = Logger.getLogger(SoundHelper.class.getName());
+
+    /** Used to execute stuff off UI thread. 5 simultaneous sounds. */
+    static final Executor offThreadExecutor = Executors.newFixedThreadPool(5);
+
     public final static FileFilter filter = new FileFilter() {
         public boolean accept(File f) {
             return f.isDirectory() || (f.exists() && checkSoundFile(f.getName())); //!f.isDirectory() &&
@@ -62,6 +68,12 @@ public class SoundHelper {
 
     }
 
+    public static void playSoundOffThread(final String path) {
+        offThreadExecutor.execute(new Runnable() { public void run () {
+            playSound(path);
+        }
+        });
+    }
     /**
      * Plays the sound at path.
      * No path results in system beep.
@@ -106,7 +118,7 @@ public class SoundHelper {
                     log.log(Level.SEVERE, "", e);
                     return false;
                 }
-            } else {
+            } else { // cound't find the file
                 Toolkit.getDefaultToolkit().beep();
                 return true;
             }
