@@ -68,12 +68,18 @@ public class SoundHelper {
 
     }
 
+    /**
+     * Plays the sound or a beep off your thread.
+     * @param path to the sound. if !exist - beeps.
+     */
     public static void playSoundOffThread(final String path) {
-        offThreadExecutor.execute(new Runnable() { public void run () {
-            playSound(path);
-        }
+        offThreadExecutor.execute(new Runnable() {
+            public void run() {
+                playSound(path);
+            }
         });
     }
+
     /**
      * Plays the sound at path.
      * No path results in system beep.
