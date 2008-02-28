@@ -23,6 +23,7 @@ package com.itbs.aimcer.gui;
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.gui.EditableJList;
+import com.itbs.gui.GUIUtils;
 
 import javax.swing.*;
 import java.util.Arrays;
@@ -137,21 +138,15 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
     }
 
     int delay;
+
     public synchronized void statusChanged(final Connection connection) {
-        try { // todo move this into genetic utils
-            if (SwingUtilities.isEventDispatchThread())
+        GUIUtils.runOnAWT(new Runnable() {
+            public void run() {
+                if (DEBUG)
+                    log.fine("status Changed All" + new Date());
                 runActionDataChanged();
-            else
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        if (DEBUG)
-                            log.fine("status Changed All" + new Date());
-                        runActionDataChanged();
-                    }
-                });
-        } catch (Exception e) {
-            log.log(Level.SEVERE, "Status changed", e);
-        }
+            }
+        });
     }
 
     public synchronized void statusChanged(final Connection connection, final Contact contact,
