@@ -152,11 +152,9 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
     public synchronized void statusChanged(final Connection connection, final Contact contact,
                               final boolean online, final boolean away, final int idleMins) {
         try {
-            boolean redraw = (contact.getStatus().isAway() != away || contact.getStatus().isOnline() != online);
-            contact.getStatus().setAway(away);
-            contact.getStatus().setOnline(online);
-            contact.getStatus().setIdleTime(idleMins);
-            if (redraw) {
+//            boolean redraw = (contact.getStatus().isAway() != away || contact.getStatus().isOnline() != online);
+//            if (redraw) {
+            if (true) {
                 if (delay % 10 == 0) {
                     System.gc();
                     delay = 0;
