@@ -79,6 +79,7 @@ public class ContactWrapper implements Contact, Renderable {
     /**
      * Factory
      * @param name to use as template
+     * @param connection connection
      * @return working wrapper
      */
     public static ContactWrapper create(String name, Connection connection) {
@@ -315,8 +316,9 @@ public class ContactWrapper implements Contact, Renderable {
         }
 
         public void setWireless(boolean wireless) {
-            setIcon(getStatus().isWireless()? ImageCacheUI.ICON_WIRELESS.getIcon(): ImageCacheUI.getImage(parent.getConnection().getClass()));
-            super.setWireless(wireless);
+            this.wireless = wireless;
+            setIcon(wireless? ImageCacheUI.ICON_WIRELESS.getIcon(): ImageCacheUI.getImage(parent.getConnection().getClass()));
+            parent.statusChanged();
         }
     }
 
