@@ -26,7 +26,7 @@ package com.itbs.aimcer.bean;
  * @author Alex Rass
  * @since Sep 22, 2004
  */
-public interface Status {
+public interface Status extends Cloneable {
     Contact getParent();
 
     boolean isOnline();
@@ -53,4 +53,11 @@ public interface Status {
      * @return minutes active
      */
     int getIdleTime();
+
+    /**
+     * Deep copy of the object.
+     * Needed for mediums to work right.
+     * @return Deep copy of the object.
+     */
+    public Object clone();
 }
