@@ -78,4 +78,17 @@ public class StatusImpl implements Status {
         this.idleTime = idleTime;
         parent.statusChanged();
     }
+
+    /**
+     * Deel copy of the object, but shallow copy of the parent.
+     * @return copy.
+     */
+    public Object clone() {
+        StatusImpl newStatus = new StatusImpl(parent);
+        newStatus.online =online;
+        newStatus.away= away;
+        newStatus.wireless= wireless;
+        newStatus.idleTime= idleTime;
+        return newStatus;
+    }
 } // StatusImpl
