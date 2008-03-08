@@ -41,9 +41,9 @@ import java.util.*;
  * @since Sep 9, 2004
  */
 public class ContactWrapper implements Contact, Renderable {
-    public static final Font NORM = new Font("Arial", Font.PLAIN, ClientProperties.INSTANCE.getFontSize());
-    public static final Font BOLD = new Font("Arial", Font.BOLD, ClientProperties.INSTANCE.getFontSize());
-    public static final Font OFF = new Font("Arial", Font.ITALIC, ClientProperties.INSTANCE.getFontSize() - 1);
+    public static final Font NORM = new Font("sansserif", Font.PLAIN, ClientProperties.INSTANCE.getFontSize());
+    public static final Font BOLD = new Font("sansserif", Font.BOLD, ClientProperties.INSTANCE.getFontSize());
+    public static final Font OFF = new Font("sansserif", Font.ITALIC, ClientProperties.INSTANCE.getFontSize() - 1);
 
     public static final Color PRESENT = Color.BLACK;
     public static final Color AWAY = Color.GRAY;
