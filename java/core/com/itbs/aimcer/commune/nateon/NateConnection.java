@@ -228,6 +228,17 @@ public class NateConnection extends AbstractMessageConnection {
                 for (ConnectionEventListener eventHandler : eventHandlers) {
                     eventHandler.statusChanged(NateConnection.this, contact, true, false, 0);
                 }
+
+/*              // Next version will have this code:
+                Status oldStatus = (Status) contact.getStatus().clone();
+                contact.getStatus().setOnline(true);
+                contact.getStatus().setAway(false);
+                contact.getStatus().setIdleTime(0);
+
+                for (ConnectionEventListener eventHandler : eventHandlers) {
+                    eventHandler.statusChanged(NateConnection.this, contact, oldStatus);
+                }
+*/
             }
 
             public void killed() {
@@ -373,7 +384,10 @@ public class NateConnection extends AbstractMessageConnection {
      * @throws java.io.IOException problems
      */
     protected void processMessage(Message message) throws IOException {
-        connection.sendMessage(message.getContact().getName(), message.getText());
+        NateFriend owner = connection.getOwner();
+        InstanceMessage msg = new InstanceMessage(owner.getNateID(), message.getContact().getName(), message.getText());
+        connection.sendIMessage(msg);
+//        connection.sendMessage(message.getContact().getName(), message.getText()); // this is old/bad method.
     }
 
     /**
