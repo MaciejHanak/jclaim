@@ -161,7 +161,7 @@ public class GroupWrapper implements Group, Renderable {
         return create(group.getName());
     }
 
-    public static final Font NORM = new Font("Arial", Font.BOLD, ClientProperties.INSTANCE.getFontSize() + 1);
+    public static final Font NORM = new Font("sansserif", Font.BOLD, ClientProperties.INSTANCE.getFontSize() + 1);
     public static final Color GROUP = Color.YELLOW;
 
     public JComponent getDisplayComponent(boolean isSelected, boolean cellHasFocus) {
