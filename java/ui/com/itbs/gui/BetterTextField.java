@@ -138,7 +138,7 @@ public class BetterTextField extends JTextField {
         textComp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, KeyEvent.SHIFT_DOWN_MASK), DefaultEditorKit.cutAction);
         textComp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.cutAction);
 
-        addAction(textComp, KeyEvent.VK_W, KeyEvent.CTRL_DOWN_MASK, selectOutAction);
+        GUIUtils.addAction(textComp, KeyEvent.VK_W, KeyEvent.CTRL_DOWN_MASK, selectOutAction);
 
         // undo mechanism
         // http://javafaq.nu/books22-6.html
@@ -173,10 +173,10 @@ public class BetterTextField extends JTextField {
                 }
             }
         };
-        addAction(textComp, KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK, undoAction);
-        addAction(textComp, KeyEvent.VK_BACK_SPACE, KeyEvent.ALT_DOWN_MASK, undoAction);
-        addAction(textComp, KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, redoAction);
-        addAction(textComp, KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK, redoAction);
+        GUIUtils.addAction(textComp, KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK, undoAction);
+        GUIUtils.addAction(textComp, KeyEvent.VK_BACK_SPACE, KeyEvent.ALT_DOWN_MASK, undoAction);
+        GUIUtils.addAction(textComp, KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, redoAction);
+        GUIUtils.addAction(textComp, KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK, redoAction);
 
         // Register for the Menu clicks
         textComp.addMouseListener(new MouseAdapter() {
@@ -218,10 +218,6 @@ public class BetterTextField extends JTextField {
     }
 
 
-    static void addAction(JTextComponent textComp, int keyCode, int modifiers, Action action) {
-        textComp.getInputMap().put(KeyStroke.getKeyStroke(keyCode, modifiers), action.getValue(Action.NAME));
-        textComp.getActionMap().put(action.getValue(Action.NAME), action);
-    }
     public static void updateButtons() {
 //        m_undoButton.setText(m_undoManager.getUndoPresentationName());
 //        m_redoButton.setText(m_undoManager.getRedoPresentationName());

@@ -115,6 +115,16 @@ public class GUIUtils {
                 log.log(Level.SEVERE, "", e);  //don't care, but lets see it.
             }
     }
+    public static void runOnAWTAndWait(Runnable runnable) {
+        if (EventQueue.isDispatchThread())
+            runnable.run();
+        else
+            try {
+                EventQueue.invokeAndWait(runnable);
+            } catch (Exception e) {
+                log.log(Level.SEVERE, "AWT Thread crashed: ", e);  //don't care, but lets see it.
+            }
+    }
 
     /**
      * Sets up the frame with some basic options.
@@ -142,4 +152,15 @@ public class GUIUtils {
         });
     }
 
+    /**
+     * Used to add keystrokes to components that do things.
+     * @param comp component
+     * @param keyCode key
+     * @param modifiers any modifiers
+     * @param action what to do when even occurs in a form of an action.
+     */
+    public static void addAction(JComponent comp, int keyCode, int modifiers, Action action) {
+        comp.getInputMap().put(KeyStroke.getKeyStroke(keyCode, modifiers), action.getValue(Action.NAME));
+        comp.getActionMap().put(action.getValue(Action.NAME), action);
+    }
 }
