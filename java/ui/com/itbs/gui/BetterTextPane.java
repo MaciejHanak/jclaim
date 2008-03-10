@@ -51,6 +51,11 @@ public class BetterTextPane extends JTextPane {
         BetterTextField.typicalInit(this);
     }
 
+
+    public void setAction(Action action) {
+        this.action = action;
+    }
+
     /**
      * Sets whether or not this component is enabled.
      * A component that is enabled may respond to user input,
