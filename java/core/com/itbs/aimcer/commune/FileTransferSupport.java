@@ -30,18 +30,20 @@ public interface FileTransferSupport extends Connection {
     /**
      * Starts a file transfer.
      * @param ftl listener
+     * @throws java.io.IOException when file errors occur
      */
     void initiateFileTransfer(FileTransferListener ftl) throws IOException;
 
     /**
      * Sets up file for receival
-     * @param ftl param
-     * @param connectionInfo
+     * @param ftl descriptor param
+     * @param connectionInfo object from the underlying protocol that needs to be passed around. Or wrap if you need more.
      */
     void acceptFileTransfer(FileTransferListener ftl, Object connectionInfo);
 
     /**
      * Request to cancel the file transfer in progress.
+     * @param connectionInfo object from the underlying protocol that needs to be passed around. Or wrap if you need more.
      */
     void rejectFileTransfer(Object connectionInfo);
 }
