@@ -197,6 +197,10 @@ public class NateConnection extends AbstractMessageConnection {
                 notifyConnectionLost();
             }
 
+            public void disConnected() {
+                notifyConnectionLost();
+            }
+
             public void notifyUnreadMail(Properties properties, int i) {
                 notifyEmailReceived(new MessageImpl(getContactFactory().create(getUserName(), NateConnection.this), false, properties.toString()));
             }
@@ -225,9 +229,11 @@ public class NateConnection extends AbstractMessageConnection {
             public void buddyModified(NateFriend nateFriend) {
                 Contact contact = getContactFactory().create(nateFriend.getID(), NateConnection.this);
                 log.info("Friend: " + nateFriend + " FABR: " + nateFriend.getFABR() + " Status: " + nateFriend.getStatus());
+
                 for (ConnectionEventListener eventHandler : eventHandlers) {
                     eventHandler.statusChanged(NateConnection.this, contact, true, false, 0);
                 }
+
 
 /*              // Next version will have this code:
                 Status oldStatus = (Status) contact.getStatus().clone();
