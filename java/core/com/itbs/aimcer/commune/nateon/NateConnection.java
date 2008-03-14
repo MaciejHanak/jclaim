@@ -3,6 +3,8 @@ package com.itbs.aimcer.commune.nateon;
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.AbstractMessageConnection;
 import com.itbs.aimcer.commune.ConnectionEventListener;
+import com.itbs.aimcer.commune.FileTransferListener;
+import com.itbs.aimcer.commune.FileTransferSupport;
 import kfmes.natelib.NateonMessenger;
 import kfmes.natelib.SwitchBoardSession;
 import kfmes.natelib.entity.GroupList;
@@ -27,7 +29,7 @@ import java.util.logging.Logger;
  * @author Alex Rass
  * @since Feb 15, 2008
  */
-public class NateConnection extends AbstractMessageConnection {
+public class NateConnection extends AbstractMessageConnection implements FileTransferSupport {
     private static final Logger log = Logger.getLogger(NateConnection.class.getName());
     NateonMessenger connection;
 
@@ -133,7 +135,10 @@ public class NateConnection extends AbstractMessageConnection {
             }
 
             public void progressTyping(SwitchBoardSession switchBoardSession, NateFriend nateFriend, int i) {
-                //TODO Change
+                for (ConnectionEventListener connectionEventListener : eventHandlers) {
+                    connectionEventListener.typingNotificationReceived(NateConnection.this,
+                            getContactFactory().create(nateFriend.getID(), NateConnection.this));
+                }
             }
 
             public void chatMessageReceived(SwitchBoardSession switchBoardSession, NateFriend nateFriend, MimeMessage mimeMessage) {
@@ -141,7 +146,17 @@ public class NateConnection extends AbstractMessageConnection {
             }
 
             public void filePosted(SwitchBoardSession switchBoardSession, FileRecver fileRecver, NateFriend nateFriend, ArrayList<NateFile> arrayList) {
-                //TODO Change
+                if (arrayList.size()>0) {
+                    for (ConnectionEventListener connectionEventListener : eventHandlers) {
+                        Contact contact = getContactFactory().create(nateFriend.getID(), NateConnection.this);
+                        connectionEventListener.fileReceiveRequested(NateConnection.this,
+                                contact,
+                                arrayList.get(0).fileName,
+                                "File from " + contact.getDisplayName(),
+                                fileRecver
+                                );
+                    }
+                }
             }
 
             public void fileSend(SwitchBoardSession switchBoardSession, FileSender fileSender, NateFriend nateFriend, ArrayList<NateFile> arrayList) {
@@ -411,5 +426,33 @@ public class NateConnection extends AbstractMessageConnection {
     }
 
 
+    /**
+     * Starts a file transfer.
+     *
+     * @param ftl listener
+     */
+    public void initiateFileTransfer(FileTransferListener ftl) throws IOException {
+        FileSender sender = connection.filemgr.getFileSender(new NateFriend(ftl.getContactName()));
+        sender.addFile(new NateFile(ftl.getFile().getAbsolutePath()));
+        sender.start();
+    }
 
+    /**
+     * Sets up file for receival
+     *
+     * @param ftl            param
+     * @param connectionInfo object from the underlying protocol that needs to be passed around. Or wrap if you need more.
+     */
+    public void acceptFileTransfer(FileTransferListener ftl, Object connectionInfo) {
+        FileRecver fileRecver = (FileRecver) connectionInfo;
+        fileRecver.start();
+    }
+
+    /**
+     * Request to cancel the file transfer in progress.
+     */
+    public void rejectFileTransfer(Object connectionInfo) {
+        FileRecver fileRecver = (FileRecver) connectionInfo;
+        fileRecver.stopFileTransfer();
+    }
 } // class SmackConnection
