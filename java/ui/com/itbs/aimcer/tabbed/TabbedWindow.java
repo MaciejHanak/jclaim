@@ -503,7 +503,7 @@ public class TabbedWindow {
 //                      addTab(message.getContact(), false);
                         final TabItself tab;
                         if (ClientProperties.INSTANCE.getInterfaceIndex() == WindowManager.INTERFACE_TABBED) {
-                            tab = addTab(message.getContact(), ClientProperties.INSTANCE.isEasyOpen());
+                            tab = addTab(message.getContact(), false);
                         } else {
                             tab = findTab(message.getContact());
                         }
@@ -659,6 +659,13 @@ public class TabbedWindow {
         addTextToHistoryPanel(contact, message, false);
     }
 
+    /**
+     * This will add a tab and possible force it open.
+     *  
+     * @param cw contact for the window
+     * @param forceToFront override to force the tab to front
+     * @return tab reference
+     */
     public TabItself addTab(final Contact cw, final boolean forceToFront) { //
         tabbedPane.lock();
         try {
@@ -672,10 +679,11 @@ public class TabbedWindow {
                 newTab.setLabelFromStatus();
                 GUIUtils.runOnAWT(new Runnable() {
                     public void run() {
-                        if (forceToFront && ClientProperties.INSTANCE.isForceFront()) {
+                        if (forceToFront || ClientProperties.INSTANCE.isForceFront()) {
                             frame.setVisible(true);
+                            frame.toFront();
                         }
-                        if (ClientProperties.INSTANCE.isEasyOpen()) {
+                        if (forceToFront || ClientProperties.INSTANCE.isEasyOpen()) {
                             tabbedPane.setSelectedComponent(newTab);
                         } else {
                             tabbedPane.setSelectedComponent(currentTab);
