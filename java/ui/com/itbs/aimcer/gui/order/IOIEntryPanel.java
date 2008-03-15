@@ -143,7 +143,7 @@ public class IOIEntryPanel extends OrderEntryBase {
         bottom.setOpaque(false);
         // Assign all the actions:
         for (IOIType ioiType : types) {
-            ioiType.setAction(new ActionAdapter(ioiType.name, new OrderAction(ioiType.attribute, ioiType.name, connection, name, historyPane), ioiType.command.charAt(0)));
+            ioiType.setAction(new ActionAdapter(ioiType.name, new OrderAction(ioiType.name, connection, name), ioiType.command.charAt(0)));
         }
 
         JPanel center = new JPanel();

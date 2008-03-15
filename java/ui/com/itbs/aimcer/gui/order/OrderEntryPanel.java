@@ -21,7 +21,7 @@
 package com.itbs.aimcer.gui.order;
 
 import com.itbs.aimcer.bean.ClientProperties;
-import com.itbs.aimcer.bean.Nameable;
+import com.itbs.aimcer.bean.Contact;
 import com.itbs.aimcer.commune.Connection;
 import com.itbs.aimcer.gui.ComponentFactory;
 import com.itbs.aimcer.gui.MessageWindow;
@@ -78,12 +78,12 @@ public class OrderEntryPanel extends OrderEntryBase {
     static final String ACTION_TYPE_BUY = "buy";
     static final String ACTION_TYPE_SELL = "sell";
 
-    public OrderEntryPanel(Connection connection, Nameable name, MessageWindow historyPane) {
+    public OrderEntryPanel(Connection connection, Contact name, MessageWindow historyPane) {
         super();
 
-        BUY = new ActionAdapter("Buy", new OrderAction(ATT_BUY, ACTION_TYPE_BUY, connection, name, historyPane), 'B');
+        BUY = new ActionAdapter("Buy", new OrderAction(ACTION_TYPE_BUY, connection, name), 'B'); //ATT_BUY,
         BUY.setEnabled(false);
-        SELL = new ActionAdapter("Sell", new OrderAction(ATT_SELL, ACTION_TYPE_SELL, connection, name, historyPane), 'L');
+        SELL = new ActionAdapter("Sell", new OrderAction(ACTION_TYPE_SELL, connection, name), 'L'); //ATT_SELL,
         SELL.setEnabled(false);
 
         JButton btn;
