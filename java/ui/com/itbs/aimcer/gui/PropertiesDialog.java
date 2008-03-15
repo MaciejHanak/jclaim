@@ -96,6 +96,41 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
     private final SoundProperty soundSend = new SoundProperty(ClientProperties.INSTANCE.getSoundSend());
     private final SoundProperty soundNewWindow = new SoundProperty(ClientProperties.INSTANCE.getSoundNewWindow());
 
+    private final RadioProperty windowingInterface = new RadioProperty(
+            new String[][] {
+                    {"Windows", "Interface where each message is it's own window"},
+                    {"Tabbed", "Interface where each message is a tab in a larger window"},
+            }, ClientProperties.INSTANCE.getInterfaceIndex());
+
+    static class RadioProperty extends JPanel {
+        JRadioButton[] buttons;
+
+        RadioProperty(String[] []labels, int startIndex) {
+            super(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            setOpaque(false);
+            ButtonGroup bg = new ButtonGroup();
+            buttons = new JRadioButton[labels.length];
+            for (int i = 0; i < labels.length; i++) {
+                buttons[i] = new JRadioButton(labels[i][0]);
+                buttons[i].setToolTipText(labels[i][1]);
+                buttons[i].setOpaque(false);
+                if (startIndex==i)
+                    buttons[i].setSelected(true);
+                bg.add(buttons[i]);
+                add(buttons[i]);
+            }
+
+            if (startIndex<0 || startIndex>1) // if out of range - set to min one.
+                buttons[0].setSelected(true);
+        }
+
+        int getResult() {
+            for (int i = 0; i < buttons.length; i++) {
+                if (buttons[i].isSelected()) return i;
+            }
+            return -1; // should never happen, but...
+        }
+    }
     static class SoundProperty extends JPanel {
         JRadioButton none = new JRadioButton();
         JRadioButton beep = new JRadioButton();
@@ -176,6 +211,7 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
         JComponent props;
         JPanel spacer;
 
+        //  C O N T A C T    L I S T
         props = new JPanel(new GridLayout(0, 2));
         props.setOpaque(false);
         props.add(getLabel("Hide Offline Contacts: ", "Hides anyone who is offline from the list", hide));
@@ -203,11 +239,14 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
         props.add(iamAway);
         props.add(getLabel("Away Message: ", "Use notify others why you are away.", iamAwayMessage));
         props.add(iamAwayMessage);
+        props.add(getLabel("Default Interface: ", "Defines where messages show up.", windowingInterface));
+        props.add(windowingInterface);
 
         spacer = new GradientPanel(new BorderLayout());
         spacer.add(props, BorderLayout.NORTH);
         tabbedPane.addTab("Contact List", spacer);
 
+        //  M E S S A G E S
         props = new JPanel(new GridLayout(0, 2));
         props.setOpaque(false);
         props.add(getLabel("De-iconify messages: ", "Restore the message dialogs when message is received", easyOpen));
@@ -276,7 +315,7 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
         tabbedPane.addTab("Remote Access", spacer);
 
 
-
+        // S O U N D
         props = new JPanel(new GridLayout(0, 2));
         props.setOpaque(false);
         props.add(getLabel("Allow Sound: ", "Allow sound when messages are sent and received", allowSound));
@@ -428,6 +467,7 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
             ClientProperties.INSTANCE.setUseTray(useTray.isSelected());
             ClientProperties.INSTANCE.setDisconnectCount(disconnectRetries.getText());
             ClientProperties.INSTANCE.setIpQuery(ipQuery.getText());
+            ClientProperties.INSTANCE.setInterfaceIndex(windowingInterface.getResult());
 
             postCheck();
             dispose();
@@ -471,8 +511,16 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
     }
 
 
+    /**
+     * Allows to easily disable all other buttons.
+     */
     private static class TurnOffDependents implements ActionListener, ChangeListener {
         JComponent[] dependents;
+
+        /**
+         * Constructor. 
+         * @param components list of components in the group.
+         */
         public TurnOffDependents(JComponent[] components) {
             dependents = components;
         }

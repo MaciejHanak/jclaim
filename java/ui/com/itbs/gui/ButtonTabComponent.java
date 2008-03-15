@@ -15,36 +15,26 @@ import java.awt.event.*;
  */
 public class ButtonTabComponent extends JPanel {
     private final JTabbedPane pane;
+    private final Component panel;
     JLabel label;
 
-    public ButtonTabComponent(final JTabbedPane pane) {
+    public ButtonTabComponent(final BetterTabbedPane pane, final Component panel) {
         //unset default FlowLayout' gaps
         super(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        if (pane == null) {
-            throw new NullPointerException("TabbedPane is null");
+        if (pane == null || panel == null) {
+            throw new NullPointerException("TabbedPane is null or component is");
         }
         this.pane = pane;
+        this.panel = panel;
         setOpaque(false);
 
-        //make JLabel read titles from JTabbedPane
-        label = new JLabel() {
-            public String getText() {
-                int i = pane.indexOfTabComponent(ButtonTabComponent.this);
-                if (i != -1) {
-                    return pane.getTitleAt(i);
-                }
-                return null;
-            }
-        };
+        label = new JLabel();
         label.addMouseListener(new MouseAdapter() {
             /**
              * {@inheritDoc}
              */
             public void mouseClicked(MouseEvent e) {
-                int i = pane.indexOfTabComponent(ButtonTabComponent.this);
-                if (i != -1) {
-                    pane.setSelectedIndex(i);
-                }
+                pane.setSelectedComponent(panel);
             }
         });
         add(label);
@@ -66,10 +56,12 @@ public class ButtonTabComponent extends JPanel {
      * Little close button in the corner.
      */
     private class TabButton extends JButton implements ActionListener {
+        Insets insets;
         public TabButton() {
             int size = 17;
             setPreferredSize(new Dimension(size, size));
             setToolTipText("Closes Tab - Ctrl-F4");
+
             //Make the button looks the same for all Laf's
             setUI(new BasicButtonUI());
             //Make it transparent
@@ -78,6 +70,10 @@ public class ButtonTabComponent extends JPanel {
             setFocusable(false);
             setBorder(BorderFactory.createEtchedBorder());
             setBorderPainted(false);
+            // precalc locations to avoid math later.
+            insets = getBorder().getBorderInsets(this);
+            insets.right = size - insets.right;
+            insets.bottom = size - insets.bottom;
             //Making nice rollover effect
             //we use the same listener for all buttons
             addMouseListener(buttonMouseListener);
@@ -87,10 +83,7 @@ public class ButtonTabComponent extends JPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            int i = pane.indexOfTabComponent(ButtonTabComponent.this);
-            if (i != -1) {
-                pane.remove(i);
-            }
+            pane.remove(panel);
         }
 
         //we don't want to update UI for this button
@@ -106,10 +99,14 @@ public class ButtonTabComponent extends JPanel {
                 g2.translate(1, 1);
             }
             g2.setStroke(new BasicStroke(2));
-            g2.setColor(Color.BLACK);
             if (getModel().isRollover()) {
-                g2.setColor(Color.MAGENTA);
+                g2.setColor(Color.RED);
+                g2.fillRect(getModel().isRollover()?0:insets.left, getModel().isRollover()?0:insets.top, insets.right, insets.bottom);
+                g2.setColor(Color.WHITE);
+            } else {
+                g2.setColor(Color.BLACK);
             }
+
             int delta = 6;
             g2.drawLine(delta, delta, getWidth() - delta - 1, getHeight() - delta - 1);
             g2.drawLine(getWidth() - delta - 1, delta, delta, getHeight() - delta - 1);
@@ -126,6 +123,7 @@ public class ButtonTabComponent extends JPanel {
             if (component instanceof AbstractButton) {
                 AbstractButton button = (AbstractButton) component;
                 button.setBorderPainted(true);
+//                button.setBackground(Color.RED);
             }
         }
 
@@ -134,6 +132,7 @@ public class ButtonTabComponent extends JPanel {
             if (component instanceof AbstractButton) {
                 AbstractButton button = (AbstractButton) component;
                 button.setBorderPainted(false);
+//                button.setBackground(null);
             }
         }
     };

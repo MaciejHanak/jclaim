@@ -129,14 +129,20 @@ public class BetterTextField extends JTextField {
     public static Action selectOutAction = new SelectOutAction();
 
     static void typicalInit(final JTextComponent textComp) {
-        textComp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK), DefaultEditorKit.pasteAction);
-        textComp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.pasteAction);
+        // clear bad ones:
+//        textComp.unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, KeyEvent.CTRL_DOWN_MASK));
+//        textComp.unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, KeyEvent.CTRL_MASK));
 
-        textComp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.copyAction);
-        textComp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.copyAction);
+        Action textAction;
+        textAction = TextActionLib.paste; // todo remove
+        GUIUtils.addAction(textComp, KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK, TextActionLib.paste);
+        textComp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), TextActionLib.paste);
 
-        textComp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, KeyEvent.SHIFT_DOWN_MASK), DefaultEditorKit.cutAction);
-        textComp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.cutAction);
+        GUIUtils.addAction(textComp, KeyEvent.VK_INSERT, KeyEvent.CTRL_DOWN_MASK, TextActionLib.copy);
+        textComp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), TextActionLib.copy);
+
+        GUIUtils.addAction(textComp, KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK, TextActionLib.cut);
+        textComp.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, KeyEvent.SHIFT_DOWN_MASK), TextActionLib.cut);
 
         GUIUtils.addAction(textComp, KeyEvent.VK_W, KeyEvent.CTRL_DOWN_MASK, selectOutAction);
 

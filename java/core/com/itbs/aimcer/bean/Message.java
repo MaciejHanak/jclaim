@@ -30,5 +30,5 @@ public interface Message {
     String getText();
     String getPlainText();
     boolean isAutoResponse();
-    Nameable getContact();
+    Contact getContact();
 }

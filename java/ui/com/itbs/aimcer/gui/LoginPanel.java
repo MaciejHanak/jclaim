@@ -20,10 +20,7 @@
 
 package com.itbs.aimcer.gui;
 
-import com.itbs.aimcer.bean.ClientProperties;
-import com.itbs.aimcer.bean.Contact;
-import com.itbs.aimcer.bean.Message;
-import com.itbs.aimcer.bean.Nameable;
+import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.gui.*;
 
@@ -246,6 +243,10 @@ public final class LoginPanel extends JDialog implements ActionListener {
         }
 
         public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
+            connection.removeEventListener(this);     // todo remove whole method
+        }
+        
+        public void statusChanged(Connection connection, Contact contact, Status oldStatus) {
             connection.removeEventListener(this);
         }
 

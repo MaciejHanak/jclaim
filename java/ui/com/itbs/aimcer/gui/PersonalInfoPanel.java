@@ -56,10 +56,13 @@ import java.awt.event.ActionListener;
  */
 public class PersonalInfoPanel extends JPanel {
     ContactPreferences preferences;
+    public JTextPane notes = new BetterTextPane();
 
     public PersonalInfoPanel(final ContactWrapper contact) {
         preferences = contact.getPreferences();
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BorderLayout());
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
         JTextComponent symbol;
         JCheckBox checkBox;
         JPanel linePanel;
@@ -86,7 +89,7 @@ public class PersonalInfoPanel extends JPanel {
             }
         });
         linePanel.add(symbol);
-        add(linePanel);
+        topPanel.add(linePanel);
 
         linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 
@@ -107,7 +110,7 @@ public class PersonalInfoPanel extends JPanel {
             }
         });
         linePanel.add(symbol);
-        add(linePanel);
+        topPanel.add(linePanel);
 
         // Checkboxes:
         linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -146,10 +149,11 @@ public class PersonalInfoPanel extends JPanel {
         }));
         checkBox.setSelected(preferences.isShowIcon());
         linePanel.add(checkBox);
-        add(linePanel);
+        topPanel.add(linePanel);
+        add(topPanel, BorderLayout.NORTH);
         // ^^^ Checkboxes ^^^
 
-        symbol = new BetterTextPane();
+        symbol = notes;
         ComponentFactory.fixWidget(symbol, "Notes");
         symbol.setOpaque(true);
         symbol.setText(preferences.getNotes());
@@ -160,7 +164,7 @@ public class PersonalInfoPanel extends JPanel {
         });
         JScrollPane scrollPane = new JScrollPane(symbol);
         scrollPane.setPreferredSize(new Dimension(-1, 150)); 
-        add(scrollPane);
+        add(scrollPane, BorderLayout.CENTER);
         setVisible(preferences.isInfoPanelVisible());
     }
 }

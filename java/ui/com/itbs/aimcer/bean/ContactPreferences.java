@@ -40,7 +40,10 @@ public class ContactPreferences {
     /** UID for a given provider. */
     private String uid;
     private Rectangle windowBounds;
+    /** Between history and text */
     private int verticalSeparation = -1;
+    /** Between history/text and secondary panels */
+    private int horizontalSeparation = -1;
     private boolean hideFromList;
     private boolean showInList;
     private boolean notifyOnConnect;
@@ -73,6 +76,15 @@ public class ContactPreferences {
 
     public void setVerticalSeparation(int verticalSeparation) {
         this.verticalSeparation = verticalSeparation;
+    }
+
+
+    public int getHorizontalSeparation() {
+        return horizontalSeparation;
+    }
+
+    public void setHorizontalSeparation(int horizontalSeparation) {
+        this.horizontalSeparation = horizontalSeparation;
     }
 
     public String getDisplayName() {

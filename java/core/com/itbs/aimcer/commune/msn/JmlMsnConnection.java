@@ -176,19 +176,24 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 			log.fine(messenger + " friend " + friend.getEmail()
 					+ " status changed from " + friend.getOldStatus() + " to "
 					+ friend.getStatus());
-            Contact cw = getContactFactory().create(friend.getEmail().getEmailAddress(), JmlMsnConnection.this);
-            cw.setDisplayName(GeneralUtils.stripHTML(getMSNName(friend)));
+            Contact contact = getContactFactory().create(friend.getEmail().getEmailAddress(), JmlMsnConnection.this);
+            contact.setDisplayName(GeneralUtils.stripHTML(getMSNName(friend)));
 
             boolean online = MsnUserStatus.OFFLINE != friend.getStatus() &&
                     MsnUserStatus.HIDE != friend.getStatus();
             // a lot of statuses which all mean "away"
             boolean away = online && MsnUserStatus.ONLINE != friend.getStatus();
-            
+
+            Status status = (Status) contact.getStatus().clone();
+            contact.getStatus().setOnline(online);
+            contact.getStatus().setAway(away);
+            contact.getStatus().setIdleTime(0);
+
             for (ConnectionEventListener eventHandler : eventHandlers) {
-                (eventHandler).statusChanged(JmlMsnConnection.this, cw, online, away, 0);
+                (eventHandler).statusChanged(JmlMsnConnection.this, contact, status);
             }
 
-        }
+        } // contactStatusChanged
 
 		public void ownerStatusChanged(MsnMessenger messenger) {
 			log.fine(messenger + " status changed from "

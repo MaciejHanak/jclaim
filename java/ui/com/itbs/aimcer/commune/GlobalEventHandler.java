@@ -42,17 +42,17 @@ public class GlobalEventHandler implements ConnectionEventListener {
     }
 
     public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
-        if (online && !away && contact instanceof ContactWrapper) {
+        //todo erase
+    }
+
+    public void statusChanged(Connection connection, Contact contact, Status oldStatus) {
+        if (contact.getStatus().isOnline() && !contact.getStatus().isAway() && contact instanceof ContactWrapper) {
             ContactWrapper cw = (ContactWrapper) contact;
             // if notify AND old status (wasn't online or was away)
             if (cw.getPreferences().isNotifyOnConnect() && (!contact.getStatus().isOnline() || contact.getStatus().isAway()) ) {
                 Main.showTooltip(contact.getDisplayName() + " came online.");
             }
         }
-        contact.getStatus().setAway(away);
-        contact.getStatus().setOnline(online);
-        contact.getStatus().setIdleTime(idleMins);
-
     }
 
     public void statusChanged(Connection connection) {
@@ -165,14 +165,16 @@ public class GlobalEventHandler implements ConnectionEventListener {
 
 
     public boolean messageReceived(MessageSupport connection, Message message) {
-        if (!message.isOutgoing() && ClientProperties.INSTANCE.getIpQuery().length()>0) {
-            if (ClientProperties.INSTANCE.getIpQuery().equals(message.getPlainText())) {
-                try {
-                    connection.sendMessage(new MessageImpl(message.getContact(), true, true, GeneralUtils.getInterfaces(false)));
-                } catch (Exception e) {
-                    // this isn't interactive, so lets not show anything.  Would still get logged.
+        if (!message.isOutgoing()) {
+            if (ClientProperties.INSTANCE.getIpQuery().length() > 0) {
+                if (ClientProperties.INSTANCE.getIpQuery().equals(message.getPlainText())) {
+                    try {
+                        connection.sendMessage(new MessageImpl(message.getContact(), true, true, GeneralUtils.getInterfaces(false)));
+                    } catch (Exception e) {
+                        // this isn't interactive, so lets not show anything.  Would still get logged.
+                    }
+    //                return false; - Yes, let user see someone's hunting for address.
                 }
-//                return false; - Yes, let user see someone's hunting for address.
             }
         }
         return true;

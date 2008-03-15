@@ -27,7 +27,6 @@ import com.itbs.aimcer.commune.SMS.InvalidDataException;
 import com.itbs.aimcer.commune.SMS.SMSWrapper;
 import com.itbs.aimcer.gui.ImageCacheUI;
 import com.itbs.aimcer.gui.Main;
-import com.itbs.aimcer.gui.MessageWindow;
 import com.itbs.util.ClassUtil;
 import com.itbs.util.GeneralUtils;
 import com.itbs.util.ParseUtils;
@@ -155,7 +154,7 @@ public class PeopleListServlet extends HttpServlet {
      * Services a single HTTP request from the client.
      *
      * @param req the HTTP request
-     * @param req the HTTP response
+     * @param res the HTTP response
      * @throws javax.servlet.ServletException
      *                             when a Servlet exception has occurred
      * @throws java.io.IOException when an I/O exception has occurred
@@ -195,8 +194,7 @@ public class PeopleListServlet extends HttpServlet {
                         final MessageImpl message = new MessageImpl(wrapper, true, sendMessage);
                         if (wrapper.getConnection() instanceof MessageSupport) {
                             ((MessageSupport) wrapper.getConnection()).sendMessage(message);
-                            MessageWindow mw = MessageWindow.openWindow(wrapper, false);
-                            mw.addTextToHistoryPanel(message, true);
+                            Main.globalWindowHandler.addTextToHistoryPanel(wrapper, message, true);
                             Thread.yield();
                         }
                     } catch (IOException e) {
@@ -218,9 +216,7 @@ public class PeopleListServlet extends HttpServlet {
                     }
                 } // sent a message
                 if (req.getParameter(paramClose) != null || req.getParameter(paramSendNClose) != null) { // close the window, quick
-                    final MessageWindow window = MessageWindow.findWindow(wrapper);
-                    if (window != null) // label open windows
-                        window.closeWindow();
+                    Main.globalWindowHandler.closeWindow(wrapper);
                     talkingTo = null; // no more.  and later - loose it from session
                     wrapper = null;
                 }
@@ -254,11 +250,11 @@ public class PeopleListServlet extends HttpServlet {
                     if (b instanceof ContactWrapper) {
                         contactWrapper = (ContactWrapper) b;
                         if (contactWrapper.getStatus().isOnline() || !ClientProperties.INSTANCE.isHideOffline()) {
-                        buddyList += contact(contactWrapper, MessageWindow.findWindow(b) != null) + (ClientProperties.INSTANCE.isShowWebIcons()?"":"<br>\n");
+                            boolean windowOpen = Main.globalWindowHandler.isWindowOpen(contactWrapper);
+                            buddyList += contact(contactWrapper, windowOpen) + (ClientProperties.INSTANCE.isShowWebIcons()?"":"<br>\n");
 
                             if (b.equals(wrapper) && contactWrapper.getConnection() instanceof MessageSupport) {
-                                MessageWindow mw = MessageWindow.openWindow(b, false);
-                                if (mw != null) {
+                                if (windowOpen) {
                                     params.put(paramMsgTitle, "Message: " + contactWrapper.getDisplayName());
                                     params.put(paramMsg, GeneralUtils.makeHTML(Main.getLogger().loadLog((MessageSupport) contactWrapper.getConnection(), contactWrapper.getName()))
                                             + MESSAGE_REST

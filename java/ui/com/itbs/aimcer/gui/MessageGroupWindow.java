@@ -60,11 +60,7 @@ public class MessageGroupWindow  extends MessageWindowBase {
         frame = GUIUtils.createFrame("Group Shout");
         frame.setIconImage(ImageCacheUI.ICON_JC.getIcon().getImage());
         frame.setBounds(DEFAULT_SIZE);
-        GUIUtils.addCancelByEscape(frame, new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                frame.dispose();
-            }
-        });
+        GUIUtils.addCancelByEscape(frame);
         ACTION_SEND = new ActionAdapter("Send", "Send message (" + (ClientProperties.INSTANCE.isEnterSends()?"":"Ctrl-") + "Enter )",
                         new ActionListener() {
                             public void actionPerformed(ActionEvent e) {

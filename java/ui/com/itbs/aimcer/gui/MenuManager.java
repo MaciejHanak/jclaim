@@ -296,6 +296,7 @@ public class MenuManager {
 
         public void typingNotificationReceived(MessageSupport connection, Nameable contact) { }
         
+        public void statusChanged(Connection connection, Contact contact, Status status) {  }
         public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {  }
 
         public void statusChanged(Connection connection) {
@@ -561,7 +562,7 @@ public class MenuManager {
                     Object result = contact.getSelectedItem();
                     if (result.toString().trim().length()==0) return;
                     final ContactWrapper contact = ContactWrapper.create(result.toString(), conn);
-                    MessageWindow.openWindow(contact, true);
+                    Main.globalWindowHandler.openWindow(contact, true);
                 }
                 dialog.dispose();
             }
@@ -663,7 +664,7 @@ public class MenuManager {
      * @param parent Top frame
      * @param defaultName name of contact
      */
-    static void addContact(Connection conn, final Frame parent, String defaultName) {
+    public static void addContact(Connection conn, final Frame parent, String defaultName) {
         Returned result = genericPrompter(conn, parent, defaultName, "Add contact?");
         if (result!=null) {
             try {

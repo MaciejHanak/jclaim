@@ -4,7 +4,6 @@ import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.gui.BetterTextPane;
 import com.itbs.gui.GUIUtils;
 import com.itbs.gui.JazzyInterface;
-import com.itbs.util.SoundHelper;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
@@ -38,7 +37,7 @@ abstract public class MessageWindowBase {
     /** Size of the message box. */
     public static final Rectangle DEFAULT_SIZE = new Rectangle(420, 200, 350, 330);
     /** Where the line is. */
-    protected static final double DEFAULT_SEPARATION = 3.0 / 5.0;//150;
+    public static final double DEFAULT_SEPARATION = 3.0 / 5.0;//150;
     /** Used to execute stuff off UI thread */
     static final Executor offUIExecutor = Executors.newFixedThreadPool(2);
 
@@ -49,8 +48,6 @@ abstract public class MessageWindowBase {
     /** lets us save the vertical separation, that's all. */
     JSplitPane splitPane;
     AbstractAction ACTION_SEND;
-    /** Used to make sure we don't beep too often */
-    long lastBeep;
 
 
 
@@ -120,11 +117,6 @@ abstract public class MessageWindowBase {
                 } catch (IOException e) {
                     log.log(Level.SEVERE, "", e);
                 }
-                // offui:
-                offUIExecutor.execute(new Runnable() { public void run () {
-                    if (SoundHelper.playSound(ClientProperties.INSTANCE.getSoundNewWindow()))
-                        lastBeep = System.currentTimeMillis(); // don't forget to update this puppy
-                } });
                 startUIDependent();
                 textPane.requestFocus();
             }

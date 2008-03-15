@@ -27,7 +27,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,42 +42,19 @@ public class GUIUtils {
      * Force the escape key to call the same action as pressing the Cancel button.
      *
      * This does not always work. See class comment.
+     * @param parentWindow frame
      */
-    public static void addCancelByEscape(JFrame parentFrame, final ActionListener callback)
-    {
-        KeyStroke escapeKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
-        InputMap inputMap = parentFrame.getRootPane().
-                getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        inputMap.put(escapeKey, CANCEL_ACTION_KEY);
-        AbstractAction cancelAction = new AbstractAction()
-         {
-            public void actionPerformed(ActionEvent e)
-            {
-                callback.actionPerformed(null);
+    public static void addCancelByEscape(final RootPaneContainer parentWindow) {
+        Action action = new AbstractAction(CANCEL_ACTION_KEY) {
+            public void actionPerformed(ActionEvent e) {
+                if (parentWindow instanceof JFrame) {
+                    ((JFrame) parentWindow).dispose();
+                } else if (parentWindow instanceof JDialog) {
+                    ((JDialog) parentWindow).dispose();
+                }
             }
         };
-        parentFrame.getRootPane().getActionMap().put(CANCEL_ACTION_KEY, cancelAction);
-    }
-
-    /**
-     * Force the escape key to call the same action as pressing the Cancel button.
-     *
-     * This does not always work. See class comment.
-     */
-    public static void addCancelByEscape(final JDialog parentFrame)
-    {
-        KeyStroke escapeKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
-        InputMap inputMap = parentFrame.getRootPane().
-                getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        inputMap.put(escapeKey, CANCEL_ACTION_KEY);
-        AbstractAction cancelAction = new AbstractAction()
-         {
-            public void actionPerformed(ActionEvent e)
-            {
-                parentFrame.dispose();
-            }
-        };
-        parentFrame.getRootPane().getActionMap().put(CANCEL_ACTION_KEY, cancelAction);
+        addAction(parentWindow, KeyEvent.VK_ESCAPE, 0, action);
     }
 
     /**
@@ -154,12 +130,30 @@ public class GUIUtils {
 
     /**
      * Used to add keystrokes to components that do things.
+     * @param frame top frame
+     * @param keyCode key
+     * @param modifiers any modifiers
+     * @param action what to do when even occurs in a form of an action.
+     */
+    public static void addAction(RootPaneContainer frame, int keyCode, int modifiers, Action action) {
+        if (action.getValue(Action.NAME)==null) {
+            throw new NullPointerException("Must set name for the action!");
+        }
+//        frame.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(keyCode, modifiers), action.getValue(Action.NAME));
+        frame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(keyCode, modifiers), action.getValue(Action.NAME));
+        frame.getRootPane().getActionMap().put(action.getValue(Action.NAME), action);
+    }
+    /**
+     * Used to add keystrokes to components that do things.
      * @param comp component
      * @param keyCode key
      * @param modifiers any modifiers
      * @param action what to do when even occurs in a form of an action.
      */
     public static void addAction(JComponent comp, int keyCode, int modifiers, Action action) {
+        if (action.getValue(Action.NAME)==null) {
+            throw new NullPointerException("Must set name for the action!");
+        }
         comp.getInputMap().put(KeyStroke.getKeyStroke(keyCode, modifiers), action.getValue(Action.NAME));
         comp.getActionMap().put(action.getValue(Action.NAME), action);
     }

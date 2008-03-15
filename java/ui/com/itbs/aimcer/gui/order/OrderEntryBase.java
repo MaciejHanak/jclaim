@@ -21,13 +21,13 @@
 package com.itbs.aimcer.gui.order;
 
 import com.itbs.aimcer.bean.ClientProperties;
+import com.itbs.aimcer.bean.Contact;
 import com.itbs.aimcer.bean.Message;
 import com.itbs.aimcer.bean.MessageImpl;
-import com.itbs.aimcer.bean.Nameable;
 import com.itbs.aimcer.commune.Connection;
 import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.gui.ComponentFactory;
-import com.itbs.aimcer.gui.MessageWindow;
+import com.itbs.aimcer.gui.Main;
 import com.itbs.gui.BetterTextField;
 import com.itbs.gui.ErrorDialog;
 
@@ -158,19 +158,15 @@ abstract public class OrderEntryBase extends JPanel {
     } // class PriceDocument
 
     protected class OrderAction extends AbstractAction {
-        private MutableAttributeSet style;
         private String actionType;
         private Connection connection;
-        final private Nameable name;
-        private MessageWindow historyPane;
+        final private Contact name;
 
-        protected OrderAction(MutableAttributeSet style, String actionType,
-                            Connection connection, Nameable name, MessageWindow historyPane) {
-            this.style = style;
+        protected OrderAction(String actionType,
+                            Connection connection, Contact name) {
             this.actionType = actionType;
             this.connection = connection;
             this.name = name;
-            this.historyPane = historyPane;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -179,7 +175,8 @@ abstract public class OrderEntryBase extends JPanel {
                 Message message = new MessageImpl(name, true, constructMessage(actionType));
                 //Main.getLogger().log(message);
                 error = "display the order on screen";
-                historyPane.appendHistoryText("\n" + timeFormat.format(new Date()) + message.getText(), style);
+                Main.globalWindowHandler.addTextToHistoryPanel(name, message, false);
+//                historyPane.appendHistoryText(, style);
                 error = "send the order through";
                 ((MessageSupport) connection).sendMessage(message);
                 // clear order

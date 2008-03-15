@@ -20,10 +20,8 @@
 
 package com.itbs.aimcer.gui;
 
-import com.itbs.aimcer.bean.Contact;
 import com.itbs.aimcer.bean.ContactWrapper;
 import com.itbs.aimcer.bean.GroupWrapper;
-import com.itbs.aimcer.bean.Status;
 import com.itbs.aimcer.commune.Connection;
 
 import javax.swing.*;
@@ -52,22 +50,6 @@ public class UTestContactListModel extends UTestFrameTest {
         Thread.sleep(500); // settle
         new EvilRunner(dataModel).start();
         waitForMe(10);
-    }
-
-    static class FakeStatus implements Status {
-        boolean online;
-        boolean away;
-        public FakeStatus(boolean online) { this.online = online; }
-        public boolean isOnline() { return online; }
-        public boolean isAway() { return away; }
-        public int getTimeAway() { return 0; }
-        public Contact getParent() { return null; }
-        public void setOnline(boolean online) { }
-        public void setAway(boolean away) { }
-        public boolean isWireless() { return false; }
-        public void setWireless(boolean wireless) { }
-        public void setIdleTime(int idleMins) { }
-        public int getIdleTime() { return 0; }
     }
 
     class EvilRunner extends Thread {

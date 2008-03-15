@@ -214,8 +214,13 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
 
             public void presenceChanged(Presence presence) {
                 Contact contact = getContactFactory().create(normalizeName(presence.getFrom()), SmackConnection.this);
+                Status status = (Status) contact.getStatus().clone();
+                contact.getStatus().setOnline(presence.isAvailable());
+                contact.getStatus().setAway(presence.isAway());
+                contact.getStatus().setIdleTime(0);
+
                 for (ConnectionEventListener eventHandler : eventHandlers) {
-                    eventHandler.statusChanged(SmackConnection.this, contact, presence.isAvailable(), presence.isAway(), 0);
+                    eventHandler.statusChanged(SmackConnection.this, contact, status);
                 }
             }
 

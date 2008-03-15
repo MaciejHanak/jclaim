@@ -419,10 +419,11 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
 
         public void buddyOffline(String sn, Buddy buddy) {
             Contact contact = getContactFactory().create(AIMUtil.normalize(buddy.getName()), DaimConnection.this);
-
+            Status status = (Status) contact.getStatus().clone();
+            contact.getStatus().setOnline(false);
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 try {
-                    eventHandler.statusChanged(DaimConnection.this, contact, false, true, 0);
+                    eventHandler.statusChanged(DaimConnection.this, contact, status);
                 } catch (Exception e) {
                     notifyErrorOccured("Failure while receiving an ICQ message", e);
                 }
@@ -431,10 +432,14 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
 
         public void buddyOnline(String sn, Buddy buddy) {
             Contact contact = getContactFactory().create(AIMUtil.normalize(buddy.getName()), DaimConnection.this);
+            Status status = (Status) contact.getStatus().clone();
+            contact.getStatus().setOnline(true);
+            contact.getStatus().setAway(buddy.isTrue(Buddy.STATE, Buddy.BUDDY_STATE_AWAY));
+            int idle = GeneralUtils.getInt(buddy.getProperty(Buddy.IDLE_TIME));
+            contact.getStatus().setIdleTime(idle);
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 try {
-                    int idle = GeneralUtils.getInt(buddy.getProperty(Buddy.IDLE_TIME));
-                    eventHandler.statusChanged(DaimConnection.this, contact, true, buddy.isTrue(Buddy.STATE, Buddy.BUDDY_STATE_AWAY), idle);
+                    eventHandler.statusChanged(DaimConnection.this, contact, status);
                 } catch (Exception e) {
                     notifyErrorOccured("Failure while receiving an ICQ message", e);
                 }

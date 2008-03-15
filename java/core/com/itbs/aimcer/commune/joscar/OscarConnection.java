@@ -602,11 +602,15 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                     Contact contact = getContactFactory().create(buddy.getNormal(), OscarConnection.this);
                     // update to the latest
                     contact.setDisplayName(buddy.getFormatted());
+                    Status oldStatus = (Status) contact.getStatus().clone();
                     contact.getStatus().setWireless((info.getFlags() & FullUserInfo.MASK_WIRELESS) > 0);
+                    contact.getStatus().setOnline(true);
+                    contact.getStatus().setAway(info.getAwayStatus());
+                    contact.getStatus().setIdleTime(info.getIdleMins());
 //                    fullUserInfoCache.put(contact, info); // no longer using this. it's been tracked
 //                    requestPictureForUser(contact, info);
                     for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                        eventHandler.statusChanged(OscarConnection.this, contact, true, info.getAwayStatus(), info.getIdleMins());
+                        eventHandler.statusChanged(OscarConnection.this, contact, oldStatus);
                     }
                 } catch (Exception e) {
                     log.log(Level.SEVERE, "Problem with buddy service", e);
@@ -616,10 +620,11 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             public void buddyOffline(BuddyService service, Screenname buddy) {
 //                log.fine("Buddy went offline. " + buddy.getNormal() + " " + buddy.getFormatted());
                 Contact contact = getContactFactory().create(buddy.getFormatted(), OscarConnection.this);
-                for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                    eventHandler.statusChanged(OscarConnection.this, contact, false, true, 0);
-                }
+                Status oldStatus = (Status) contact.getStatus().clone();
                 contact.getStatus().setOnline(false);
+                for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
+                    eventHandler.statusChanged(OscarConnection.this, contact, oldStatus);
+                }
             }
         });
     }

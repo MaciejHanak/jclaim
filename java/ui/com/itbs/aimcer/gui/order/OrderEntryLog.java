@@ -92,11 +92,7 @@ public class OrderEntryLog implements ConnectionEventListener {
         if (frame == null || !frame.isDisplayable()) {
             frame = GUIUtils.createFrame(TITLE);
             frame.setBounds(bounds);
-            GUIUtils.addCancelByEscape(frame, new ActionListener () {
-                public void actionPerformed(ActionEvent e) {
-                    frame.dispose();
-                }
-            });
+            GUIUtils.addCancelByEscape(frame);
             frame.getContentPane().setLayout(new BorderLayout());
             frame.getContentPane().add(getSpreadSheet());
             frame.getContentPane().add(getButtons(), BorderLayout.SOUTH);
@@ -483,6 +479,7 @@ public class OrderEntryLog implements ConnectionEventListener {
     public void connectionLost(Connection connection) { }
     public void connectionFailed(Connection connection, String message) { }
     public void connectionEstablished(Connection connection) { }
+    public void statusChanged(Connection connection, Contact contact, Status oldStatus) { }
     public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) { }
     public void statusChanged(Connection connection) { }
     public boolean contactRequestReceived(final String user, final MessageSupport connection) {  return true; }

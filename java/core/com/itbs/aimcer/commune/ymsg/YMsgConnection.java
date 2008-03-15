@@ -504,8 +504,13 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
 //                log.fine("Updated: " + yu[i].toString());
                 if (aYu==null) continue;
                 Contact contact = getContactFactory().create(aYu.getId(), YMsgConnection.this);
+                Status oldStatus = (Status) contact.getStatus().clone();
+                contact.getStatus().setOnline(aYu.isLoggedIn());
+                contact.getStatus().setAway(isAway(aYu));
+                contact.getStatus().setIdleTime(0);
+
                 for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                    eventHandler.statusChanged(YMsgConnection.this, contact, aYu.isLoggedIn(), isAway(aYu), 0);
+                    eventHandler.statusChanged(YMsgConnection.this, contact, oldStatus);
                 }
             }
         }

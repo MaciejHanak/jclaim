@@ -23,6 +23,7 @@ package com.itbs.aimcer.commune;
 import com.itbs.aimcer.bean.Contact;
 import com.itbs.aimcer.bean.Message;
 import com.itbs.aimcer.bean.Nameable;
+import com.itbs.aimcer.bean.Status;
 
 /**
  * @author Alex Rass
@@ -76,9 +77,18 @@ public interface ConnectionEventListener {
     /**
      * Nameable's status changed.
      * @param contact contact
-     * @param idleMins
+     * @deprecated use the other contact status update call:
+     *   void statusChanged(Connection connection, Contact contact, Status oldStatus);
      */
     void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins);
+
+    /**
+     * Nameable's status changed.
+     * @param connection connection
+     * @param contact contact with updated status
+     * @param oldStatus status of the contact before this event happened.
+     */
+    void statusChanged(Connection connection, Contact contact, Status oldStatus);
 
     /**
      * Statuses for contacts that belong to this connection have changed.

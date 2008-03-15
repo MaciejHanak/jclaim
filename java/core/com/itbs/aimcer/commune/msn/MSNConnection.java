@@ -107,8 +107,13 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
             Contact contact = getContactFactory().get(friend.getLoginName(), MSNConnection.this);
             if (contact != null) {
                 contact.setDisplayName(GeneralUtils.stripHTML(friend.getFormattedFriendlyName()));
+                Status oldStatus = (Status) contact.getStatus().clone();
+                contact.getStatus().setOnline(true);
+                contact.getStatus().setAway(false);
+                contact.getStatus().setIdleTime(0);
+
                 for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                    eventHandler.statusChanged(MSNConnection.this, contact, true, false, 0);
+                    eventHandler.statusChanged(MSNConnection.this, contact, oldStatus);
                 }
             } else {
                 log.fine("got MSN contact status w/o it being in the list");
@@ -117,9 +122,12 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
 
         public void userOffline(String loginName) {
             Contact contact = getContactFactory().get(loginName, MSNConnection.this);
+
             if (contact != null) {
+                Status oldStatus = (Status) contact.getStatus().clone();
+                contact.getStatus().setOnline(false);
                 for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                    eventHandler.statusChanged(MSNConnection.this, contact, false, true, 0);
+                    eventHandler.statusChanged(MSNConnection.this, contact, oldStatus);
                 }
             } else {
                 log.fine("got MSN contact status w/o it being in the list");
@@ -211,11 +219,16 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
          * Map�? 저장해�?면 편리하다. (Key값�?� loginName으로 하면 �?� 좋다)
          */
         public void listOnline(MsnFriend friend) {
-            Contact cw = getContactFactory().create(friend.getLoginName(), MSNConnection.this);
-            cw.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
-//            cw.setOnline(true);
+            Contact contact = getContactFactory().create(friend.getLoginName(), MSNConnection.this);
+            contact.setDisplayName(GeneralUtils.stripHTML(friend.getFriendlyName()));
+//            contact.setOnline(true);
+            Status status = (Status) contact.getStatus().clone();
+            contact.getStatus().setOnline(true);
+            contact.getStatus().setAway(false);
+            contact.getStatus().setIdleTime(0);
+
             for (ConnectionEventListener eventHandler : eventHandlers) {
-                (eventHandler).statusChanged(MSNConnection.this, cw, true, false, 0);
+                (eventHandler).statusChanged(MSNConnection.this, contact, status);
             }
         }
 

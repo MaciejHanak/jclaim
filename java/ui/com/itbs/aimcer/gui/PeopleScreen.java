@@ -72,7 +72,7 @@ final public class PeopleScreen extends JPanel  {
     private void handleItem(Object item) {
         if (item instanceof ContactWrapper) {
             if (((ContactWrapper)item).getConnection() instanceof MessageSupport) {
-                MessageWindow.openWindow((ContactWrapper)item, true);
+                Main.globalWindowHandler.openWindow((ContactWrapper)item, true);
             } else if (((ContactWrapper)item).getConnection() instanceof WeatherConnection) {
                 try {
                     Desktop.browse(new URL(WeatherConnection.TOKEN_HOURLY + ((ContactWrapper)item).getName()));
@@ -176,7 +176,7 @@ final public class PeopleScreen extends JPanel  {
                                 }
                             }
                             if (allContacts.size() == 1) {
-                                MessageWindow.openWindow(allContacts.get(0), false);
+                                Main.globalWindowHandler.openWindow(allContacts.get(0), false);
                             } else
                                 MessageGroupWindow.openWindow(allContacts.toArray(new ContactWrapper[allContacts.size()]));
                         }

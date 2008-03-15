@@ -49,6 +49,10 @@ public class StatusImpl implements Status {
 
     public void setOnline(boolean online) {
         this.online = online;
+        if (!online) {
+            this.away=false;
+            this.idleTime=0;
+        }
         parent.statusChanged();
     }
 

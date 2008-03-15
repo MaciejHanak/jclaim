@@ -3,6 +3,7 @@ package com.itbs.aimcer.gui;
 import com.itbs.aimcer.bean.Contact;
 import com.itbs.aimcer.bean.Message;
 import com.itbs.aimcer.bean.Nameable;
+import com.itbs.aimcer.bean.Status;
 import com.itbs.aimcer.commune.*;
 import com.itbs.gui.ActionAdapter;
 import com.itbs.gui.BetterButton;
@@ -55,11 +56,7 @@ public class MessageCollaborationWindow  extends MessageWindowBase implements Co
                 }
             }
         }, 'S');
-        GUIUtils.addCancelByEscape(frame, new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                frame.dispose();
-            }
-        });
+        GUIUtils.addCancelByEscape(frame);
         composeUI();
         offUIExecutor.execute(new Runnable() { public void run () {
            join(groupName, connection.getUser().getName());
@@ -145,6 +142,12 @@ public class MessageCollaborationWindow  extends MessageWindowBase implements Co
     public void statusChanged(Connection connection) {
     }
 
+    public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
+    }
+
+    public void statusChanged(Connection connection, Contact contact, Status oldStatus) {
+    }
+
     public void errorOccured(String message, Exception exception) {
     }
 
@@ -157,8 +160,6 @@ public class MessageCollaborationWindow  extends MessageWindowBase implements Co
         return false;
     }
 
-    public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
-    }
 
     public void pictureReceived(IconSupport connection, Contact contact) {
     }

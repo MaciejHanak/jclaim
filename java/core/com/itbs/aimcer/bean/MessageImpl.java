@@ -29,15 +29,15 @@ import com.itbs.util.GeneralUtils;
 final public class MessageImpl implements Message {
     boolean outgoing, autoresponse;
     String text, plainText;
-    Nameable name;
+    Contact name;
 
-    public MessageImpl(Nameable name, boolean outgoing, String text) {
+    public MessageImpl(Contact name, boolean outgoing, String text) {
         this.outgoing = outgoing;
         this.text = text;
         this.name = name;
     }
 
-    public MessageImpl(Nameable name, boolean outgoing, boolean autoresponse, String text) {
+    public MessageImpl(Contact name, boolean outgoing, boolean autoresponse, String text) {
         this.outgoing = outgoing;
         this.autoresponse = autoresponse;
         this.text = text;
@@ -67,7 +67,12 @@ final public class MessageImpl implements Message {
         return autoresponse;
     }
 
-    public Nameable getContact() {
+
+    public void setName(Contact name) {
+        this.name = name;
+    }
+
+    public Contact getContact() {
         return name;
     }
 

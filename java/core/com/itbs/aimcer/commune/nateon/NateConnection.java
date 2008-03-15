@@ -245,12 +245,14 @@ public class NateConnection extends AbstractMessageConnection implements FileTra
                 Contact contact = getContactFactory().create(nateFriend.getID(), NateConnection.this);
                 log.info("Friend: " + nateFriend + " FABR: " + nateFriend.getFABR() + " Status: " + nateFriend.getStatus());
 
+/*
                 for (ConnectionEventListener eventHandler : eventHandlers) {
                     eventHandler.statusChanged(NateConnection.this, contact, true, false, 0);
                 }
+*/
 
 
-/*              // Next version will have this code:
+              // Next version will have this code:
                 Status oldStatus = (Status) contact.getStatus().clone();
                 contact.getStatus().setOnline(true);
                 contact.getStatus().setAway(false);
@@ -259,7 +261,7 @@ public class NateConnection extends AbstractMessageConnection implements FileTra
                 for (ConnectionEventListener eventHandler : eventHandlers) {
                     eventHandler.statusChanged(NateConnection.this, contact, oldStatus);
                 }
-*/
+
             }
 
             public void killed() {

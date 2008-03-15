@@ -202,8 +202,8 @@ public class LoggerEventListener implements ConnectionEventListener {
     public void connectionEstablished(com.itbs.aimcer.commune.Connection connection) {
     }
 
-    public void statusChanged(com.itbs.aimcer.commune.Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
-    }
+    public void statusChanged(com.itbs.aimcer.commune.Connection connection, Contact contact, Status oldStatus) { }
+    public void statusChanged(com.itbs.aimcer.commune.Connection connection, Contact contact, boolean online, boolean away, int idleMins) { }
 
     /**
      * Statuses for contacts that belong to this connection have changed.

@@ -453,8 +453,13 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
 //          log.fine("Updated: " + yu[i].toString());
             if (aYu==null) return;
             Contact contact = getContactFactory().create(aYu.getId(), YMsgOpenConnection.this);
+            com.itbs.aimcer.bean.Status oldStatus = (com.itbs.aimcer.bean.Status) contact.getStatus().clone();
+            contact.getStatus().setOnline(aYu.isLoggedIn());
+            contact.getStatus().setAway(isAway(aYu));
+            contact.getStatus().setIdleTime(0);
+
             for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                eventHandler.statusChanged(YMsgOpenConnection.this, contact, aYu.isLoggedIn(), isAway(aYu), 0);
+                eventHandler.statusChanged(YMsgOpenConnection.this, contact, oldStatus);
             }
         }
 

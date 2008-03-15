@@ -1,9 +1,6 @@
 package com.itbs.aimcer.commune;
 
-import com.itbs.aimcer.bean.Contact;
-import com.itbs.aimcer.bean.Message;
-import com.itbs.aimcer.bean.MessageImpl;
-import com.itbs.aimcer.bean.Nameable;
+import com.itbs.aimcer.bean.*;
 
 /**
  * Provides ability to forward messages to another contact.
@@ -61,8 +58,8 @@ public class MessageForwarder implements ConnectionEventListener {
     public void connectionEstablished(Connection connection) {
     }
 
-    public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
-    }
+    public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) { }
+    public void statusChanged(Connection connection, Contact contact, Status status) { }
 
     public void statusChanged(Connection connection) {
     }

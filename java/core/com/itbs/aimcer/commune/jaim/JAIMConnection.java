@@ -215,8 +215,12 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
 
     private void receiveBuddyUpdate(BuddyUpdateTocResponse response) {
         Contact contact = getContactFactory().create(response.getBuddy(), this);
+        Status status = (Status) contact.getStatus().clone();
+        contact.getStatus().setOnline(response.isOnline());
+        contact.getStatus().setAway(response.isAway());
+        contact.getStatus().setIdleTime(response.getIdleTime());
         for (ConnectionEventListener connectionEventListener: eventHandlers) {
-            connectionEventListener.statusChanged(this, contact, response.isOnline(), response.isAway(), response.getIdleTime());
+            connectionEventListener.statusChanged(this, contact, status);
         }
     }
 

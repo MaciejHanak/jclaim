@@ -107,6 +107,8 @@ public class ClientProperties implements ConnectionProperties {
     private boolean spellCheck = true;
     private boolean spellCheckAllowSlang = true;
     private int lookAndFeelIndex = -1;
+    /** Default interface.  0 - default, 1 - tabbed windows */
+    private int interfaceIndex = 0;
     private boolean serverEnabled = false;
     private int serverPort = 2000;
     private boolean useTray = true;
@@ -583,6 +585,18 @@ public class ClientProperties implements ConnectionProperties {
     }
     public void setLookAndFeelIndex(int value) {
         lookAndFeelIndex = value;
+    }
+
+    /**
+     * Default interface index.
+     * @return 0 or 1
+     */
+    public int getInterfaceIndex() {
+        return interfaceIndex;
+    }
+
+    public void setInterfaceIndex(int interfaceIndex) {
+        this.interfaceIndex = interfaceIndex;
     }
 
     public boolean isEnableOrderEntryInSystem() {

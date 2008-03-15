@@ -51,7 +51,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public class Main {
     static String TITLE = "JCLAIM";
-    public static String VERSION = "Version: 4.4.42";
+    public static String VERSION = "Version: 5.02";
     public static final String URL_FAQ = "http://www.itbsllc.com/jclaim/User%20Documentation.htm";
     public static final String EMAIL_SUPPORT = "support@itbsllc.com";
     private static final String LICENSE = System.getProperty("client");
@@ -82,6 +82,7 @@ public class Main {
     private static java.util.List <Connection> connections = new CopyOnWriteArrayList<Connection>();
     public static LoggerEventListener logger;
     private GlobalEventHandler globalEventHandler;
+    public static GlobalWindowHandler globalWindowHandler;
     private MessageForwarder messageForwarder;
     private static Main main;
 
@@ -89,6 +90,7 @@ public class Main {
     private StatusPanel statusBar;
     
     public static GroupFactory standardGroupFactory = new GroupWrapperFactory();
+
 
     /**
      * Provides a way to set a forwarder. 
@@ -191,7 +193,12 @@ public class Main {
             }
         });
         main.globalEventHandler = new GlobalEventHandler();
+        globalWindowHandler = new GlobalWindowHandler();
         main.messageForwarder = new MessageForwarder();
+
+        globalWindowHandler.add(new WindowManager.Sounds());
+        globalWindowHandler.add(new WindowManager.Individual());
+        globalWindowHandler.add(new WindowManager.Tabbed());
 
         try {
             // addConnection what you loaded
@@ -271,7 +278,7 @@ public class Main {
             ContactListModel.setConnection(weather);
         }
         connection.addEventListener(main.globalEventHandler);
-        connection.addEventListener(MessageWindow.getConnectionEventListener());
+        main.globalWindowHandler.addConnection(connection);
         connection.addEventListener(logger); // if logger is before MW, we see it log the incoming msg first
         JList list = main.peopleScreen.getList();
         connection.addEventListener((ConnectionEventListener) list.getModel()); // is also self-added

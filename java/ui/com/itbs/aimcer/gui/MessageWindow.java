@@ -29,7 +29,6 @@ import com.itbs.aimcer.gui.order.OrderEntryPanel;
 import com.itbs.gui.*;
 import com.itbs.util.DelayedThread;
 import com.itbs.util.GeneralUtils;
-import com.itbs.util.SoundHelper;
 import org.jdesktop.jdic.desktop.Desktop;
 import org.jdesktop.jdic.desktop.DesktopException;
 
@@ -81,7 +80,7 @@ public class MessageWindow extends MessageWindowBase {
 
     /** Typing icon display with delay. */
     private DelayedThread delayedShow;
-    private JLabel userIcon;
+    private JLabel userIcon= new JLabel();
     private String historyText;
 
     public MessageSupport getConnection() {
@@ -113,11 +112,7 @@ public class MessageWindow extends MessageWindowBase {
         }
         Rectangle bounds = contactWrapper.getPreferences().getWindowBounds();
         frame.setBounds(bounds==null?DEFAULT_SIZE:bounds);
-        GUIUtils.addCancelByEscape(frame, new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                onWindowClose();
-            }
-        });
+        GUIUtils.addCancelByEscape(frame);
         ACTION_SEND = new ActionAdapter("Send", "Send message (" + (ClientProperties.INSTANCE.isEnterSends()?"":"Ctrl-") + "Enter )",
                         new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
@@ -135,7 +130,7 @@ public class MessageWindow extends MessageWindowBase {
                                     log.log(Level.SEVERE, "Failed to send message", e1);
                                     ErrorDialog.displayError(frame, "Failed to send message", e1);
                                 }
-                                textPane.requestFocus();
+                                textPane.requestFocusInWindow();
                             }
                         }, 'S');
         ACTION_ADD = new ActionAdapter("Add", "Add to the list", new ActionListener() {
@@ -283,6 +278,11 @@ public class MessageWindow extends MessageWindowBase {
         }
     }
 
+    /**
+     * Finds the window to see if it's open.
+     * @param buddyWrapper to find
+     * @return window or null if not open
+     */
     public static MessageWindow findWindow(Nameable buddyWrapper) {
         lock.lock();
         try {
@@ -468,7 +468,6 @@ public class MessageWindow extends MessageWindowBase {
     JComponent getMessage() {
         JComponent typingSpace = super.getMessage();
         addDNDSupport(textPane);
-        userIcon = new JLabel();
         if (ClientProperties.INSTANCE.isShowPictures())
             if (contactWrapper.getPicture() == null && getConnection() instanceof IconSupport)
                 ((IconSupport) getConnection()).requestPictureForUser(contactWrapper);
@@ -537,13 +536,6 @@ public class MessageWindow extends MessageWindowBase {
             //Main.getLogger().log(messageOut);
             appendHistoryText((ClientProperties.INSTANCE.isShowTime() ? TIME_FORMAT.format(new Date()) : ""),
                     toBuddy, (message.isAutoResponse()?"Automatic response: ":"") + (toBuddy?message.getText():message.getPlainText()));
-            if (ClientProperties.INSTANCE.isSoundAllowed()
-//                    && (toBuddy && ClientProperties.INSTANCE.isSoundSend()) || (!toBuddy && ClientProperties.INSTANCE.isSoundReceiveAllowed()))
-                    && (!getConnection().isAway() || ClientProperties.INSTANCE.isSoundIdle())
-                    && (lastBeep== 0 || lastBeep + ClientProperties.INSTANCE.getBeepDelay()*1000 < System.currentTimeMillis())) {
-                SoundHelper.playSound(toBuddy?ClientProperties.INSTANCE.getSoundSend():ClientProperties.INSTANCE.getSoundReceive());
-            }
-            lastBeep = System.currentTimeMillis();
         } catch (Exception e) {
             ErrorDialog.displayError(frame, "Error processing command.  Try again.\n"+e.getMessage(), e);
         }
@@ -556,7 +548,7 @@ public class MessageWindow extends MessageWindowBase {
     /////////////////////////////////////////////////////////////////////
    // *******************  File Transfers   **************  //
   ///////////////////////////////////////////////////////////////////
-    static class FileTransferHandler extends AbstractFileTransferHandler {
+    public static class FileTransferHandler extends AbstractFileTransferHandler {
         ContactWrapper wrapper;
         public FileTransferHandler(ContactWrapper contactWrapper) {
             wrapper = contactWrapper;
@@ -595,8 +587,16 @@ public class MessageWindow extends MessageWindowBase {
             if (!message.isOutgoing() && (!ClientProperties.INSTANCE.isIgnoreSystemMessages() || !connection.isSystemMessage(message.getContact()))) {
 //                offUIExecutor.execute(new Runnable() {
 //                    public void run() {
-                        MessageWindow window = openWindow(message.getContact(), false);
-                        window.feedForBuddy(message);
+//                        MessageWindow window = openWindow(message.getContact(), false);
+                        MessageWindow window;
+                        if (ClientProperties.INSTANCE.getInterfaceIndex() == WindowManager.INTERFACE_WINDOWED) {
+                            window = openWindow(message.getContact(), ClientProperties.INSTANCE.isEasyOpen());
+                        } else {
+                            window = findWindow(message.getContact());
+                        }
+                        if (window != null) {
+                            window.feedForBuddy(message);
+                        }
 //                    }
 //                });
             }
@@ -654,8 +654,19 @@ public class MessageWindow extends MessageWindowBase {
          * @param idleMins how long the contact is idle for
          */
         public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
-            if (contact.getStatus().isOnline() != online) {
-                notifyUser("\n" + contact + (online?" is now online.":" has disconnected."), contact);
+            // todo erase me!
+        }
+
+        /**
+         * Nameable's status changed.
+         *
+         * @param connection connection
+         * @param contact    contact with updated status
+         * @param oldStatus  status of the contact before this event happened.
+         */
+        public void statusChanged(Connection connection, Contact contact, Status oldStatus) {
+            if (contact.getStatus().isOnline() != oldStatus.isOnline()) {
+                notifyUser("\n" + contact + (contact.getStatus().isOnline()?" is now online.":" has disconnected."), contact);
             }
         }
 
@@ -728,7 +739,8 @@ public class MessageWindow extends MessageWindowBase {
             window.appendHistoryText(message, ATT_ERROR);
         }
 
-    } // class
+    } // class MessageWindowConnectionEventListener
+
     /**
      * Sends message via any available media.
      * @param conns All available connections to try (can be null)
@@ -748,7 +760,7 @@ public class MessageWindow extends MessageWindowBase {
                     ContactWrapper cw = (ContactWrapper) conn.getContactFactory().create(GeneralUtils.stripPhone(to.getPreferences().getPhone()), conn);
                     cw.getPreferences().setName(to.getPreferences().getName());
                     cw.getPreferences().setDisplayName((to.getPreferences().getDisplayName()==null?to.getName():to.getPreferences().getDisplayName()) + " (Phone)");
-                    MessageWindow.openWindow(cw, true);
+                    Main.globalWindowHandler.openWindow(cw, true);
                 }
             }
             if (!found && conns!=null) { // Search
@@ -768,7 +780,7 @@ public class MessageWindow extends MessageWindowBase {
                         ContactWrapper cw = (ContactWrapper) connection.getContactFactory().create(GeneralUtils.stripPhone(to.getPreferences().getPhone()), connection);
                         cw.getPreferences().setName(to.getPreferences().getName());
                         cw.getPreferences().setDisplayName(to.getPreferences().getDisplayName() + " (Phone)");
-                        MessageWindow.openWindow(cw, true);
+                        Main.globalWindowHandler.openWindow(cw, true);
                     }
                 }
                 if (!found) {

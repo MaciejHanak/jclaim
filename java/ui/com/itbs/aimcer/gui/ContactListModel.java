@@ -151,6 +151,11 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
 
     public synchronized void statusChanged(final Connection connection, final Contact contact,
                               final boolean online, final boolean away, final int idleMins) {
+        throw new RuntimeException("Don't call me no more!");
+    }
+
+    public synchronized void statusChanged(final Connection connection, final Contact contact,
+                              final Status oldStatus) {
         try {
 //            boolean redraw = (contact.getStatus().isAway() != away || contact.getStatus().isOnline() != online);
 //            if (redraw) {
