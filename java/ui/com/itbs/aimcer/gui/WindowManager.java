@@ -6,6 +6,8 @@ import com.itbs.aimcer.tabbed.TabbedWindow;
 import com.itbs.util.SoundHelper;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * Knows about individual ContactWindow classes.
@@ -93,19 +95,20 @@ public class WindowManager {
      */
     public static class Sounds implements ContactWindow {
         /** Used to make sure we don't beep too often */
-        long lastBeep;
+        protected Map <Contact, Long> map = new WeakHashMap<Contact, Long>(20);
         
         public void addConnection(MessageSupport connection) {
             connection.addEventListener(new ConnectionEventListener() {
                 public void connectionInitiated(Connection connection) { }
                 public boolean messageReceived(MessageSupport connection, Message message) throws Exception {
                     boolean toBuddy = message.isOutgoing();
+                    Long lastBeep = map.get(message.getContact());
                     if (ClientProperties.INSTANCE.isSoundAllowed()
                             && (!message.getContact().getConnection().isAway() || ClientProperties.INSTANCE.isSoundIdle())
-                            && (lastBeep == 0 || lastBeep + ClientProperties.INSTANCE.getBeepDelay() * 1000 < System.currentTimeMillis())) {
+                            && (lastBeep == null || lastBeep.longValue() + ClientProperties.INSTANCE.getBeepDelay() * 1000 < System.currentTimeMillis())) {
                         SoundHelper.playSoundOffThread(toBuddy ? ClientProperties.INSTANCE.getSoundSend() : ClientProperties.INSTANCE.getSoundReceive());
                     }
-                    lastBeep = System.currentTimeMillis();
+                    map.put(message.getContact(), System.currentTimeMillis());
                     return false;
                 }
                 public boolean emailReceived(MessageSupport connection, Message message) throws Exception { return false; }
@@ -129,7 +132,7 @@ public class WindowManager {
 
         public void openWindow(Contact buddyWrapper, boolean forceToFront) {
             if (SoundHelper.playSound(ClientProperties.INSTANCE.getSoundNewWindow())) {
-                lastBeep = System.currentTimeMillis(); // don't forget to update this puppy
+                map.put(buddyWrapper, System.currentTimeMillis()); // don't forget to update this puppy
             }
         }
 

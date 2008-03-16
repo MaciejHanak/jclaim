@@ -670,38 +670,38 @@ public class TabbedWindow {
         tabbedPane.lock();
         try {
             TabItself tab = findTab(cw);
+            final TabItself finalTab;
             // only if tab d/n exist do we do this
             if (tab==null) {
-                final TabItself newTab = new TabItself(cw, tabbedPane);
-                tab = newTab;
-                tabbedPane.addTab(cw.getDisplayName(), newTab);
-                newTab.addTabComponent();
-                newTab.setLabelFromStatus();
-                GUIUtils.runOnAWT(new Runnable() {
-                    public void run() {
-                        if (forceToFront || ClientProperties.INSTANCE.isForceFront()) {
-                            frame.setVisible(true);
-                            frame.toFront();
-                        }
-                        if (forceToFront || ClientProperties.INSTANCE.isEasyOpen()) {
-                            tabbedPane.setSelectedComponent(newTab);
-                        } else {
-                            tabbedPane.setSelectedComponent(currentTab);
-                        }
+                tab = new TabItself(cw, tabbedPane);
+                finalTab = tab;
+                tabbedPane.addTab(cw.getDisplayName(), tab);
+                tab.addTabComponent();
+                tab.setLabelFromStatus();
+            } else {
+                finalTab = tab;
+            }
+            
+            GUIUtils.runOnAWT(new Runnable() {
+                public void run() {
+                    if (forceToFront || ClientProperties.INSTANCE.isForceFront()) {
+                        tabbedPane.setSelectedComponent(finalTab);
+                    } else {
+                        tabbedPane.setSelectedComponent(currentTab);
                     }
-                });
-            } else if (forceToFront) {
-                tabbedPane.setSelectedComponent(tab);
-            }
-            if (ClientProperties.INSTANCE.isUseAlert()) {
-                TrayAdapter.alert(frame);
-            }
+                    if (forceToFront || ClientProperties.INSTANCE.isEasyOpen()) {
+                        frame.setVisible(true);
+                        frame.toFront();
+                        frame.setState(Frame.NORMAL);
+                    }
+                    if (ClientProperties.INSTANCE.isUseAlert()) {
+                        TrayAdapter.alert(frame);
+                    }
+                }
+            });
             return tab;
         } finally {
             tabbedPane.unlock();
-            if (!frame.isVisible() || ClientProperties.INSTANCE.isForceFront()) {
-                frame.setVisible(true);
-            }
         }
     }
 

@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
 /**
  * Manages the individual tab.
@@ -34,6 +35,7 @@ import java.util.concurrent.Executors;
  * @since Feb 28, 2008
  */
 public class TabItself extends JPanel {
+    private static final Logger log = Logger.getLogger(TabItself.class.getName());
     protected ContactWrapper contactWrapper;
 
     public ContactWrapper getContact() {
@@ -56,7 +58,7 @@ public class TabItself extends JPanel {
 
     /** Used to execute stuff off UI thread */
     static final Executor offUIExecutor = Executors.newFixedThreadPool(2);
-
+    /** Reusable for any component here. */
     final private MessageWindow.FileTransferHandler ftHandler;
 
     BetterTextPane textPane;
@@ -71,6 +73,7 @@ public class TabItself extends JPanel {
         this.tabbedPane = tabbedPane;
         setLayout(new BorderLayout());
         contactWrapper = (ContactWrapper) cw;
+        ftHandler = new MessageWindow.FileTransferHandler(contactWrapper); // do this before using any components.
         recalculateAttributes();
         splitHistoryTextPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, getHistory(), getMessage());
         if (contactWrapper.getPreferences().getVerticalSeparation() == -1)
@@ -82,12 +85,12 @@ public class TabItself extends JPanel {
         PersonalInfoPanel personalInfo = new PersonalInfoPanel(contactWrapper);
         personalInfo.setVisible(true); // always visible for the tabbed interface
         splitNotes = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, temp, personalInfo);
-        if (contactWrapper.getPreferences().getHorizontalSeparation() == -1)
-            splitNotes.setDividerLocation((int)(tabbedPane.getWidth() * DEFAULT_SEPARATION));
-        else
+        if (contactWrapper.getPreferences().getHorizontalSeparation() == -1) {
+            splitNotes.setDividerLocation((int) (tabbedPane.getWidth() * DEFAULT_SEPARATION));
+        } else {
             splitNotes.setDividerLocation((contactWrapper.getPreferences().getHorizontalSeparation()));
+        }
         add(splitNotes);
-        ftHandler = new MessageWindow.FileTransferHandler(contactWrapper);
         tabbedPane.addContainerListener(new ContainerAdapter() {
             /**
              * Invoked when a component has been removed from the container.
@@ -178,6 +181,8 @@ public class TabItself extends JPanel {
         historyPane = new BetterTextPane();
         addDNDSupport(historyPane);
         historyPane.setEditable(false);
+        final JScrollPane jScrollPane = new JScrollPane(historyPane, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        jScrollPane.getVerticalScrollBar().setValue(jScrollPane.getVerticalScrollBar().getMaximum());
 
         String historyText;
         try {
@@ -192,8 +197,6 @@ public class TabItself extends JPanel {
             GUIUtils.appendText(historyPane, "\nStatus of this contact is offline or unknown. Your message may not get delivered.\n", ATT_RED);
         if (historyPane.getFont().getSize() > 10)
             StyleConstants.setFontSize(ATT_GRAY, ClientProperties.INSTANCE.getFontSize());
-        final JScrollPane jScrollPane = new JScrollPane(historyPane, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        jScrollPane.getVerticalScrollBar().setValue(jScrollPane.getVerticalScrollBar().getMaximum());
         return jScrollPane;
     }
 

@@ -51,7 +51,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public class Main {
     static String TITLE = "JCLAIM";
-    public static String VERSION = "Version: 5.02";
+    public static String VERSION = "Version: 5.03";
     public static final String URL_FAQ = "http://www.itbsllc.com/jclaim/User%20Documentation.htm";
     public static final String EMAIL_SUPPORT = "support@itbsllc.com";
     private static final String LICENSE = System.getProperty("client");
