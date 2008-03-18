@@ -41,6 +41,7 @@ public interface ConnectionEventListener {
      * @param connection connection
      * @param message message
      * @return false if noone else needs to see this.
+     * @throws Exception on error
      */
     boolean messageReceived(MessageSupport connection, Message message) throws Exception;
     
@@ -49,6 +50,7 @@ public interface ConnectionEventListener {
     /**
      * Tells that other side is typing a message.
      * @param connection on which the notification is sent
+     * @param contact contact reference
      */
     void typingNotificationReceived(MessageSupport connection, Nameable contact);
 
@@ -73,14 +75,6 @@ public interface ConnectionEventListener {
      * @param connection that has finished stabilizing
      */
     void connectionEstablished(Connection connection);
-
-    /**
-     * Nameable's status changed.
-     * @param contact contact
-     * @deprecated use the other contact status update call:
-     *   void statusChanged(Connection connection, Contact contact, Status oldStatus);
-     */
-    void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins);
 
     /**
      * Nameable's status changed.
