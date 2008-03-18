@@ -18,7 +18,6 @@ import java.awt.event.ContainerAdapter;
 import java.awt.event.ContainerEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -50,8 +49,6 @@ public class TabItself extends JPanel {
     public static final double DEFAULT_SEPARATION = 3.0 / 5.0;//150;
     /** The way the time in the window is formatted */
     protected DateFormat TIME_FORMAT = new SimpleDateFormat(ClientProperties.INSTANCE.getTimeFormat());
-
-    public static boolean oldVM;
 
     ButtonTabComponent tabControl;
     BetterTabbedPane tabbedPane;
@@ -111,15 +108,9 @@ public class TabItself extends JPanel {
     public void addTabComponent() {
         int index = tabbedPane.indexOfComponent(this);
         tabControl = new ButtonTabComponent(tabbedPane, this);
-//        tabbedPane.setTabComponentAt(index, tabControl); // todo start using this line instead when going to 1.6
+        tabbedPane.setTabComponentAtReflect(index, tabControl);
 
-        try {
-            Class types[] = new Class[] {int.class, Component.class};
-            Method method = tabbedPane.getClass().getMethod("setTabComponentAt", types);
-            method.invoke(tabbedPane, index, tabControl);
-        } catch (Exception e) { // jdk 1.5 compatibility
-            // this is 1.5, lets do smth else
-            oldVM = true;
+        if (BetterTabbedPane.oldVM) {
             tabbedPane.setIconAt(index, getContact().getIcon());
         }
         tabControl.setBackground(Color.RED);
@@ -231,7 +222,7 @@ public class TabItself extends JPanel {
     public void setTabHighlighted(final boolean highlight) {
         GUIUtils.runOnAWT(new Runnable() {
             public void run() {
-                if (oldVM) {
+                if (BetterTabbedPane.oldVM) {
                     int index = tabbedPane.indexOfComponent(TabItself.this);
                     tabbedPane.setBackgroundAt(index, highlight?Color.RED:null);
                 } else if (tabControl!=null) {

@@ -1,11 +1,11 @@
 package com.itbs.gui;
 
 import javax.swing.*;
-import javax.swing.event.MouseInputAdapter;
 import javax.swing.plaf.TabbedPaneUI;
 import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
@@ -28,6 +28,13 @@ public class BetterTabbedPane extends JTabbedPane {
 
     public void lock() {
         lock.lock();
+    }
+    public boolean tryLock() {
+        try {
+            return lock.tryLock() || lock.tryLock(50, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            return false;
+        }
     }
 
     public void unlock() {
@@ -77,12 +84,11 @@ public class BetterTabbedPane extends JTabbedPane {
         super(tabPlacement, tabLayoutPolicy);
         init();
     }
-    MouseAdapter dndMouseAdapter;
+
+    protected TabMoveHandler dndMouseAdapter;
     private void init() {
         setupKeys(this);
         dndMouseAdapter = new TabMoveHandler(); // 1
-//         dndMouseAdapter = new MouseHandler();     // 2
-
         addMouseListener(dndMouseAdapter);
         addMouseMotionListener(dndMouseAdapter);
 
@@ -232,11 +238,48 @@ public class BetterTabbedPane extends JTabbedPane {
         }
     }
 
+
+    /**
+     * Move tab via index.
+     * 
+     * @param src source tab index
+     * @param dst destination tab index
+     */
+    public void moveTab(int src, int dst) {
+        // Get all the properties
+        Component comp = getComponentAt(src);
+        Component tabConrol = getTabComponentAtReflect(src);
+        String label = getTitleAt(src);
+        Icon icon = getIconAt(src);
+        Icon iconDis = getDisabledIconAt(src);
+        String tooltip = getToolTipTextAt(src);
+        boolean enabled = isEnabledAt(src);
+        int keycode = getMnemonicAt(src);
+        int mnemonicLoc = getDisplayedMnemonicIndexAt(src);
+        Color fg = getForegroundAt(src);
+        Color bg = getBackgroundAt(src);
+
+        // Remove the tab
+        remove(src);
+
+        // Add a new tab
+        insertTab(label, icon, comp, tooltip, dst);
+
+        // Restore all properties
+        setDisabledIconAt(dst, iconDis);
+        setEnabledAt(dst, enabled);
+        setMnemonicAt(dst, keycode);
+        setDisplayedMnemonicIndexAt(dst, mnemonicLoc);
+        setForegroundAt(dst, fg);
+        setBackgroundAt(dst, bg);
+        setTabComponentAtReflect(dst, tabConrol);
+    }
+
     /**
      * Came from here:
      * http://forum.java.sun.com/thread.jspa?threadID=263180&messageID=3253894
      */
-    public class TabMoveHandler extends MouseAdapter implements MouseMotionListener {
+    public class TabMoveHandler implements MouseMotionListener, MouseListener {
         int startIndex = -1;
         private int currentIndex = -1;
 
@@ -245,8 +288,7 @@ public class BetterTabbedPane extends JTabbedPane {
         */
         public void mousePressed(MouseEvent e) {
             if (!e.isPopupTrigger()) {
-                JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
-                startIndex = tabbedPane.indexAtLocation(e.getX(), e.getY());
+                startIndex = indexAtLocation(e.getX(), e.getY());
             }
             currentIndex = -1;
         }
@@ -255,74 +297,34 @@ public class BetterTabbedPane extends JTabbedPane {
         * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
         */
         public void mouseReleased(MouseEvent e) {
-            BetterTabbedPane tabbedPane = (BetterTabbedPane) e.getSource();
             if (!e.isPopupTrigger()) {
-                int endIndex = tabbedPane.indexAtLocation(e.getX(), e.getY());
+                int endIndex = indexAtLocation(e.getX(), e.getY());
 
                 if (startIndex != -1 && endIndex != -1 && startIndex != endIndex) {
-                    moveTab(tabbedPane, startIndex, endIndex);
-                    tabbedPane.setSelectedIndex(endIndex);
+                    moveTab(startIndex, endIndex);
+                    setSelectedIndex(endIndex);
 
-                    // ONLY OMS SPECIFIC LINE
-//                    OMSBasePanel.getInstance().saveUISettings();
                 }
             }
             startIndex = -1;
-            clearRectangle(tabbedPane);
+            clearRectangle(BetterTabbedPane.this);
             currentIndex = -1;
         }
-
-        /**
-         * @param pane tabbedPane
-         * @param src source tab index
-         * @param dst destination tab index
-         */
-        private void moveTab(BetterTabbedPane pane, int src, int dst) {
-            // Get all the properties
-            Component comp = pane.getComponentAt(src);
-            Component tabConrol = pane.getTabComponentAtReflect(src);
-            String label = pane.getTitleAt(src);
-            Icon icon = pane.getIconAt(src);
-            Icon iconDis = pane.getDisabledIconAt(src);
-            String tooltip = pane.getToolTipTextAt(src);
-            boolean enabled = pane.isEnabledAt(src);
-            int keycode = pane.getMnemonicAt(src);
-            int mnemonicLoc = pane.getDisplayedMnemonicIndexAt(src);
-            Color fg = pane.getForegroundAt(src);
-            Color bg = pane.getBackgroundAt(src);
-
-            // Remove the tab
-            pane.remove(src);
-
-            // Add a new tab
-            pane.insertTab(label, icon, comp, tooltip, dst);
-
-            // Restore all properties
-            pane.setDisabledIconAt(dst, iconDis);
-            pane.setEnabledAt(dst, enabled);
-            pane.setMnemonicAt(dst, keycode);
-            pane.setDisplayedMnemonicIndexAt(dst, mnemonicLoc);
-            pane.setForegroundAt(dst, fg);
-            pane.setBackgroundAt(dst, bg);
-            pane.setTabComponentAtReflect(dst, tabConrol);
-        }
-
 
         /* (non-Javadoc)
         * @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
         */
         public void mouseDragged(MouseEvent e) {
             if (startIndex != -1) {
-                JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
-                int index = tabbedPane.indexAtLocation(e.getX(), e.getY());
+                int index = indexAtLocation(e.getX(), e.getY());
 
                 if (index != -1 && index != currentIndex) { // moved over another tab
-                    clearRectangle(tabbedPane);
+                    clearRectangle(BetterTabbedPane.this);
                     currentIndex = index;
                 }
 
                 if (currentIndex != -1 && currentIndex != startIndex) {
-                    drawRectangle(tabbedPane);
+                    drawRectangle(BetterTabbedPane.this);
                 }
             }
         }
@@ -347,143 +349,25 @@ public class BetterTabbedPane extends JTabbedPane {
         /* (non-Javadoc)
         * @see java.awt.event.MouseMotionListener#mouseMoved(java.awt.event.MouseEvent)
         */
-        public void mouseMoved(MouseEvent e) {
-        }
+        public void mouseMoved(MouseEvent e) { }
+
+        /**
+         * Invoked when the mouse button has been clicked (pressed
+         * and released) on a component.
+         */
+        public void mouseClicked(MouseEvent e) { }
+
+        /**
+         * Invoked when the mouse enters a component.
+         */
+        public void mouseEntered(MouseEvent e) { }
 
         /* (non-Javadoc)
         * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
         */
         public void mouseExited(MouseEvent e) {
-            clearRectangle((JTabbedPane) e.getSource());
+            clearRectangle(BetterTabbedPane.this);
             currentIndex = -1;
         }
     }
-
-    // ******************************************************* ALTERNATIVE DND
-
-/*
-    public BetterTabbedPane()
-    {
-        this(TOP);
-    }
-
-    public XTabbedPane(int tabPlacement)
-    {
-        this(tabPlacement, WRAP_TAB_LAYOUT);
-    }
-
-    public XTabbedPane(int tabPlacement, int tabLayoutPolicy)
-    {
-        super(tabPlacement, tabLayoutPolicy);
-
-    }
-*/
-    private Cursor defaultCursor, handCursor;
-
-    private void dragTab(int dragIndex, int tabIndex)
-    {
-        String title = getTitleAt(dragIndex);
-        Icon icon = getIconAt(dragIndex);
-        Component component = getComponentAt(dragIndex);
-        String toolTipText = getToolTipTextAt(dragIndex);
-
-        Color background = getBackgroundAt(dragIndex);
-        Color foreground = getForegroundAt(dragIndex);
-        Icon disabledIcon = getDisabledIconAt(dragIndex);
-        int mnemonic = getMnemonicAt(dragIndex);
-        int displayedMnemonicIndex = getDisplayedMnemonicIndexAt(dragIndex);
-        boolean enabled = isEnabledAt(dragIndex);
-
-        remove(dragIndex);
-        insertTab(title, icon, component, toolTipText, tabIndex);
-
-        setBackgroundAt(tabIndex, background);
-        setForegroundAt(tabIndex, foreground);
-        setDisabledIconAt(tabIndex, disabledIcon);
-        setMnemonicAt(tabIndex, mnemonic);
-        setDisplayedMnemonicIndexAt(tabIndex, displayedMnemonicIndex);
-        setEnabledAt(tabIndex, enabled);
-    }
-
-    private Cursor getDefaultCursor()
-    {
-        if (defaultCursor == null)
-        {
-            defaultCursor = Cursor.getDefaultCursor();
-        }
-
-        return defaultCursor;
-    }
-
-    private Cursor getHandCursor()
-    {
-        if (handCursor == null)
-        {
-            handCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-        }
-
-        return handCursor;
-    }
-
-    private int getTabIndex(int x, int y)
-    {
-        return getUI().tabForCoordinate(this, x, y);
-    }
-
-    private void maybeSetDefaultCursor()
-    {
-        Cursor cursor = getDefaultCursor();
-
-        if (getCursor() != cursor)
-        {
-            setCursor(cursor);
-        }
-    }
-
-    private void maybeSetHandCursor()
-    {
-        Cursor cursor = getHandCursor();
-
-        if (getCursor() != cursor)
-        {
-            setCursor(cursor);
-        }
-    }
-    class MouseHandler extends MouseInputAdapter {
-
-        public void mouseDragged(MouseEvent e) {
-            if (dragIndex != -1) {
-                if (getTabIndex(e.getX(), e.getY()) != -1) {
-                    maybeSetHandCursor();
-                } else {
-                    maybeSetDefaultCursor();
-                }
-            }
-        }
-
-        public void mousePressed(MouseEvent e) {
-            if (!e.isPopupTrigger() && e.getButton() == MouseEvent.BUTTON1) {
-                int tabIndex = getTabIndex(e.getX(), e.getY());
-                if (tabIndex != -1) {
-                    dragIndex = tabIndex;
-                }
-            }
-        }
-
-        public void mouseReleased(MouseEvent e) {
-            if (!e.isPopupTrigger() && e.getButton() == MouseEvent.BUTTON1) {
-                if (dragIndex != -1) {
-                    int tabIndex = getTabIndex(e.getX(), e.getY());
-                    if (tabIndex != -1 && tabIndex != dragIndex) {
-                        dragTab(dragIndex, tabIndex);
-                        setSelectedIndex(tabIndex);
-                    }
-                    dragIndex = -1;
-                    maybeSetDefaultCursor();
-                }
-            }
-        }
-
-        private int dragIndex = -1;
-    } // Mouse class
 } // class

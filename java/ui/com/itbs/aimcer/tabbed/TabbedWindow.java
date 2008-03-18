@@ -22,6 +22,8 @@ import java.beans.VetoableChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -61,7 +63,7 @@ public class TabbedWindow {
         public void changedUpdate(DocumentEvent e) { count(e); }
     };
     DocumentListener documentListenerJazzy;
-    private final AbstractAction ACTION_SEND, ACTION_SEND_ALL, ACTION_ADD, ACTION_LOG, ACTION_PAGE, ACTION_EMAIL;
+    private final AbstractAction ACTION_SEND, ACTION_SEND_ALL, ACTION_ADD, ACTION_LOG, ACTION_PAGE, ACTION_EMAIL, ACTION_SORT;
 
     public static TabbedWindow getINSTANCE() {
         return INSTANCE;
@@ -238,6 +240,11 @@ public class TabbedWindow {
                 }
             }
         });
+        ACTION_SORT = new ActionAdapter("Sort", "Sort the tabs by name", new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                sortTabs();
+            }
+        });
 
         tabbedPane = new BetterTabbedPane();
         frame.getContentPane().add(tabbedPane);
@@ -406,7 +413,10 @@ public class TabbedWindow {
         panel.add(typing);
 
 
-
+        BetterButton btnSort = new BetterButton(ACTION_SORT);
+        btnSort.setFont(btnSort.getFont().deriveFont(btnSort.getFont().getSize()-1));
+        
+        panel.add(btnSort);
         panel.add(new BetterButton(ACTION_EMAIL));
         panel.add(new BetterButton(ACTION_PAGE));
         panel.add(new BetterButton(ACTION_LOG));
@@ -594,10 +604,6 @@ public class TabbedWindow {
             }
         }
 
-        public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
-            //old deprecated method
-        }
-
         public void statusChanged(Connection connection) {
             tabbedPane.lock();
             try
@@ -720,6 +726,43 @@ public class TabbedWindow {
         }
         return null;
     }
+
+    public void sortTabs() {
+        GUIUtils.runOnAWT(new Runnable() {
+            public void run() {
+                boolean locked = tabbedPane.tryLock();
+                if (locked) {
+                    try {
+                        // loop to control number of passes
+                        Component[] components = tabbedPane.getComponents();
+                        Arrays.sort(components, new Comparator<Component>() {
+                            public int compare(Component o1, Component o2) {
+                                if (o1 instanceof TabItself && o2 instanceof TabItself) {
+                                    TabItself component1 = (TabItself) o1;
+                                    TabItself component2 = (TabItself) o2;
+                                    return component1.getContact().getDisplayName().compareTo(component2.getContact().getDisplayName());
+                                }
+                                return 0;
+                            }
+                        });
+                        tabbedPane.removeAll();
+                        for (Component component3 : components) {
+                            if (component3 instanceof TabItself) {
+                                TabItself component = (TabItself) component3;
+                                tabbedPane.addTab("", component);
+                                component.addTabComponent();
+                                component.setLabelFromStatus();
+                            }
+                        } // end loop to control passes
+                    } finally {
+                        tabbedPane.unlock();
+                    }
+                } else { // didn't lock!
+                    log.severe("Failed to lock in a GUI thread!!!!");
+                }
+            }
+        });
+    } // sortTabs
 
     public ConnectionEventListener getConnectionEventListener() {
         return connectionEventListener;
