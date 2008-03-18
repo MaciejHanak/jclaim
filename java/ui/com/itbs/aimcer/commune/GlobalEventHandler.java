@@ -41,10 +41,6 @@ public class GlobalEventHandler implements ConnectionEventListener {
     public GlobalEventHandler() {
     }
 
-    public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
-        //todo erase
-    }
-
     public void statusChanged(Connection connection, Contact contact, Status oldStatus) {
         if (contact.getStatus().isOnline() && !contact.getStatus().isAway() && contact instanceof ContactWrapper) {
             ContactWrapper cw = (ContactWrapper) contact;
