@@ -58,7 +58,6 @@ public class MessageForwarder implements ConnectionEventListener {
     public void connectionEstablished(Connection connection) {
     }
 
-    public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) { }
     public void statusChanged(Connection connection, Contact contact, Status status) { }
 
     public void statusChanged(Connection connection) {
