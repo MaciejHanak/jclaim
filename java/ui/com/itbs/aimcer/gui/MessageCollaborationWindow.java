@@ -142,9 +142,6 @@ public class MessageCollaborationWindow  extends MessageWindowBase implements Co
     public void statusChanged(Connection connection) {
     }
 
-    public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
-    }
-
     public void statusChanged(Connection connection, Contact contact, Status oldStatus) {
     }
 

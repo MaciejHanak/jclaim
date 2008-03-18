@@ -650,16 +650,6 @@ public class MessageWindow extends MessageWindowBase {
         /**
          * Nameable's status changed.
          *
-         * @param contact  contact
-         * @param idleMins how long the contact is idle for
-         */
-        public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
-            // todo erase me!
-        }
-
-        /**
-         * Nameable's status changed.
-         *
          * @param connection connection
          * @param contact    contact with updated status
          * @param oldStatus  status of the contact before this event happened.

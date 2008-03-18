@@ -297,7 +297,6 @@ public class MenuManager {
         public void typingNotificationReceived(MessageSupport connection, Nameable contact) { }
         
         public void statusChanged(Connection connection, Contact contact, Status status) {  }
-        public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {  }
 
         public void statusChanged(Connection connection) {
             away.setSelected(connection.isAway());

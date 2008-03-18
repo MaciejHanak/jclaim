@@ -117,7 +117,6 @@ public class WindowManager {
                 public void connectionFailed(Connection connection, String message) { }
                 public void connectionEstablished(Connection connection) { }
                 public void statusChanged(Connection connection, Contact contact, Status oldStatus) { }
-                public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) { }
                 public void statusChanged(Connection connection) { }
                 public void pictureReceived(IconSupport connection, Contact contact) { }
                 public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) { }
