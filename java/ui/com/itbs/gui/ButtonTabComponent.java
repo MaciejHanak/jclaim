@@ -29,12 +29,35 @@ public class ButtonTabComponent extends JPanel {
         setOpaque(false);
 
         label = new JLabel();
-        label.addMouseListener(new MouseAdapter() {
-            /**
-             * {@inheritDoc}
-             */
+        label.addMouseMotionListener(new MouseMotionListener() {
+            public void mouseDragged(MouseEvent e) {
+                dispatchToParent(e);
+            }
+
+            public void mouseMoved(MouseEvent e) {
+                dispatchToParent(e);
+            }
+        });
+        label.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                pane.setSelectedComponent(panel);
+                dispatchToParent(e);
+//                pane.setSelectedComponent(panel);
+            }
+
+            public void mousePressed(MouseEvent e) {
+                dispatchToParent(e);
+            }
+
+            public void mouseReleased(MouseEvent e) {
+                dispatchToParent(e);
+            }
+
+            public void mouseEntered(MouseEvent e) {
+                dispatchToParent(e);
+            }
+
+            public void mouseExited(MouseEvent e) {
+                dispatchToParent(e);
             }
         });
         add(label);
@@ -45,8 +68,28 @@ public class ButtonTabComponent extends JPanel {
         add(button);
         //add more space to the top of the component
         setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
-    }
+    } // Constructor
 
+    Point point; int comp_x, comp_y; // for component with respect to this machine
+    public void dispatchToParent(MouseEvent e) {
+        point=((JComponent)e.getSource()).getLocation();
+        //System.out.println("Dispatching: " + e.getX() + " " + e.getY());
+        //System.out.println("Component position: " + ((JComponent)(e.getSource())).getLocation());
+        comp_x=(int)point.getX(); comp_y=(int)point.getY();
+        comp_x+=this.getX(); comp_y+=this.getY();
+        e.translatePoint(comp_x, comp_y);
+        dispatchEvent(e);
+        dispatchToParentsParent(e);
+    }
+    public void dispatchToParentsParent(MouseEvent e) {
+        point=((JComponent)e.getSource()).getParent().getLocation();
+        //System.out.println("Dispatching: " + e.getX() + " " + e.getY());
+        //System.out.println("Component position: " + ((JComponent)(e.getSource())).getLocation());
+        comp_x=(int)point.getX(); comp_y=(int)point.getY();
+        comp_x+=this.getX(); comp_y+=this.getY();
+        e.translatePoint(comp_x, comp_y);
+        getParent().getParent().dispatchEvent(e);
+    }
 
     public JLabel getLabel() {
         return label;
