@@ -74,24 +74,24 @@ public class UTestContactListModel extends UTestFrameTest {
                 group.add(b3);
                 group.add(b4);
                 for (int i=0; i<REPETITIONS; i++) {
-                    dataModel.statusChanged(connection, b1, false, false, 1);
+                    dataModel.statusChanged(connection, b1, b1.getStatus());
 //                    yield();
-                    dataModel.statusChanged(connection, b2, false, false, 1);
-//                    yield();
-
-                    dataModel.statusChanged(connection, b1, false, false, 1);
-//                    yield();
-                    dataModel.statusChanged(connection, b2, true, false, 1);
+                    dataModel.statusChanged(connection, b2, b1.getStatus());
 //                    yield();
 
-                    dataModel.statusChanged(connection, b1, true, false, 1);
+                    dataModel.statusChanged(connection, b1, b1.getStatus());
 //                    yield();
-                    dataModel.statusChanged(connection, b2, false, false, 1);
+                    dataModel.statusChanged(connection, b2, b1.getStatus());
 //                    yield();
 
-                    dataModel.statusChanged(connection, b1, true, false, 1);
+                    dataModel.statusChanged(connection, b1, b1.getStatus());
 //                    yield();
-                    dataModel.statusChanged(connection, b2, true, false, 1);
+                    dataModel.statusChanged(connection, b2, b1.getStatus());
+//                    yield();
+
+                    dataModel.statusChanged(connection, b1, b1.getStatus());
+//                    yield();
+                    dataModel.statusChanged(connection, b2, b1.getStatus());
 //                    yield();
                 }
             } catch (Exception e) {
