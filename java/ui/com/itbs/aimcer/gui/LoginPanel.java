@@ -242,10 +242,6 @@ public final class LoginPanel extends JDialog implements ActionListener {
             setControlsEnabled(true);
         }
 
-        public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) {
-            connection.removeEventListener(this);     // todo remove whole method
-        }
-        
         public void statusChanged(Connection connection, Contact contact, Status oldStatus) {
             connection.removeEventListener(this);
         }

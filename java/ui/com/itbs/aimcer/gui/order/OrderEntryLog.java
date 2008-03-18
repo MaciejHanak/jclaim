@@ -480,7 +480,6 @@ public class OrderEntryLog implements ConnectionEventListener {
     public void connectionFailed(Connection connection, String message) { }
     public void connectionEstablished(Connection connection) { }
     public void statusChanged(Connection connection, Contact contact, Status oldStatus) { }
-    public void statusChanged(Connection connection, Contact contact, boolean online, boolean away, int idleMins) { }
     public void statusChanged(Connection connection) { }
     public boolean contactRequestReceived(final String user, final MessageSupport connection) {  return true; }
 
