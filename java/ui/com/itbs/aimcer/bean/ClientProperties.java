@@ -80,7 +80,7 @@ public class ClientProperties implements ConnectionProperties {
     private boolean useAlert = false;
     private boolean hideOffline = true;
     private boolean showEmptyGroups = true;
-    private boolean easyOpen = true;
+    private boolean easyOpen = false;
     private boolean colorMessages = true;
     private boolean showCharCounter = true;
     private boolean showPictures = true;
@@ -90,7 +90,7 @@ public class ClientProperties implements ConnectionProperties {
     private String timeFormat = "(hh:mm)";
     private int beepDelay = DEFAULT_BEEP_DELAY;
     /** Forces a window to front when message arrives */
-    private boolean forceFront = true;
+    private boolean forceFront = false;
     private boolean ignoreSystemMessages = false;
     private int fontSize = DEFAULT_FONT_SIZE;
     private ReadableRectangle windowPosition;
@@ -108,7 +108,7 @@ public class ClientProperties implements ConnectionProperties {
     private boolean spellCheckAllowSlang = true;
     private int lookAndFeelIndex = -1;
     /** Default interface.  0 - default, 1 - tabbed windows */
-    private int interfaceIndex = 0;
+    private int interfaceIndex = 1;
     private boolean serverEnabled = false;
     private int serverPort = 2000;
     private boolean useTray = true;
