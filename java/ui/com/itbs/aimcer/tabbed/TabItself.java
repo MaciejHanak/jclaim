@@ -73,6 +73,8 @@ public class TabItself extends JPanel {
         ftHandler = new MessageWindow.FileTransferHandler(contactWrapper); // do this before using any components.
         recalculateAttributes();
         splitHistoryTextPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, getHistory(), getMessage());
+        splitHistoryTextPane.setOneTouchExpandable(true);
+        splitHistoryTextPane.setResizeWeight(1);
         if (contactWrapper.getPreferences().getVerticalSeparation() == -1)
             splitHistoryTextPane.setDividerLocation((int)(tabbedPane.getHeight() * DEFAULT_SEPARATION));
         else
@@ -82,6 +84,8 @@ public class TabItself extends JPanel {
         PersonalInfoPanel personalInfo = new PersonalInfoPanel(contactWrapper);
         personalInfo.setVisible(true); // always visible for the tabbed interface
         splitNotes = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, temp, personalInfo);
+        splitNotes.setOneTouchExpandable(true);
+        splitNotes.setResizeWeight(1);
         if (contactWrapper.getPreferences().getHorizontalSeparation() == -1) {
             splitNotes.setDividerLocation((int) (tabbedPane.getWidth() * DEFAULT_SEPARATION));
         } else {

@@ -452,6 +452,8 @@ public class MessageWindow extends MessageWindowBase {
      */
     protected JComponent getTextComponents() {
         splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, getHistory(), getMessage());
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setResizeWeight(1);
         addDNDSupport(splitPane);
         if (contactWrapper.getPreferences().getVerticalSeparation() == -1)
             splitPane.setDividerLocation((int)(frame.getHeight() * DEFAULT_SEPARATION));
