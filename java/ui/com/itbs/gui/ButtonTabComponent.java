@@ -53,10 +53,11 @@ public class ButtonTabComponent extends JPanel {
             }
 
             public void mouseEntered(MouseEvent e) {
-                dispatchToParent(e);
+                getParent().getParent().dispatchEvent(new MouseEvent(((Component) e.getSource()), e.getID(), e.getWhen(), e.getModifiers(), e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(), e.getButton()));            
             }
 
             public void mouseExited(MouseEvent e) {
+//                dispatchEvent(e); 
                 dispatchToParent(e);
             }
         });
@@ -70,25 +71,21 @@ public class ButtonTabComponent extends JPanel {
         setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
     } // Constructor
 
-    Point point; int comp_x, comp_y; // for component with respect to this machine
     public void dispatchToParent(MouseEvent e) {
+        Point point; int comp_x, comp_y;
         point=((JComponent)e.getSource()).getLocation();
         //System.out.println("Dispatching: " + e.getX() + " " + e.getY());
         //System.out.println("Component position: " + ((JComponent)(e.getSource())).getLocation());
         comp_x=(int)point.getX(); comp_y=(int)point.getY();
         comp_x+=this.getX(); comp_y+=this.getY();
         e.translatePoint(comp_x, comp_y);
-        dispatchEvent(e);
-        dispatchToParentsParent(e);
+        // now don't use up the event!
+        getParent().dispatchEvent(new MouseEvent(((Component) e.getSource()), e.getID(), e.getWhen(), e.getModifiers(), e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(), e.getButton()));
+        getParent().getParent().dispatchEvent(new MouseEvent(((Component) e.getSource()), e.getID(), e.getWhen(), e.getModifiers(), e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(), e.getButton()));
     }
+
     public void dispatchToParentsParent(MouseEvent e) {
-        point=((JComponent)e.getSource()).getParent().getLocation();
-        //System.out.println("Dispatching: " + e.getX() + " " + e.getY());
-        //System.out.println("Component position: " + ((JComponent)(e.getSource())).getLocation());
-        comp_x=(int)point.getX(); comp_y=(int)point.getY();
-        comp_x+=this.getX(); comp_y+=this.getY();
-        e.translatePoint(comp_x, comp_y);
-        getParent().getParent().dispatchEvent(e);
+        // todo remove
     }
 
     public JLabel getLabel() {

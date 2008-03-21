@@ -249,14 +249,18 @@ public class TabItself extends JPanel {
                 displayComponent.setFont(ContactWrapper.NORM);
                 displayComponent.setForeground(contact.getStatus().isAway() ? ContactWrapper.AWAY : ContactWrapper.PRESENT);
                 if (contact.getConnection() instanceof MessageSupport) {
-                    displayComponent.setToolTipText(contact.getName() + " on " + contact.getConnection().getServiceName() + " as " + ((MessageSupport) contact.getConnection()).getUserName() + (contact.getStatus().isAway() ? (" Idle for " + contact.getStatus().getIdleTime() + "m") : ""));
+                    final String temp = contact.getName() + " on " + contact.getConnection().getServiceName() + " as " + ((MessageSupport) contact.getConnection()).getUserName() + (contact.getStatus().isAway() ? (" Idle for " + contact.getStatus().getIdleTime() + "m") : "");
+                    tabControl.setToolTipText(temp);
+                    displayComponent.setToolTipText(temp);
                 }
             } else {
                 displayComponent.setText(contact.getDisplayName() + (contact.getStatus().isOnline()?" (Online)":" (Offline)"));
                 displayComponent.setIcon(null);
                 displayComponent.setFont(ContactWrapper.OFF);
                 displayComponent.setForeground(ContactWrapper.AWAY);
-                displayComponent.setToolTipText("Last Seen: " + (contact.getPreferences().getLastConnected()==null?"Not yet.":contact.getPreferences().getLastConnected())); // turn off tooltip
+                final String temp = "Last Seen on " + contact.getConnection().getServiceName() + (contact.getPreferences().getLastConnected() == null ? " Not yet." : (" " + contact.getPreferences().getLastConnected()));
+                tabControl.setToolTipText(temp); // turn off tooltip
+                displayComponent.setToolTipText(temp); // turn off tooltip
             }
         }
     }
