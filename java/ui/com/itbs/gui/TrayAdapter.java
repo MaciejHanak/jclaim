@@ -54,7 +54,7 @@ public class TrayAdapter {
             alerter = Alerter.newInstance();
             log.fine("Alerter support: " + alerter.isAlertSupported());
         } catch (Throwable e) {
-            log.log(Level.SEVERE, "Failed to load alerter", e);
+            log.log(Level.SEVERE, "Failed to load alerter. See if jawt.dll is in library path", e);
         }
 
     }
