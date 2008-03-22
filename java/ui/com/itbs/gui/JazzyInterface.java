@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 /**
  * Provides a set of utilities to provide a rich spell checking support to an app.
  *
+ * Each instance is huge, hence this is a singleton.
  * @author Alex Rass on Nov 7, 2004
  *         Based on examples from Robert Gustavsson (robert@lindesign.se)
  */
@@ -177,6 +178,7 @@ public class JazzyInterface {
 
     /**
      * Set user dictionary (used when a word is added)
+     * @param dictionary dictionary to use
      */
     public void setUserDictionary(SpellDictionary dictionary) {
         if (spellCheck != null)
@@ -185,12 +187,24 @@ public class JazzyInterface {
 
 
     // --------------------------   HANDLING of SPELLING ------------------------------------------
+    static KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, Event.CTRL_MASK, true);
+    
+    public synchronized void removeSpellCheckComponent(final JTextComponent textComp, DocumentListener docListener) {
+        if (textComp==null) {
+            return;
+        }
 
-    public synchronized void addSpellCheckComponent(final JTextComponent textComp) {
+        textComp.unregisterKeyboardAction(keystroke);
+
+        if (docListener != null) {
+            textComp.getDocument().removeDocumentListener(docListener);
+        }
+    }
+
+    public synchronized DocumentListener  addSpellCheckComponent(final JTextComponent textComp) {
         SpellCheckingDocumentListener spellCheckingDocumentListener = new SpellCheckingDocumentListener(textComp);
         textComp.getDocument().addDocumentListener(spellCheckingDocumentListener);
 
-        KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, Event.CTRL_MASK, true);
         textComp.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JTextComponent tc = (JTextComponent) e.getSource();
@@ -215,6 +229,7 @@ public class JazzyInterface {
             }
             BetterTextField.setPopupMenu(menu);
         }
+        return spellCheckingDocumentListener;
     }
 
     private class SpellCheckingDocumentListener implements DocumentListener {
@@ -250,19 +265,21 @@ public class JazzyInterface {
         }
 
         public void insertUpdate(DocumentEvent e) {
-            check();
+            check(e);
         }
 
         public void removeUpdate(DocumentEvent e) {
-            check();
+            check(e);
         }
 
         public void changedUpdate(DocumentEvent e) {
-            check();
+            check(e);
         }
 
-        public void check() {
-            flagThread.mark();
+        public void check(DocumentEvent e) {
+            if (e.getDocument().getLength()>0) { // save effort for empty docs.
+                flagThread.mark();
+            }
         }
 
         public void spellingError(final SpellCheckEvent event) {
