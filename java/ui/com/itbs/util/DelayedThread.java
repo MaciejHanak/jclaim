@@ -20,6 +20,7 @@
 
 package com.itbs.util;
 
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
 /**
@@ -59,16 +60,21 @@ import java.util.logging.Logger;
  */
 public class DelayedThread extends Thread {
     private Logger logger = Logger.getLogger(DelayedThread.class.getName());
+    /**
+     * Determines if we should run the block b/c someone said "mark!".
+     * False if no one has initiated or if the block already ran.
+     */
     private SyncBoolean flag = new SyncBoolean(false);
     private final long delay;
     /** Object on which to sync. */
     protected final Object notifyObject = new Object();
+    private final ReentrantLock lock = new ReentrantLock();
 
     /** Used to control the loop. */
     private boolean internalCheck = true;
 
     /** Snippet of code to run. */
-    private Runnable runThisFirst, runThisLast;
+    protected Runnable runThisFirst, runThisLast;
 
     /** Parent window. */
     private StillAliveMonitor stillAliveMonitor;
@@ -86,12 +92,13 @@ public class DelayedThread extends Thread {
          */
         boolean isAlive();
     }
+    
     /**
      * Constructor.
      * @param threadName      Name of the thread
      * @param delayMillis     delay in milliseconds
      * @param aliveMonitor    allows to see when it's time to die (window is destroyed etc.)
-     * @param snippetStart    code to run before.  nulls allowed
+     * @param snippetStart    code to run before.  nulls allowed. will run on each mark().
      * @param snippetEnd      code to run after @NotNull
      */
     public DelayedThread(String threadName, long delayMillis, StillAliveMonitor aliveMonitor, Runnable snippetStart, Runnable snippetEnd) {
@@ -111,12 +118,18 @@ public class DelayedThread extends Thread {
      */
     public void mark() {
         clock = System.currentTimeMillis(); // make sure it d/n start w/o us running first code
-        if (runThisFirst != null)
-            runThisFirst.run();
-        flag.setValue(true);
-        clock = System.currentTimeMillis();
-        synchronized(notifyObject) { // wake it up
-            notifyObject.notify();
+        lock.lock();
+        try {
+            if (runThisFirst != null)
+                runThisFirst.run();
+//            runThisFirst = null; // done
+            flag.setValue(true);
+            clock = System.currentTimeMillis();
+            synchronized(notifyObject) { // wake it up
+                notifyObject.notify();
+            }
+        } finally {
+            lock.unlock();
         }
         Thread.yield();
     }
@@ -126,16 +139,22 @@ public class DelayedThread extends Thread {
      */
     public void stopProcessing() {
         internalCheck = false;
-        synchronized(notifyObject) { // wake it up
-            notifyObject.notify();
+        lock.lock();
+        try {
+            synchronized(notifyObject) { // wake it up
+                notifyObject.notify();
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     public void run() {
+
         try {
 //            sleep(delay); // this way the window gets created.
             while (internalCheck && stillAliveMonitor.isAlive()) {
-                if (!flag.value) {
+                if (!flag.value) { // if nothing to do - then wait for notify
                     logger.finest("Waiting indefinitely.");
                     synchronized(notifyObject) { // wake it up
                         notifyObject.wait();
@@ -145,18 +164,26 @@ public class DelayedThread extends Thread {
                 Thread.sleep(newDelay>0?newDelay:100); // negative - we are cycling through
                 logger.finest("Waited for " + newDelay);
                 //                     old clock + del < now
-                if (flag.isValue() && (clock + delay <= System.currentTimeMillis())) {
-                    flag.setValue(false);
-                    runThisLast.run();
-                } else {
-                    logger.finest("Failed with the if for. now flag:" + flag
-                            + " clock: " + (clock + delay < System.currentTimeMillis())
-                            + " clock details: " + clock + " " + delay + System.currentTimeMillis());
-                }
-            } // while
+                    if (internalCheck && flag.isValue() && (clock + delay <= System.currentTimeMillis())) {
+                        flag.setValue(false);
+                        runThisLast.run();
+                    } else {
+                        logger.finest("No run for now. flag:" + flag
+                                + " clock: " + (clock + delay < System.currentTimeMillis())
+                                + " clock details: " + clock + " " + delay + " " + System.currentTimeMillis());
+                    }
+                } // while
         } catch (InterruptedException e) {
             // don't care
         }
 //        log.info("Delayed Thread Finished work.");
+    }
+
+    public Runnable getRunThisFirst() {
+        return runThisFirst;
+    }
+
+    public Runnable getRunThisLast() {
+        return runThisLast;
     }
 } // class FlagThread
