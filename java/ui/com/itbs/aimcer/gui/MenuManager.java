@@ -414,7 +414,7 @@ public class MenuManager {
                 Main.exit();
             } else if (COMMAND_GREP.equals(command)) {
                 new Grep();
-            } else if (COMMAND_GREP.equals(command)) {
+            } else if (COMMAND_IMPORT.equals(command)) {
                 LogsPidgin.presentItself();
             } else if (COMMAND_SETTINGS.equals(command)) {
                 final JDialog properties = new PropertiesDialog(Main.getFrame());
