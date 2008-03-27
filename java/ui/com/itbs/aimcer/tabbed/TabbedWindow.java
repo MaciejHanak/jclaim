@@ -84,6 +84,14 @@ public class TabbedWindow {
                 System.gc();
                 frame.setVisible(false);
             }
+
+            /**
+             * Do window init stuff here
+             * @param e event
+             */
+            public void windowOpened(WindowEvent e) {
+                delayedShow.start();
+            }
         });
 
         ACTION_SEND = new ActionAdapter("Send", "Send message (" + (ClientProperties.INSTANCE.isEnterSends()?"":"Ctrl-") + "Enter )",
@@ -298,22 +306,6 @@ public class TabbedWindow {
                 }
             }
         });
-
-        tabbedPane.addComponentListener(new ComponentAdapter() {
-            /**
-             * Invoked when the component has been made visible.
-             */
-            public void componentShown(ComponentEvent e) {
-                e = null;
-            }
-
-            /**
-     * Invoked when the component has been made invisible.
-             */
-            public void componentHidden(ComponentEvent e) {
-                e = null;
-            }
-        });
     }
 
     /**
@@ -372,6 +364,7 @@ public class TabbedWindow {
         charCount.setText("" + tab.textPane.getDocument().getLength());
         tab.textPane.getDocument().addDocumentListener(documentListenerForCounter);
         tab.textPane.setAction(ACTION_SEND);
+        delayedShow.getRunThisLast().run(); // clears typing flag
         // All GUI runtime stuff here:
         GUIUtils.runOnAWT(new Runnable() {
             public void run() {
@@ -426,7 +419,7 @@ public class TabbedWindow {
                 panel.add(new BetterButton(ACTION_ORDER));
 */
 
-        panel.add(new BetterButton(ACTION_ADD)); // todo enable only when needed.
+        panel.add(new BetterButton(ACTION_ADD));
 
         // see if we already added this one some place and if so, we don't need the add button
 
@@ -501,6 +494,20 @@ public class TabbedWindow {
         public void connectionInitiated(Connection connection) {
             //TODO set tabs gray, but not disabled
         }
+        public void connectionLost(Connection connection) {
+            notifyAllUsers("Lost connection to " + connection.getServiceName(), connection);
+            //TODO set tabs gray, but not disabled
+        }
+
+        public void connectionFailed(Connection connection, String message) {
+            notifyAllUsers("Lost has failed: " + connection.getServiceName(), connection);
+            //TODO set tabs gray, but not disabled
+        }
+
+        public void connectionEstablished(Connection connection) {
+            notifyAllUsers("Connection established to " + connection.getServiceName(), connection);
+            //TODO un-set tabs from gray
+        }
 
         public boolean messageReceived(MessageSupport connection, Message message) throws Exception {
             if (connection.getSupportAccount()!=null && !message.isOutgoing() && message.isAutoResponse()                        // incoming autoresponse
@@ -542,18 +549,6 @@ public class TabbedWindow {
                     delayedShow.mark();
                 }
             }
-        }
-
-        public void connectionLost(Connection connection) {
-            notifyAllUsers("Lost connection to " + connection.getServiceName(), connection);
-        }
-
-        public void connectionFailed(Connection connection, String message) {
-            notifyAllUsers("Lost has failed: " + connection.getServiceName(), connection);
-        }
-
-        public void connectionEstablished(Connection connection) {
-            notifyAllUsers("Connection established to " + connection.getServiceName(), connection);
         }
 
         private void notifyUser(String message, Contact contact) {
