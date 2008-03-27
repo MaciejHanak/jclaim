@@ -62,7 +62,8 @@ public class ClientProperties implements ConnectionProperties {
         "64.12.163.175"
     };
 */
-    private String logPath=new File("c:\\AimLogs").exists()?"c:\\AimLogs":"AimLogs";
+
+    private String logPath=new File("c:\\AimLogs").exists()?"c:\\AimLogs":(System.getProperty("user.home")+File.separatorChar + "JClaimLogs");
     private static final String DEFAULT_PROXY_HOST = ""; // "All the messages are being logged."
     private static final int DEFAULT_PROXY_PORT = 8080;
     private static final String DISCLAIMER_DEFAULT=""; // "All the messages are being logged."
