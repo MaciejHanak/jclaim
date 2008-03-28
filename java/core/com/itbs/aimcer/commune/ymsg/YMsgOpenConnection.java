@@ -106,32 +106,17 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
             if (session!=null && session.getSessionStatus()== SessionState.LOGGED_ON) {
                 // -----Update identities list
 
-                Set<YahooGroup> yg = session.getGroups();
-                for (YahooGroup aYg : yg) {
-                    Group group = getGroupFactory().create(aYg.getName());
-                    Set<YahooUser> v = aYg.getUsers();
-                    for (YahooUser yu:v) {
-                        Contact contact = getContactFactory().create(yu.getId(), YMsgOpenConnection.this);
-                        contact.getStatus().setOnline(yu.isLoggedIn());
-                        contact.getStatus().setAway(isAway(yu));
-//                        contact.setDisplayName(yu.toString());
+                for (YahooUser yahooUser : session.getRoster()) {
+                    Contact contact = getContactFactory().create(yahooUser.getId(), YMsgOpenConnection.this);
+                    contact.getStatus().setOnline(yahooUser.isLoggedIn());
+                    contact.getStatus().setAway(isAway(yahooUser));
+                    Set<String> groupIDs = yahooUser.getGroupIds();
+                    for (String groupID : groupIDs) {
+                        Group group = getGroupFactory().create(groupID);
                         group.add(contact);
+                        getGroupList().add(group);
                     }
-                    getGroupList().add(group);
                 }
-/*
-                YahooIdentity[] ids = session.getIdentities();
-                // todo make up the groups
-                Group group = GroupWrapper.create("Yahoo");
-                for (int i = 0; i < ids.length; i++) {
-                    YahooIdentity id = ids[i];
-                    Contact contact = getContactFactory().create(id.getId(), this);
-                    group.add(contact);
-                }
-                getGroupList().add(group);
-*/
-
-// todo see about this               currentIdentity=null;
                 notifyConnectionEstablished();
             } else {
                 notifyConnectionFailed("Failed to login.");
@@ -167,7 +152,7 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
         if (session != null) {
             // do it for the server
             try {
-                session.addFriend(contact.getName(), group.getName());
+                session.sendNewFriendRequest(contact.getName(), group.getName());
                 group.add(contact);
 //              Why was this done!?  Causes contacts to appear online when they are not! Testing, maybe?
 //                if (contact instanceof Contact) {
@@ -189,7 +174,7 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
                 try {
                     if (list.get(i).remove(contact) && !list.get(i).getName().equalsIgnoreCase(group.getName())) {
                         found = true;
-                        session.removeFriend(contact.getName(), list.get(i).getName());
+                        session.removeFriendFromGroup(contact.getName(), list.get(i).getName());
                     }
                 } catch (IOException e) {
                     log.log(Level.SEVERE, "", e);//Todo change?
@@ -220,7 +205,7 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
             for (int i = list.size()-1; i >= 0; i--) {
                 try {
                     if (list.get(i).remove(contact)) {
-                        session.removeFriend(contact.getName(), list.get(i).getName());
+                        session.removeFriendFromGroup(contact.getName(), list.get(i).getName());
                         return; // just 1 at a time, jik
                     }
                 } catch (IOException e) {
