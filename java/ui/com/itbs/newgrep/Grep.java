@@ -285,7 +285,7 @@ public class Grep {
                 uiOptions.fileSearch = ((JCheckBox) e.getSource()).isSelected();
             }
         })));
-        optionsPanel.add(new JCheckBox(new ActionAdapter("Search Logs", "Include the logs in your search", new ActionListener() {
+        optionsPanel.add(new JCheckBox(new ActionAdapter("Search log", "Include the logs in your search", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 uiOptions.logSearch = ((JCheckBox) e.getSource()).isSelected();
             }

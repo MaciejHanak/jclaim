@@ -193,7 +193,6 @@ public class JazzyInterface {
         if (textComp==null) {
             return;
         }
-
         textComp.unregisterKeyboardAction(keystroke);
 
         if (docListener != null) {
@@ -237,7 +236,7 @@ public class JazzyInterface {
         private DelayedThread flagThread;
 
         public SpellCheckingDocumentListener(JTextComponent textCompIn) {
-            this.textComp = textCompIn;
+            this.textComp = textCompIn;                          // 1/2 sec is about right for that
             flagThread = new DelayedActionThread("SpellingThread", 500, textComp, null, new Runnable() {
                 public void run() {
 //                    log.fine(textComp.hashCode() + " running scpellcheck.");

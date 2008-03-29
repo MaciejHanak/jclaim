@@ -20,11 +20,11 @@
 
 package com.itbs.aimcer.gui;
 
-import com.itbs.aimcer.LoggerEventListener;
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.aimcer.commune.weather.WeatherConnection;
 import com.itbs.aimcer.gui.order.OrderEntryLog;
+import com.itbs.aimcer.log.LoggerEventListener;
 import com.itbs.aimcer.web.ServerStarter;
 import com.itbs.gui.*;
 
@@ -51,7 +51,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public class Main {
     static String TITLE = "JCLAIM";
-    public static String VERSION = "Version: 5.03";
+    public static String VERSION = "Version: 5.10";
     public static final String URL_FAQ = "http://www.itbsllc.com/jclaim/User%20Documentation.htm";
     public static final String EMAIL_SUPPORT = "support@itbsllc.com";
     private static final String LICENSE = System.getProperty("client");
@@ -61,11 +61,11 @@ public class Main {
     public static final String ABOUT_MESSAGE =
             "Java Compliant Logging & Auditing Instant Messenger.\n" +
             DEBUG_INFO + "\n\n" +
-            "This is a Messaging Client Software.\n" +
-            "Provides a GUI interface for connecting to IM Services.\n" +
+            "This is a Messaging Client Program.\n" +
+            "Provides a UI for connecting to IM Services.\n" +
             "Follows logging requirements for financial institutions.\n" +
             "\nhttp://www.jclaim.com\n" +
-            "\nDeveloped by ITBS LLC, Copyright 2004 - 2007." +
+            "\nDeveloped by ITBS LLC, Copyright 2004 - 2008." +
             "\nAll rights reserved.\n" +
             "\nTo request a feature or submit a bug, visit 'Contact Us' section on the web site."+
            (LICENSE==null?"":"\n\nThis version is licensed to: " + LICENSE);

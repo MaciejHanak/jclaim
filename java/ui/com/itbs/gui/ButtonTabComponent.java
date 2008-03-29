@@ -1,5 +1,8 @@
 package com.itbs.gui;
 
+import com.itbs.aimcer.bean.ContactWrapper;
+import com.itbs.aimcer.gui.ContactLabel;
+
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
@@ -16,9 +19,9 @@ import java.awt.event.*;
 public class ButtonTabComponent extends JPanel {
     private final JTabbedPane pane;
     private final Component panel;
-    JLabel label;
+    ContactLabel label;
 
-    public ButtonTabComponent(final BetterTabbedPane pane, final Component panel) {
+    public ButtonTabComponent(final BetterTabbedPane pane, final Component panel, ContactWrapper contact) {
         //unset default FlowLayout' gaps
         super(new FlowLayout(FlowLayout.LEFT, 0, 0));
         if (pane == null || panel == null) {
@@ -28,7 +31,7 @@ public class ButtonTabComponent extends JPanel {
         this.panel = panel;
         setOpaque(false);
 
-        label = new JLabel();
+        label = new ContactLabel(contact);
         label.addMouseMotionListener(new MouseMotionListener() {
             public void mouseDragged(MouseEvent e) {
                 dispatchToParent(e);
@@ -88,7 +91,7 @@ public class ButtonTabComponent extends JPanel {
         // todo remove
     }
 
-    public JLabel getLabel() {
+    public ContactLabel getLabel() {
         return label;
     }
 

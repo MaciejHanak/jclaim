@@ -62,6 +62,7 @@ public class DelayedActionThread extends DelayedThread {
     /**
      * Constructor.
      * @param threadName       Name of the thread
+     * @param delay How long to wait before an actual run
      * @param ownerComponent  component who's window to monitor (dies when window is destroyed)
      * @param snippetStart    code to run before
      * @param snippetEnd      code to run after
@@ -76,6 +77,7 @@ public class DelayedActionThread extends DelayedThread {
     /**
      * Constructor.
      * @param threadName       Name of the thread
+     * @param delay How long to wait before an actual run
      * @param window          window to monitor (dies when window is destroyed)
      * @param snippetStart    code to run before
      * @param snippetEnd      code to run after
@@ -85,18 +87,20 @@ public class DelayedActionThread extends DelayedThread {
               delay,
               new StillAliveMonitor() {
                   public boolean isAlive() {
-                      return window.isDisplayable();
+                      return window == null || window.isDisplayable();
                   }
               },
               snippetStart,
               snippetEnd
         );
-        if (window == null)
-            throw new NullPointerException("Component is not contained within a window.  If intentional, override to ensure no infinite loops.");
-        window.addWindowListener(new WindowAdapter() {
-            public void windowClosed(WindowEvent e) {
-                stopProcessing();
-            }
-        });
+        if (window != null)
+//            throw new NullPointerException("Component is not contained within a window.  If intentional, override to ensure no infinite loops.");
+        {
+            window.addWindowListener(new WindowAdapter() {
+                        public void windowClosed(WindowEvent e) {
+                            stopProcessing();
+                        }
+                    });
+        }
     }
 } // class FlagThread

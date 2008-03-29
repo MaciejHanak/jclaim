@@ -4,6 +4,7 @@ import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.FileTransferSupport;
 import com.itbs.aimcer.commune.IconSupport;
 import com.itbs.aimcer.commune.MessageSupport;
+import com.itbs.aimcer.gui.ContactLabel;
 import com.itbs.aimcer.gui.Main;
 import com.itbs.aimcer.gui.MessageWindow;
 import com.itbs.aimcer.gui.PersonalInfoPanel;
@@ -111,7 +112,7 @@ public class TabItself extends JPanel {
 
     public void addTabComponent() {
         int index = tabbedPane.indexOfComponent(this);
-        tabControl = new ButtonTabComponent(tabbedPane, this);
+        tabControl = new ButtonTabComponent(tabbedPane, this, contactWrapper);
         tabbedPane.setTabComponentAtReflect(index, tabControl);
 
         if (BetterTabbedPane.oldVM) {
@@ -241,27 +242,9 @@ public class TabItself extends JPanel {
 
     void setLabelFromStatus() {
         if (tabControl!=null) {
-            JLabel displayComponent = tabControl.getLabel();
-            ContactWrapper contact = getContact();
-            if (contact.getStatus().isOnline()) {
-                displayComponent.setText(contact.getDisplayName());
-                displayComponent.setIcon(contact.getIcon());
-                displayComponent.setFont(ContactWrapper.NORM);
-                displayComponent.setForeground(contact.getStatus().isAway() ? ContactWrapper.AWAY : ContactWrapper.PRESENT);
-                if (contact.getConnection() instanceof MessageSupport) {
-                    final String temp = contact.getName() + " on " + contact.getConnection().getServiceName() + " as " + ((MessageSupport) contact.getConnection()).getUserName() + (contact.getStatus().isAway() ? (" Idle for " + contact.getStatus().getIdleTime() + "m") : "");
-                    tabControl.setToolTipText(temp);
-                    displayComponent.setToolTipText(temp);
-                }
-            } else {
-                displayComponent.setText(contact.getDisplayName() + (contact.getStatus().isOnline()?" (Online)":" (Offline)"));
-                displayComponent.setIcon(null);
-                displayComponent.setFont(ContactWrapper.OFF);
-                displayComponent.setForeground(ContactWrapper.AWAY);
-                final String temp = "Last Seen on " + contact.getConnection().getServiceName() + (contact.getPreferences().getLastConnected() == null ? " Not yet." : (" " + contact.getPreferences().getLastConnected()));
-                tabControl.setToolTipText(temp); // turn off tooltip
-                displayComponent.setToolTipText(temp); // turn off tooltip
-            }
+            ContactLabel displayComponent = tabControl.getLabel();
+            displayComponent.update();
+            tabControl.setToolTipText(displayComponent.getToolTipText());
         }
     }
 

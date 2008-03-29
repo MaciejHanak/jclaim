@@ -21,6 +21,7 @@
 package com.itbs.aimcer.web;
 
 import com.itbs.aimcer.bean.ClientProperties;
+import com.itbs.aimcer.bean.ContactWrapper;
 import com.itbs.aimcer.commune.Connection;
 import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.gui.Main;
@@ -60,6 +61,7 @@ public class OptionsServlet extends HttpServlet {
     private static final String paramHideOffline = "hideoffline";
     private static final String paramShowPictures = "showpictures";
     private static final String paramAway = "away";
+    private static final String paramForward = "forward";
     private static final String paramWebServer = "server";
     private static final String paramLoginForms = "loginform";
 
@@ -82,7 +84,7 @@ public class OptionsServlet extends HttpServlet {
      * Services a single HTTP request from the client.
      *
      * @param req the HTTP request
-     * @param req the HTTP response
+     * @param res the HTTP response
      * @throws javax.servlet.ServletException
      *                             when a Servlet exception has occurred
      * @throws java.io.IOException when an I/O exception has occurred
@@ -96,6 +98,18 @@ public class OptionsServlet extends HttpServlet {
         if (req.getParameter(paramSet) != null) { // set
             ClientProperties.INSTANCE.setHideOffline(req.getParameter(paramHideOffline) != null);
             MenuManager.setGlobalAway(req.getParameter(paramAway) != null);
+            // We can do this w/o an if statement, but it's heavy logic, so this saves cpu
+            if (req.getParameter(paramForward) == null) { // unchecked
+                Main.setForwardingContact(null);
+            } else { // do forward
+                ContactWrapper[] contactWrappers = ContactWrapper.toArray();
+                for (ContactWrapper wrapper : contactWrappers) {
+                    if (wrapper.toString().equalsIgnoreCase(ClientProperties.INSTANCE.getForwardee())) {
+                        MenuManager.setForwardee(wrapper);
+                    }
+                }
+            }
+
             ClientProperties.INSTANCE.setShowWebIcons(req.getParameter(paramShowPictures) != null);
             ClientProperties.INSTANCE.setHTTPServerEnabled(req.getParameter(paramWebServer) != null);
             PropertiesDialog.postCheck();
@@ -155,6 +169,7 @@ public class OptionsServlet extends HttpServlet {
         params.put(paramHideOffline, ClientProperties.INSTANCE.isHideOffline()?CHECKED:"");
         params.put(paramShowPictures, ClientProperties.INSTANCE.isShowWebIcons()?CHECKED:"");
         params.put(paramAway, ClientProperties.INSTANCE.isIamAway()?CHECKED:"");
+        params.put(paramForward, Main.isForwarding()?CHECKED:"");
         params.put(paramWebServer, ClientProperties.INSTANCE.isHTTPServerEnabled()?CHECKED:"");
 
         // bottom of the page

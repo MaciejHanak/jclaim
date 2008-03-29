@@ -21,7 +21,7 @@
 package com.itbs.aimcer.bean;
 
 import com.itbs.aimcer.commune.Connection;
-import com.itbs.aimcer.commune.MessageSupport;
+import com.itbs.aimcer.gui.ContactLabel;
 import com.itbs.aimcer.gui.ImageCacheUI;
 import com.itbs.aimcer.gui.ListRenderer;
 import com.itbs.gui.GUIUtils;
@@ -41,13 +41,6 @@ import java.util.*;
  * @since Sep 9, 2004
  */
 public class ContactWrapper implements Contact, Renderable {
-    public static final Font NORM = new Font("sansserif", Font.PLAIN, ClientProperties.INSTANCE.getFontSize());
-    public static final Font BOLD = new Font("sansserif", Font.BOLD, ClientProperties.INSTANCE.getFontSize());
-    public static final Font OFF = new Font("sansserif", Font.ITALIC, ClientProperties.INSTANCE.getFontSize() - 1);
-
-    public static final Color PRESENT = Color.BLACK;
-    public static final Color AWAY = Color.GRAY;
-    
     private final static Color SELECTED = new Color(127, 190, 240);
 
     public static Comparator <Nameable> COMP_NAME = new NameComparator();
@@ -67,7 +60,7 @@ public class ContactWrapper implements Contact, Renderable {
     private ContactPreferences preferences;
     private long lastDisclaimerTime;
     private Connection connection;
-    private JLabel displayComponent;
+    private ContactLabel displayComponent;
     private JPanel offsetPanel;
 
 //    private static Map<String, ContactWrapper> wrappers = new HashMap<String, ContactWrapper>(50);
@@ -122,7 +115,7 @@ public class ContactWrapper implements Contact, Renderable {
         this.status = createStatus();
         preferences = ClientProperties.findBuddyPreferences(name + "|" + (connection==null?"":connection.getServiceName()));
         offsetPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        displayComponent = new JLabel();
+        displayComponent = new ContactLabel(this);
         updateDisplayComponent();
         JPanel spacer = new JPanel() {
             public Dimension getPreferredSize() {
@@ -193,22 +186,7 @@ public class ContactWrapper implements Contact, Renderable {
     public void updateDisplayComponent() {
         GUIUtils.runOnAWT(new Runnable(){
             public void run() {
-                if (getStatus().isOnline() && !preferences.isHideFromList()) {
-                    displayComponent.setText(getDisplayName());
-                    displayComponent.setIcon(getIcon());
-                    displayComponent.setFont(NORM);
-                    displayComponent.setForeground(getStatus().isAway() ? AWAY : PRESENT);
-                    if (connection instanceof MessageSupport)
-                        displayComponent.setToolTipText(getName() + " on " + getConnection().getServiceName() + " as " + ((MessageSupport) getConnection()).getUserName() + (getStatus().isAway() ? (" Idle for " + getStatus().getIdleTime() + "m") : ""));
-                    else
-                        displayComponent.setToolTipText(null);
-                } else {
-                    displayComponent.setText(getDisplayName() + (getStatus().isOnline()?" (Online)":" (Offline)"));
-                    displayComponent.setIcon(null);
-                    displayComponent.setFont(OFF);
-                    displayComponent.setForeground(AWAY);
-                    displayComponent.setToolTipText("Last Seen: " + (preferences.getLastConnected()==null?"Not yet.":preferences.getLastConnected())); // turn off tooltip
-                }
+                displayComponent.update();
             }
         });
     } // updateDisplayComponent()
@@ -286,11 +264,8 @@ public class ContactWrapper implements Contact, Renderable {
     }
 
     public JComponent getDisplayComponent(boolean isSelected, boolean cellHasFocus) {
-//        displayComponent.setBackground(isSelected ? ListRenderer.SELECTED : ListRenderer.NOT_SELECTED);
         displayComponent.setBackground(isSelected ? SELECTED: ListRenderer.NOT_SELECTED);
         displayComponent.setOpaque(isSelected);
-//        if (isSelected && !cellHasFocus)
-//            displayComponent.setBackground(ListRenderer.SELECTED_NO_FOCUS);
         return offsetPanel;
     }
 

@@ -174,14 +174,17 @@ public class MenuManager {
         }
     }
 
+    public static void setForwardee(Contact wrapper) {
+        Main.setForwardingContact(wrapper);
+        globalForward.setSelected(wrapper!=null);
+        globalForward.setText(wrapper==null?COMMAND_FORWARD:"Forwarded to " + wrapper.getDisplayName());
+    }
+
     private static void setForwardingContact() {
         // If we are already forwarding... clear it.
         globalForward.setSelected(Main.isForwarding()); // to stop default behavior
         if (Main.isForwarding()) {
-            Main.setForwardingContact(null);
-            globalForward.setSelected(false);
-            globalForward.setText(COMMAND_FORWARD);
-//            globalForward.invalidate();
+            setForwardee(null);
             return;
         }
         final JDialog dialog = new JDialog(Main.getFrame(), "Fordard All Messages To:", true);
@@ -202,20 +205,15 @@ public class MenuManager {
                     final ContactWrapper wrapper = (ContactWrapper) contact.getSelectedItem();
                     new Thread() {
                         public void run() {
-
                             if (wrapper.getConnection() instanceof MessageSupport) {
-                                Main.setForwardingContact(wrapper);                                
-                                globalForward.setSelected(Main.isForwarding());
-                                globalForward.setText("Forwarded to " + wrapper.getDisplayName());
+                                setForwardee(wrapper);
                             } else {
                                 Main.complain("This protocol for this contact does not support messages - "+wrapper.getConnection().getServiceName());
                             }
                         }
                     }.start();
                 } else {
-                    Main.setForwardingContact(null);
-                    globalForward.setSelected(false);
-                    globalForward.setText(COMMAND_FORWARD);
+                    setForwardee(null);
                 }
                 dialog.dispose();
             }
