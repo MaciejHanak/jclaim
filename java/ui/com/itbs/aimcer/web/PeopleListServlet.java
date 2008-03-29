@@ -254,19 +254,18 @@ public class PeopleListServlet extends HttpServlet {
                             buddyList += contact(contactWrapper, windowOpen) + (ClientProperties.INSTANCE.isShowWebIcons()?"":"<br>\n");
 
                             if (b.equals(wrapper) && contactWrapper.getConnection() instanceof MessageSupport) {
-                                if (windowOpen) {
-                                    params.put(paramMsgTitle, "Message: " + contactWrapper.getDisplayName());
-                                    params.put(paramMsg, GeneralUtils.makeHTML(Main.getLogger().loadLog((MessageSupport) contactWrapper.getConnection(), contactWrapper.getName()))
-                                            + MESSAGE_REST
-                                            + contactWrapper.getPreferences().getEmailAddressAsURL()
-                                            + (GeneralUtils.isNotEmpty(contactWrapper.getPreferences().getPhone())?" | <input name=\"" + paramSendCell + "\" type=\"submit\" value=\"Page\">":"")
-                                            + "  <input name=\"" + paramName + "\" type=\"hidden\" value=\"" + URLEncoder.encode(contactWrapper.getName(), "UTF-8") + "\">"
-                                            + "  <input name=\"" + paramMedium + "\" type=\"hidden\" value=\"" + contactWrapper.getConnection().getServiceName() + "\">"
-                                            + "  <input name=\"" + paramAs + "\" type=\"hidden\" value=\"" + contactWrapper.getConnection().getUser().getName() + "\">"
-                                    );
-                                    params.put(paramScroll, SCROLL);
-                                    params.put(paramText, ""); // todo fix it so that it remembers typed text even if I hit another link
-                                }
+                                Main.globalWindowHandler.openWindow(wrapper, false);
+                                params.put(paramMsgTitle, "Message: " + contactWrapper.getDisplayName());
+                                params.put(paramMsg, GeneralUtils.makeHTML(Main.getLogger().loadLog((MessageSupport) contactWrapper.getConnection(), contactWrapper.getName()))
+                                        + MESSAGE_REST
+                                        + contactWrapper.getPreferences().getEmailAddressAsURL()
+                                        + (GeneralUtils.isNotEmpty(contactWrapper.getPreferences().getPhone())?" | <input name=\"" + paramSendCell + "\" type=\"submit\" value=\"Page\">":"")
+                                        + "  <input name=\"" + paramName + "\" type=\"hidden\" value=\"" + URLEncoder.encode(contactWrapper.getName(), "UTF-8") + "\">"
+                                        + "  <input name=\"" + paramMedium + "\" type=\"hidden\" value=\"" + contactWrapper.getConnection().getServiceName() + "\">"
+                                        + "  <input name=\"" + paramAs + "\" type=\"hidden\" value=\"" + contactWrapper.getConnection().getUser().getName() + "\">"
+                                );
+                                params.put(paramScroll, SCROLL);
+                                params.put(paramText, ""); // todo fix it so that it remembers typed text even if I hit another link
                             }
                         }
                     }
