@@ -9,7 +9,7 @@ import com.itbs.aimcer.bean.*;
  */
 public class MessageForwarder implements ConnectionEventListener {
     private Contact forwardContact;
-    private static final int MAX_LEN = 80; // 50 characters are gone due to fillers.
+    private static final int MAX_LEN = 125; // tons of characters are gone due to fillers.
 
     public void setForwardContact(Contact forwardContact) {
         this.forwardContact = forwardContact;
