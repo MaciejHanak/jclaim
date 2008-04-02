@@ -62,7 +62,7 @@ public class TabbedWindow {
         public void removeUpdate(DocumentEvent e) { count(e); }
         public void changedUpdate(DocumentEvent e) { count(e); }
     };
-    DocumentListener documentListenerJazzy;
+    JazzyInterface.SpellCheckingDocumentListener documentListenerJazzy;
     private final AbstractAction ACTION_SEND, ACTION_SEND_ALL, ACTION_ADD, ACTION_LOG, ACTION_PAGE, ACTION_EMAIL, ACTION_SORT;
 
     public static TabbedWindow getINSTANCE() {

@@ -189,7 +189,7 @@ public class JazzyInterface {
     // --------------------------   HANDLING of SPELLING ------------------------------------------
     static KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, Event.CTRL_MASK, true);
     
-    public synchronized void removeSpellCheckComponent(final JTextComponent textComp, DocumentListener docListener) {
+    public synchronized void removeSpellCheckComponent(final JTextComponent textComp, SpellCheckingDocumentListener docListener) {
         if (textComp==null) {
             return;
         }
@@ -197,13 +197,25 @@ public class JazzyInterface {
 
         if (docListener != null) {
             textComp.getDocument().removeDocumentListener(docListener);
+            docListener.stopProcessing();
         }
     }
 
-    public synchronized DocumentListener  addSpellCheckComponent(final JTextComponent textComp) {
+    public synchronized SpellCheckingDocumentListener addSpellCheckComponent(final JTextComponent textComp, DelayedThread.StillAliveMonitor monitor) {
+        SpellCheckingDocumentListener spellCheckingDocumentListener = new SpellCheckingDocumentListener(textComp, monitor);
+        textComp.getDocument().addDocumentListener(spellCheckingDocumentListener);
+        addSpellCheckComponentCommon(textComp);
+        return spellCheckingDocumentListener;
+    }
+    
+    public synchronized SpellCheckingDocumentListener addSpellCheckComponent(final JTextComponent textComp) {
         SpellCheckingDocumentListener spellCheckingDocumentListener = new SpellCheckingDocumentListener(textComp);
         textComp.getDocument().addDocumentListener(spellCheckingDocumentListener);
+        addSpellCheckComponentCommon(textComp);
+        return spellCheckingDocumentListener;
+    }
 
+    protected synchronized void addSpellCheckComponentCommon(final JTextComponent textComp) {
         textComp.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JTextComponent tc = (JTextComponent) e.getSource();
@@ -228,16 +240,31 @@ public class JazzyInterface {
             }
             BetterTextField.setPopupMenu(menu);
         }
-        return spellCheckingDocumentListener;
     }
 
-    private class SpellCheckingDocumentListener implements DocumentListener {
+    public static class SpellCheckingDocumentListener implements DocumentListener {
         private JTextComponent textComp;
         private DelayedThread flagThread;
 
         public SpellCheckingDocumentListener(JTextComponent textCompIn) {
             this.textComp = textCompIn;                          // 1/2 sec is about right for that
-            flagThread = new DelayedActionThread("SpellingThread", 500, textComp, null, new Runnable() {
+            flagThread = new DelayedActionThread("SpellingThread", 500, textComp, null, getRunnable());
+            flagThread.start();
+        }
+        public SpellCheckingDocumentListener(JTextComponent textCompIn, DelayedThread.StillAliveMonitor monitor) {
+            this.textComp = textCompIn;                          // 1/2 sec is about right for that
+            flagThread = new DelayedThread("SpellingThread", 500, monitor, null, getRunnable());
+            flagThread.start();
+        }
+        
+        public void stopProcessing() {
+            if (flagThread!=null) {
+                flagThread.stopProcessing();
+            }
+        }
+
+        private Runnable getRunnable() {
+            return new Runnable() {
                 public void run() {
 //                    log.fine(textComp.hashCode() + " running scpellcheck.");
                     Document document = textComp.getDocument();
@@ -245,9 +272,9 @@ public class JazzyInterface {
                     DocumentWordTokenizer tokenizer = new DocumentWordTokenizer(document);
                     Highlighter h = textComp.getHighlighter();
                     h.removeAllHighlights();
-                    List <SpellCheckEvent> errors = null;
+                    List<SpellCheckEvent> errors = null;
                     try {
-                        errors = getSpellChecker().checkSpellingSilent(tokenizer);
+                        errors = create().getSpellChecker().checkSpellingSilent(tokenizer);
                     } catch (NullPointerException e) {
                         log.log(Level.SEVERE, "JI: Cought a NPE trying to check: " + textComp.getText(), e);
                     } catch (Exception e) {
@@ -259,8 +286,7 @@ public class JazzyInterface {
                         }
                     }
                 }
-            });
-            flagThread.start();
+            };
         }
 
         public void insertUpdate(DocumentEvent e) {
