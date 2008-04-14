@@ -450,6 +450,18 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
         }
     }
 
+    public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
+        try {
+            connection.moveGroupAsFriend(new MsnFriend(contact.getName()), oldGroup.getName(), newGroup.getName());
+            oldGroup.remove(contact);
+            newGroup.add(contact);
+        } catch (IOException e) {
+            for (ConnectionEventListener eventHandler : eventHandlers) {
+                eventHandler.errorOccured("ERROR moving a contact between groups.", e);
+            }
+        }
+    }
+
     /**
      * Returns a short name for the service.
      * "AIM", "ICQ" etc.

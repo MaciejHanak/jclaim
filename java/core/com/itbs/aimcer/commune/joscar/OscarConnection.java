@@ -948,6 +948,10 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         }
     }
 
+    public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
+        moveContact(contact,  newGroup);
+    }
+
 
     public void initiateFileTransfer(final FileTransferListener ftl) throws IOException {
         OutgoingFileTransfer oft = connection.getIcbmService().getRvConnectionManager().createOutgoingFileTransfer(new Screenname(ftl.getContactName()));

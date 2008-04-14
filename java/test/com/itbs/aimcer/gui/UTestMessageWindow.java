@@ -20,10 +20,10 @@
 
 package com.itbs.aimcer.gui;
 
-import com.itbs.aimcer.LoggerEventListener;
 import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.aimcer.bean.ContactWrapper;
 import com.itbs.aimcer.bean.MessageImpl;
+import com.itbs.aimcer.log.LoggerEventListener;
 import junit.framework.TestCase;
 
 import java.awt.*;

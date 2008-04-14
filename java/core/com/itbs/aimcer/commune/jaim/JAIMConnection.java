@@ -104,6 +104,10 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
     public void removeContactGroup(Group group) {
     }
 
+    public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
+        moveContact(contact, newGroup);
+    }
+
     /**
      * Use to remove contacts.
      * @param contact to delete

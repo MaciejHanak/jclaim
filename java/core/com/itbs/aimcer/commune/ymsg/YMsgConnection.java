@@ -252,6 +252,18 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
         }
     }
 
+    public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
+        if (session != null) {
+            try {
+                session.removeFriend(contact.getName(), oldGroup.getName());
+                oldGroup.remove(contact);
+                addContact(contact, newGroup);
+            } catch (IOException e) {
+                notifyErrorOccured("Failed to move contact", e);
+            }
+        }
+    }
+
     public void addContactGroup(Group group) {
         //todo Yahoo d/n support this directly. Use addContact... keep checking if new versions implemement code for adding a group
     }

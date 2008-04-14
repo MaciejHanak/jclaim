@@ -100,6 +100,7 @@ public interface Connection {
     void addContactGroup(Group group);
     void removeContactGroup(Group group);
     void moveContact(Nameable contact, Group group);
+    void moveContact(Nameable contact, Group oldGroup, Group newGroup);
     GroupList getGroupList();
     /**
      * Returns a short display name for the service.

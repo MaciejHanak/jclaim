@@ -99,6 +99,11 @@ public class UTestFakeConnection extends AbstractMessageConnection implements Fi
         addContact(contact, group);
     }
 
+    public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
+        oldGroup.remove(contact);
+        newGroup.add(contact);
+    }
+
     public void addContactGroup(Group group) {
     }
 

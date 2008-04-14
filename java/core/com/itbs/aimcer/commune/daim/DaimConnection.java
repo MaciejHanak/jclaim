@@ -279,6 +279,16 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
         }
     }
 
+    public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
+        try {
+            connection.moveBuddy(contact.getName(), oldGroup.getName(), newGroup.getName());
+        } catch (IOException e) {
+            notifyErrorOccured("Error while removing contact", e);
+        }
+        oldGroup.remove(contact);
+        newGroup.add(contact);
+    }
+
 
     public void initiateFileTransfer(final FileTransferListener ftl) throws IOException {
         connection.sendFile(ftl.getContactName(), ftl.getFile());

@@ -332,6 +332,28 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
         addContact(contact, group);
     }
 
+    public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
+        RosterGroup rosterGroup = connection.getRoster().getGroup(oldGroup.getName());
+        if (rosterGroup==null) {
+            moveContact(contact, newGroup);
+        } else {
+            for (RosterEntry rosterEntry : rosterGroup.getEntries()) {
+                if (rosterEntry.getName().equals(contact.getName())) {
+                    try {
+                        rosterGroup.removeEntry(rosterEntry);
+                        oldGroup.remove(contact);
+                    } catch (XMPPException e) {
+                        for (ConnectionEventListener connectionEventListener : eventHandlers) {
+                            connectionEventListener.errorOccured("Found, but failed to remove the contact", e);
+                        }
+                    }
+                    return;
+                }
+            }
+            addContact(contact, newGroup);
+        }
+    }
+
     public void addContactGroup(Group group) {
         connection.getRoster().createGroup(group.getName());
     }

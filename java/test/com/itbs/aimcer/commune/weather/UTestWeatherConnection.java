@@ -22,6 +22,7 @@ package com.itbs.aimcer.commune.weather;
 
 import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.aimcer.bean.ContactWrapper;
+import com.itbs.aimcer.gui.ContactLabel;
 import com.itbs.aimcer.gui.Main;
 import com.itbs.aimcer.gui.UTestFrameTest;
 
@@ -62,7 +63,7 @@ public class UTestWeatherConnection extends UTestFrameTest {
         Thread.sleep(10000*1);
         for (String aZipCode1 : zipCode) {
             ContactWrapper cw = ContactWrapper.create(aZipCode1, conn);
-            window.getContentPane().add(cw.getDisplayComponent(false, false));
+            window.getContentPane().add(new ContactLabel(cw));
             System.out.println("Result: " + cw.getDisplayName() + " " + cw.oldToString());
             assertFalse("Should have been set by now" + cw.getDisplayName(), cw.getDisplayName().equals(aZipCode1));
             assertTrue("Should have been set by now" + cw.getDisplayName(), cw.getDisplayName().indexOf(", NJ - ") > -1 || cw.getDisplayName().indexOf(", NY - ") > -1);

@@ -186,6 +186,18 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
         }
     }
 
+    public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
+        if (session != null) {
+            try {
+                session.removeFriendFromGroup(contact.getName(), oldGroup.getName());
+            } catch (IOException e) {
+                log.log(Level.SEVERE, "Failed to remove a friend.", e);//Todo change to error?
+                notifyErrorOccured("Failed to remove a friend.", e);
+            }
+            addContact(contact, newGroup);
+        }
+    }
+
     public void addContactGroup(Group group) {
         //todo Yahoo d/n support this directly. Use addContact... keep checking if new versions implemement code for adding a group
     }

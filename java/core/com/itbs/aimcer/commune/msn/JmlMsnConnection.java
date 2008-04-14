@@ -305,7 +305,13 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 		connection.removeGroup(group.getName());
 	}
 
-	public void setTimeout(int arg0) {
+    public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
+        connection.moveFriend(Email.parseStr(contact.getName()), oldGroup.getName(), newGroup.getName());
+        oldGroup.remove(contact);
+        newGroup.add(contact);
+    }
+
+    public void setTimeout(int arg0) {
 	}
 
 }

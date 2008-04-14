@@ -296,6 +296,11 @@ public class WeatherConnection extends AbstractConnection {
     public void removeContactGroup(Group group) {
     }
 
+    public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
+        oldGroup.remove(contact);
+        newGroup.add(contact);
+    }
+
     public String getServiceName() {
         return "Weather";
     }
