@@ -173,6 +173,15 @@ abstract public class AbstractConnection implements Connection {
         }
     }
     /**
+     * Tells everyone someone's status changed.
+     */
+    public void notifyStatusChanged() {
+        Iterator <ConnectionEventListener >iter = getEventListenerIterator();
+        while (iter.hasNext()) {
+            iter.next().statusChanged(this);
+        }
+    }
+    /**
      * Notifies of an email received.
      * @param message that was received.
      */

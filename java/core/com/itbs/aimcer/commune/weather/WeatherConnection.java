@@ -141,6 +141,7 @@ public class WeatherConnection extends AbstractConnection {
             return;
         weather = getGroupList().add(getGroupFactory().create("Weather"));
         processSettings();
+        notifyStatusChanged();
         reconnect();
     }
 
@@ -173,8 +174,8 @@ public class WeatherConnection extends AbstractConnection {
             }
         } finally {
             updateLock.unlock();
+            notifyStatusChanged();
         }
-
     }
 
     /**
