@@ -20,14 +20,12 @@
 
 package com.itbs.gui;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-
 import com.itbs.aimcer.gui.UTestFrameTest;
+import org.jdesktop.swingx.VerticalLayout;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 
 /**
  * @author  Alex Rass
@@ -52,6 +50,38 @@ public class UTestClockLabel extends UTestFrameTest {
         JButton button = new JButton(action);
         button.setToolTipText("blah");
         add(button);
+        window.setVisible(true);
+        waitForMe(50);
+        System.out.println(""+ trigger);
+    }
+    /**
+     * Didn't feel like working the robot. this unit test is a hands on one.
+     * @throws InterruptedException stuff broke
+     */
+    public void testOffsetLabel() throws InterruptedException {
+        final JLabel plainLabel = new JLabel("Blah");
+        final int WIDTH_INC = 3;
+        final JLabel offsetLabel = new JLabel("Blah") {
+            // -------------- This removes the need for a whole panel.
+            /**
+             * Up the width.
+             * @return new width.
+             */
+            public Dimension getPreferredSize() {
+                Dimension dim = super.getPreferredSize();
+                dim.width += WIDTH_INC;
+                return dim;
+            }
+
+            protected void paintComponent(Graphics g) {
+                g.translate(WIDTH_INC, 0);
+                super.paintComponent(g);
+            }
+
+        };
+        window.setLayout(new VerticalLayout());
+        add(plainLabel);
+        add(offsetLabel);
         window.setVisible(true);
         waitForMe(50);
         System.out.println(""+ trigger);
