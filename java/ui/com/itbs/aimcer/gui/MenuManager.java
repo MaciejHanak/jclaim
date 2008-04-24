@@ -23,6 +23,7 @@ package com.itbs.aimcer.gui;
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.aimcer.gui.order.OrderEntryLog;
+import com.itbs.aimcer.gui.userlist.ContactLabel;
 import com.itbs.aimcer.log.LogsPidgin;
 import com.itbs.gui.*;
 import com.itbs.newgrep.Grep;

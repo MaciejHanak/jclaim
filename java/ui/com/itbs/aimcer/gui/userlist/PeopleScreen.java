@@ -18,7 +18,7 @@
  *
  */
 
-package com.itbs.aimcer.gui;
+package com.itbs.aimcer.gui.userlist;
 
 import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.aimcer.bean.ContactWrapper;
@@ -26,7 +26,9 @@ import com.itbs.aimcer.bean.GroupWrapper;
 import com.itbs.aimcer.commune.ConnectionEventListener;
 import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.commune.weather.WeatherConnection;
-import com.itbs.aimcer.gui.userlist.UserList;
+import com.itbs.aimcer.gui.Main;
+import com.itbs.aimcer.gui.MenuManager;
+import com.itbs.aimcer.gui.MessageGroupWindow;
 import com.itbs.gui.AbstractFileTransferHandler;
 import com.itbs.gui.ActionAdapter;
 import com.itbs.gui.EditableJList;

@@ -24,6 +24,8 @@ import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.aimcer.commune.weather.WeatherConnection;
 import com.itbs.aimcer.gui.order.OrderEntryLog;
+import com.itbs.aimcer.gui.userlist.ContactListModel;
+import com.itbs.aimcer.gui.userlist.PeopleScreen;
 import com.itbs.aimcer.gui.userlist.UserList;
 import com.itbs.aimcer.log.LoggerEventListener;
 import com.itbs.aimcer.web.ServerStarter;

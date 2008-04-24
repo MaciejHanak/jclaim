@@ -18,7 +18,7 @@
  *
  */
 
-package com.itbs.aimcer.gui;
+package com.itbs.aimcer.gui.userlist;
 
 import com.itbs.aimcer.bean.Renderable;
 import com.itbs.gui.ErrorDialog;

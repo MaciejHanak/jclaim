@@ -18,10 +18,11 @@
  *
  */
 
-package com.itbs.aimcer.gui;
+package com.itbs.aimcer.gui.userlist;
 
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
+import com.itbs.aimcer.gui.LoginPanel;
 import com.itbs.gui.DelayedActionThread;
 import com.itbs.gui.EditableJList;
 import com.itbs.gui.GUIUtils;

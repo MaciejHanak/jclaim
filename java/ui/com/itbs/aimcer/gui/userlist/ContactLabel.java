@@ -1,4 +1,4 @@
-package com.itbs.aimcer.gui;
+package com.itbs.aimcer.gui.userlist;
 
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.MessageSupport;
