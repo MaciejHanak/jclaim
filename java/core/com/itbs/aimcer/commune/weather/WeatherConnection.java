@@ -61,6 +61,11 @@ public class WeatherConnection extends AbstractConnection {
     /** Used to prefix the display string when updates fail */
     private static final String PREFIX_OLD = "<HTML>Old: ";
     private static final boolean DEBUG = false;
+    transient Nameable user = new Nameable() {
+        public String getName() {
+            return "weather";
+        }
+    };
 
     public WeatherConnection() {
     }
@@ -227,7 +232,7 @@ public class WeatherConnection extends AbstractConnection {
     }
 
     public Nameable getUser() {
-        return null;
+        return user;
     }
 
     public void disconnect(boolean intentional) {
