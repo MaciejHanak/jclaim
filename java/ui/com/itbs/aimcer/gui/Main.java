@@ -24,6 +24,7 @@ import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.aimcer.commune.weather.WeatherConnection;
 import com.itbs.aimcer.gui.order.OrderEntryLog;
+import com.itbs.aimcer.gui.userlist.UserList;
 import com.itbs.aimcer.log.LoggerEventListener;
 import com.itbs.aimcer.web.ServerStarter;
 import com.itbs.gui.*;
@@ -51,7 +52,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public class Main {
     static String TITLE = "JCLAIM";
-    public static String VERSION = "Version: 5.10";
+    public static String VERSION = "Version: 5.12";
     public static final String URL_FAQ = "http://www.itbsllc.com/jclaim/User%20Documentation.htm";
     public static final String EMAIL_SUPPORT = "support@itbsllc.com";
     private static final String LICENSE = System.getProperty("client");
@@ -84,9 +85,9 @@ public class Main {
     private GlobalEventHandler globalEventHandler;
     public static GlobalWindowHandler globalWindowHandler;
     private MessageForwarder messageForwarder;
-    private static Main main;
+    private static Main main = new Main();
 
-    private PeopleScreen peopleScreen;
+    private UserList peopleScreen;
     private StatusPanel statusBar;
     
     public static GroupFactory standardGroupFactory = new GroupWrapperFactory();
@@ -172,17 +173,22 @@ public class Main {
     {
         Toolkit.getDefaultToolkit().setDynamicLayout(true);
         // if all else fails: security manager to null in the first line in you code
-        main  = new Main();
+        // Fix all the bugs by setting the right params prior to drawing anything at all.
         System.setProperty("com.apple.macos.useScreenMenuBar", "true");
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("sun.java2d.noddraw", "true");
+        
         System.out.println("" + System.getProperty("proxyHost") + System.getProperty("proxyPort") );
         loadProperties();
         LookAndFeelManager.setLookAndFeel(ClientProperties.INSTANCE.getLookAndFeelIndex());
+        Toolkit.getDefaultToolkit().setDynamicLayout(true);
         motherFrame = GUIUtils.createFrame(TITLE);
         motherFrame.setIconImage(ImageCacheUI.ICON_JC.getIcon().getImage());
         main.createGUI();
         main.peopleScreen = new PeopleScreen();
+//        main.peopleScreen = new TreeTableUserList();
         motherFrame.getContentPane().setLayout(new BorderLayout());
-        motherFrame.getContentPane().add(main.peopleScreen);
+        motherFrame.getContentPane().add(getPeoplePanel().getDisplayComponent());
         main.statusBar = new StatusPanel();
         motherFrame.getContentPane().add(main.statusBar, BorderLayout.SOUTH);
         motherFrame.addWindowListener(new WindowAdapter() {
@@ -226,7 +232,7 @@ public class Main {
         }
     }
 
-    public static PeopleScreen getPeoplePanel() {
+    public static UserList getPeoplePanel() {
         return main.peopleScreen;
     }
     public static StatusPanel getStatusBar() {
@@ -280,8 +286,7 @@ public class Main {
         connection.addEventListener(main.globalEventHandler);
         main.globalWindowHandler.addConnection(connection);
         connection.addEventListener(logger); // if logger is before MW, we see it log the incoming msg first
-        JList list = main.peopleScreen.getList();
-        connection.addEventListener((ConnectionEventListener) list.getModel()); // is also self-added
+        connection.addEventListener(main.peopleScreen.getConnectionEventListener()); // is also self-added
         connection.addEventListener(OrderEntryLog.getInstance());
         if (ClientProperties.INSTANCE.isEnableOrderEntryInSystem())
             if (ClientProperties.INSTANCE.isShowOrderEntry())

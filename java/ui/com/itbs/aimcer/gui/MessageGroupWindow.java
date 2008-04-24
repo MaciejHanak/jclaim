@@ -20,10 +20,7 @@
 
 package com.itbs.aimcer.gui;
 
-import com.itbs.aimcer.bean.ClientProperties;
-import com.itbs.aimcer.bean.ContactWrapper;
-import com.itbs.aimcer.bean.Message;
-import com.itbs.aimcer.bean.MessageImpl;
+import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.gui.*;
 
@@ -49,13 +46,13 @@ public class MessageGroupWindow  extends MessageWindowBase {
     private static final Logger log = Logger.getLogger(MessageGroupWindow.class.getName());
 
     /** Target Audience */
-    private ContactWrapper[] contactWrapper;
+    private Contact[] contactWrapper;
 
     /**
      * Constructor
      * @param selectedBuddy buddy to work
      */
-    private MessageGroupWindow(final ContactWrapper[] selectedBuddy) {
+    private MessageGroupWindow(final Contact[] selectedBuddy) {
         contactWrapper = selectedBuddy;
         frame = GUIUtils.createFrame("Group Shout");
         frame.setIconImage(ImageCacheUI.ICON_JC.getIcon().getImage());
@@ -68,7 +65,7 @@ public class MessageGroupWindow  extends MessageWindowBase {
                                     return;
                                 Message message;
                                 for (int i = 0; i < contactWrapper.length; i++) {
-                                    ContactWrapper contact = contactWrapper[i];
+                                    Contact contact = contactWrapper[i];
                                     message = new MessageImpl(contact, true, textPane.getText());
                                     try {
                                         if (i==0) {
@@ -93,7 +90,7 @@ public class MessageGroupWindow  extends MessageWindowBase {
      * @param wrappers to find the window by
      * @return reference to the window
      */
-    public static MessageGroupWindow openWindow(ContactWrapper[] wrappers) {
+    public static MessageGroupWindow openWindow(Contact[] wrappers) {
         return new MessageGroupWindow(wrappers);
     }
 
@@ -115,7 +112,7 @@ public class MessageGroupWindow  extends MessageWindowBase {
 //        historyPane.setContentType("text/html");
         String contactList="";
         boolean allOnline = true;
-        for (ContactWrapper aContactWrapper : contactWrapper) {
+        for (Contact aContactWrapper : contactWrapper) {
             contactList += aContactWrapper + " ";
             if (allOnline && !aContactWrapper.getStatus().isOnline())
                 allOnline = false;

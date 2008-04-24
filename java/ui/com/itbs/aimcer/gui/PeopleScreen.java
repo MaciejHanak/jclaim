@@ -23,8 +23,10 @@ package com.itbs.aimcer.gui;
 import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.aimcer.bean.ContactWrapper;
 import com.itbs.aimcer.bean.GroupWrapper;
+import com.itbs.aimcer.commune.ConnectionEventListener;
 import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.commune.weather.WeatherConnection;
+import com.itbs.aimcer.gui.userlist.UserList;
 import com.itbs.gui.AbstractFileTransferHandler;
 import com.itbs.gui.ActionAdapter;
 import com.itbs.gui.EditableJList;
@@ -37,6 +39,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -48,7 +51,7 @@ import java.util.logging.Logger;
  * @author Alex Rass
  * @since Sep 9, 2004
  */
-final public class PeopleScreen extends JPanel  {
+final public class PeopleScreen extends JPanel implements UserList {
     private static final Logger log = Logger.getLogger(PeopleScreen.class.getName());
     private JList list;
 
@@ -70,12 +73,12 @@ final public class PeopleScreen extends JPanel  {
      * @param item to work
      */
     private void handleItem(Object item) {
-        if (item instanceof ContactWrapper) {
-            if (((ContactWrapper)item).getConnection() instanceof MessageSupport) {
-                Main.globalWindowHandler.openWindow((ContactWrapper)item, true);
-            } else if (((ContactWrapper)item).getConnection() instanceof WeatherConnection) {
+        if (item instanceof ContactLabel) {
+            if (((ContactLabel)item).getContact().getConnection() instanceof MessageSupport) {
+                Main.globalWindowHandler.openWindow(((ContactLabel)item).getContact(), true);
+            } else if (((ContactLabel)item).getContact().getConnection() instanceof WeatherConnection) {
                 try {
-                    Desktop.browse(new URL(WeatherConnection.TOKEN_HOURLY + ((ContactWrapper)item).getName()));
+                    Desktop.browse(new URL(WeatherConnection.TOKEN_HOURLY + (((ContactLabel)item).getContact()).getName()));
                 } catch (Exception exc) {
                     Main.complain("Failed to launch url " + WeatherConnection.TOKEN_HOURLY  + ((ContactWrapper)item).getName() + "\n", exc);
                 } catch (UnsatisfiedLinkError exc) {
@@ -86,6 +89,8 @@ final public class PeopleScreen extends JPanel  {
         else if (item instanceof GroupWrapper) {
             ((GroupWrapper)item).swapShrunk();
             ((ContactListModel)list.getModel()).runActionDataChanged();
+        } else {
+            log.warning("Failed to find a handler of item of class "+ item.getClass());
         }
     }
 
@@ -103,8 +108,8 @@ final public class PeopleScreen extends JPanel  {
             public String getToolTipText(MouseEvent event) {
                 int index = locationToIndex(event.getPoint());
                 Object entry = list.getModel().getElementAt(index);
-                if (entry instanceof ContactWrapper) {
-                    return ((ContactWrapper) entry).getToolTipText();
+                if (entry instanceof ContactLabel) {
+                    return ((ContactLabel) entry).getToolTipText();
                 } 
                 return super.getToolTipText(event);
             }
@@ -163,8 +168,8 @@ final public class PeopleScreen extends JPanel  {
                             // do the do
                             List <ContactWrapper> allContacts = new ArrayList<ContactWrapper>(items.length);
                             for (Object selected : items) {
-                                if (selected instanceof ContactWrapper) {
-                                    allContacts.add((ContactWrapper) selected);
+                                if (selected instanceof ContactLabel) {
+                                    allContacts.add(((ContactLabel) selected).getContact());
                                 } else if (selected instanceof GroupWrapper) {
                                     GroupWrapper group = (GroupWrapper) selected;
                                     for (int j = 0; j < group.size(); j++) {
@@ -182,9 +187,9 @@ final public class PeopleScreen extends JPanel  {
                         }
                     });
                     menu.add(item);
-                    if (list.getSelectedValue() instanceof ContactWrapper) {
+                    if (list.getSelectedValue() instanceof ContactLabel) {
                         final JMenuItem itemHide = new JMenuItem("Hide/Unhide (Keep Offline)");
-                        final boolean hide = !((ContactWrapper)list.getSelectedValue()).getPreferences().isHideFromList();
+                        final boolean hide = !((ContactLabel)list.getSelectedValue()).getContact().getPreferences().isHideFromList();
                         itemHide.addActionListener(new ActionListener() {
                             /**
                              * Invoked when an action occurs.
@@ -249,8 +254,19 @@ final public class PeopleScreen extends JPanel  {
         return pane;
     }
 
-    JList getList() {
-        return list;
+    public List getSelectedValues() {
+        return Arrays.asList(list.getSelectedValues());
     }
 
+    public ConnectionEventListener getConnectionEventListener() {
+        return (ConnectionEventListener) list.getModel();
+    }
+
+    public void update() {
+        list.repaint();
+    }
+
+    public JComponent getDisplayComponent() {
+        return this;
+    }
 }

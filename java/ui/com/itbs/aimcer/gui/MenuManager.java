@@ -61,8 +61,8 @@ public class MenuManager {
     private static final String COMMAND_CONNECTION_ADD  = "Add Connection...";
             static final String COMMAND_FILE_SEND       = "Send File";
     private static final String COMMAND_BUDDY_ADD       = "Add Contact";
-            static final String COMMAND_BUDDY_REMOVE    = "Remove Contact";
-            static final String COMMAND_BUDDY_MOVE      = "Move Contact";
+    public  static final String COMMAND_BUDDY_REMOVE    = "Remove Contact";
+    public  static final String COMMAND_BUDDY_MOVE      = "Move Contact";
     private static final String COMMAND_PICTURE_SEND    = "Set Picture";
     private static final String COMMAND_PICTURE_RESET   = "Clear Picture";
     private static final String COMMAND_GLOBAL_AWAY     = "Away All";
@@ -172,6 +172,7 @@ public class MenuManager {
             if (Main.getConnections().get(i).isLoggedIn())
                 Main.getConnections().get(i).setAway(away);
         }
+        Main.getPeoplePanel().update(); // todo this is mostly for debugging. sorta harmless here.
     }
 
     public static void setForwardee(Contact wrapper) {
@@ -372,7 +373,7 @@ public class MenuManager {
     /**
      * Provides menu command support for all menues in main GUI.
      */
-    static class MenuHandler implements ActionListener {
+    public static class MenuHandler implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             new ActionProceed(e).start();
         }
@@ -462,38 +463,45 @@ public class MenuManager {
                 OrderEntryLog.getInstance().showFrame();
             } else if (COMMAND_BUDDY_MOVE.equals(command)) {
                 if (pleaseLogIn()) return;
-                JList list = Main.getPeoplePanel().getList();
-                Object []value = list.getSelectedValues();
-                if (value == null || value.length == 0)
+                List value = Main.getPeoplePanel().getSelectedValues();
+                if (value == null || value.size() == 0)
                     return;
                 // learn group
                 Returned result = genericPrompter(Main.getConnections().get(0), Main.getFrame(), null, "Move contacts?");
                 if (result == null) return;
                 Group group = result.group;
                 for (Object o : value) {
-                    if (o instanceof ContactWrapper) {
-                        ((ContactWrapper)o).getConnection().moveContact((ContactWrapper)o, group);
+                    if (o instanceof ContactLabel) {
+                        ContactLabel label = ((ContactLabel)o);
+                        label.getContact().getConnection().moveContact(label.getContact(), label.getGroup(), group);
+/*
+                    } else if (o instanceof ElementContact) {
+                        ElementContact label = ((ElementContact)o);
+                        label.getContact().getConnection().moveContact(label.getContact(), label.getGroup(), group);
+*/
+                    } else {
+                        log.severe("Poor choice of objects");
                     }
                 }
-                Main.getPeoplePanel().getList().repaint();
+                Main.getPeoplePanel().update();
             } else if (COMMAND_BUDDY_REMOVE.equals(command)) {
-                JList list = Main.getPeoplePanel().getList();
-                Object value = list.getSelectedValue();
-                if (value != null) {
-                    if (value instanceof ContactWrapper) {
-                        if (!((ContactWrapper)value).getConnection().isLoggedIn()) {
-                            JOptionPane.showMessageDialog(Main.getFrame(), "Need to be online via " + ((ContactWrapper)value).getConnection().getServiceName() + " to delete contacts.", "Can not proceed:", JOptionPane.ERROR_MESSAGE);
+                List values = Main.getPeoplePanel().getSelectedValues();
+                for (Object value : values) {
+                    if (value instanceof ContactLabel) {
+                        ContactWrapper contactWrapper = ((ContactLabel) value).getContact();
+                        if (!contactWrapper.getConnection().isLoggedIn()) {
+                            JOptionPane.showMessageDialog(Main.getFrame(), "Need to be online via " + contactWrapper.getConnection().getServiceName() + " to delete contacts.", "Can not remove:", JOptionPane.ERROR_MESSAGE);
                         } else {
-                            int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete " + ((ContactWrapper)value).getDisplayName() + " (" + ((ContactWrapper)value).getName()+ ")?", "Delete a contact?", JOptionPane.YES_NO_OPTION);
+                            int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete " + contactWrapper.getDisplayName() + " (" + contactWrapper.getName() + ")?", "Delete a contact?", JOptionPane.YES_NO_OPTION);
                             if (result == JOptionPane.YES_OPTION) {
-                                ((ContactWrapper)value).getConnection().removeContact((Contact) value);
-                                updateContactList(((ContactWrapper)value).getConnection());
+                                contactWrapper.getConnection().removeContact(contactWrapper);
+                                updateContactList(contactWrapper.getConnection());
                             }
                         }
                     } else if (value instanceof GroupWrapper) {
                         int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete entire group " + value + "?", "Delete a group?", JOptionPane.YES_NO_OPTION);
                         if (result == JOptionPane.YES_OPTION) {
-                            for (Connection conn:Main.getConnections()) {
+                            for (Connection conn : Main.getConnections()) {
                                 conn.removeContactGroup((Group) value);
                                 updateContactList(conn);
                                 conn.getGroupList().remove((Group) value);
@@ -577,7 +585,7 @@ public class MenuManager {
         dialog.setVisible(true);
 //        dialog.toFront();
     }
-    public static void sendFileDialog(ContactWrapper contactWrapper, List <File> fileList) {
+    public static void sendFileDialog(Contact contactWrapper, List <File> fileList) {
         final JDialog dialog = new JDialog(Main.getFrame(), "File to Send", true);
         Container pane = dialog.getContentPane();
         pane.setLayout(new GridLayout(0, 2));

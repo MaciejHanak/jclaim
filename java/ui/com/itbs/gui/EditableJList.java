@@ -34,11 +34,14 @@ import java.beans.PropertyChangeListener;
 import java.util.EventObject;
 
 /**
+ * Allows in-cell edit.
+ *
  * @author Alex Rass
  * @since May 30, 2006
  *        Based on http://jroller.com/page/santhosh?entry=making_jlist_editable_no_jtable
  */
 public class EditableJList extends JList implements CellEditorListener {
+    private static final String START_EDITING = "startEditing";
 
     // @author Santhosh Kumar T - santhosh@in.fiorano.com
     public interface MutableListModel extends ListModel {
@@ -98,13 +101,11 @@ public class EditableJList extends JList implements CellEditorListener {
     }
 
     private void init(){
-        getActionMap().put("startEditing", new StartEditingAction());                                                             //NOI18N
-        getActionMap().put("cancel", new CancelEditingAction());                                                                  //NOI18N
+        GUIUtils.addAction(this, KeyEvent.VK_F2, 0, new StartEditingAction());
+        GUIUtils.addAction(this, KeyEvent.VK_ESCAPE, 0, new CancelEditingAction());
         addMouseListener(new MouseListener());
-        getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "startEditing");                                             //NOI18N
-        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel");  //NOI18N
         putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);                                                              //NOI18N
-        setListCellEditor(new DefaultListCellEditor(new JTextField()));
+        setListCellEditor(new DefaultListCellEditor(new BetterTextField()));
     }
 
     public void setListCellEditor(ListCellEditor editor){
@@ -264,6 +265,15 @@ public class EditableJList extends JList implements CellEditorListener {
     /*-------------------------------------------------[ Editing Actions]---------------------------------------------------*/
 
     private static class StartEditingAction extends AbstractAction {
+
+        /**
+         * Defines an <code>Action</code> object with a default
+         * description string and default icon.
+         */
+        public StartEditingAction() {
+            super(START_EDITING);
+        }
+
         public void actionPerformed(ActionEvent e) {
             EditableJList list = (EditableJList)e.getSource();
             if (!list.hasFocus()) {
@@ -285,6 +295,15 @@ public class EditableJList extends JList implements CellEditorListener {
     }
 
     private class CancelEditingAction extends AbstractAction {
+
+        /**
+         * Defines an <code>Action</code> object with a default
+         * description string and default icon.
+         */
+        public CancelEditingAction() {
+            super("CancelEditingAction");
+        }
+
         public void actionPerformed(ActionEvent e) {
             EditableJList list = (EditableJList)e.getSource();
             list.removeEditor();

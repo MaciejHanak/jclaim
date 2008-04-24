@@ -22,13 +22,13 @@ package com.itbs.aimcer.gui;
 
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
+import com.itbs.gui.DelayedActionThread;
 import com.itbs.gui.EditableJList;
 import com.itbs.gui.GUIUtils;
+import com.itbs.util.DelayedThread;
 
 import javax.swing.*;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -40,9 +40,24 @@ import java.util.logging.Logger;
 public class ContactListModel extends AbstractListModel implements ConnectionEventListener, EditableJList.MutableListModel {
     private static final Logger log = Logger.getLogger(LoginPanel.class.getName());
     Connection connection;
-    private static final boolean DEBUG = false;
     private static ContactListModel instance = new ContactListModel();
-    private ContactListModel() {}
+    DelayedThread flagThread;
+
+
+    private ContactListModel() {
+        flagThread = new DelayedActionThread("TreeTableUpdateThread", 1000, null, null, new Runnable() {
+            public void run() {
+//                log.info("Notifying the table of updates.");
+                GUIUtils.runOnAWT(new Runnable() {
+                    public void run() {
+                        fireContentsChanged(this, 1, getSize());
+                    }
+                });
+            }
+        }); // flagThread
+        flagThread.start();
+        
+    }
 
     public static ContactListModel getInstance() {
         return instance;
@@ -122,7 +137,7 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
                     contactWrapper = (ContactWrapper) contact;//ContactWrapper.create(b, connection.get(connIndex));
                     if (contactWrapper.getStatus().isOnline() || !ClientProperties.INSTANCE.isHideOffline() || contactWrapper.getPreferences().isShowInList()) {
                         if (index == count)
-                            return contactWrapper;
+                            return ContactLabel.construct(contactWrapper, groupWrapper);
                         count++;
                     }
                 }
@@ -134,37 +149,18 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
 //    List<ListDataListener> listeners = new ArrayList<ListDataListener>();
 
     void runActionDataChanged() {
-        fireContentsChanged(this, 1, getSize());
+        flagThread.mark();
     }
 
     int delay;
 
     public synchronized void statusChanged(final Connection connection) {
-        GUIUtils.runOnAWT(new Runnable() {
-            public void run() {
-                if (DEBUG)
-                    log.fine("status Changed All" + new Date());
-                runActionDataChanged();
-            }
-        });
+        flagThread.mark();
     }
 
     public synchronized void statusChanged(final Connection connection, final Contact contact,
                               final Status oldStatus) {
-        try {
-//            boolean redraw = (contact.getStatus().isAway() != away || contact.getStatus().isOnline() != online);
-//            if (redraw) {
-            if (true) {
-                if (delay % 10 == 0) {
-                    System.gc();
-                    delay = 0;
-                }
-                delay++;
-                statusChanged(connection);
-            } // redraw
-        } catch (Exception e) {
-            log.log(Level.SEVERE, "", e);
-        }
+        flagThread.mark();
     }
 
     /**
