@@ -1,7 +1,7 @@
 package com.itbs.gui;
 
 import com.itbs.aimcer.bean.ContactWrapper;
-import com.itbs.aimcer.gui.ContactLabel;
+import com.itbs.aimcer.gui.userlist.ContactLabel;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicButtonUI;
