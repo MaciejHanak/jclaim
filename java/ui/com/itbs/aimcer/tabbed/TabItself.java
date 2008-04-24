@@ -4,10 +4,10 @@ import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.FileTransferSupport;
 import com.itbs.aimcer.commune.IconSupport;
 import com.itbs.aimcer.commune.MessageSupport;
-import com.itbs.aimcer.gui.ContactLabel;
 import com.itbs.aimcer.gui.Main;
 import com.itbs.aimcer.gui.MessageWindow;
 import com.itbs.aimcer.gui.PersonalInfoPanel;
+import com.itbs.aimcer.gui.userlist.ContactLabel;
 import com.itbs.gui.*;
 
 import javax.swing.*;
