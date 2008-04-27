@@ -39,7 +39,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -179,12 +178,13 @@ public class PeopleListServlet extends HttpServlet {
             String buddyList=""; // list of people
             Map <String, String> params = new HashMap<String, String>(); // used for parameters to the template
             ContactWrapper wrapper;
-            String talkingTo = req.getParameter(paramName);
+            String talkingTo = req.getParameter(paramName);  //comes from url or from post form. should be decoded either way.
             if (talkingTo == null) { // pull up from history
                 wrapper = (ContactWrapper) req.getSession(false).getValue(paramName);
             } else {
                 // set wrapper
-                wrapper = Main.findContact(URLDecoder.decode(talkingTo, "UTF-8"), req.getParameter(paramMedium), req.getParameter(paramAs));
+                wrapper = Main.findContact(talkingTo, req.getParameter(paramMedium), req.getParameter(paramAs));
+//                wrapper = Main.findContact(URLDecoder.decode(talkingTo, "UTF-8"), req.getParameter(paramMedium), req.getParameter(paramAs)); // should already be decoded
             }
 
             if (wrapper!=null) {
@@ -260,7 +260,7 @@ public class PeopleListServlet extends HttpServlet {
                                         + MESSAGE_REST
                                         + contactWrapper.getPreferences().getEmailAddressAsURL()
                                         + (GeneralUtils.isNotEmpty(contactWrapper.getPreferences().getPhone())?" | <input name=\"" + paramSendCell + "\" type=\"submit\" value=\"Page\">":"")
-                                        + "  <input name=\"" + paramName + "\" type=\"hidden\" value=\"" + URLEncoder.encode(contactWrapper.getName(), "UTF-8") + "\">"
+                                        + "  <input name=\"" + paramName + "\" type=\"hidden\" value=\"" + contactWrapper.getName() + "\">"
                                         + "  <input name=\"" + paramMedium + "\" type=\"hidden\" value=\"" + contactWrapper.getConnection().getServiceName() + "\">"
                                         + "  <input name=\"" + paramAs + "\" type=\"hidden\" value=\"" + contactWrapper.getConnection().getUser().getName() + "\">"
                                 );
