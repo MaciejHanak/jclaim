@@ -22,7 +22,7 @@ package com.itbs.aimcer.gui.userlist;
 
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
-import com.itbs.aimcer.gui.LoginPanel;
+import com.itbs.aimcer.gui.Main;
 import com.itbs.gui.DelayedActionThread;
 import com.itbs.gui.EditableJList;
 import com.itbs.gui.GUIUtils;
@@ -39,8 +39,7 @@ import java.util.logging.Logger;
  * @since Sep 9, 2004
  */
 public class ContactListModel extends AbstractListModel implements ConnectionEventListener, EditableJList.MutableListModel {
-    private static final Logger log = Logger.getLogger(LoginPanel.class.getName());
-    Connection connection;
+    private static final Logger log = Logger.getLogger(ContactListModel.class.getName());
     private static ContactListModel instance = new ContactListModel();
     DelayedThread flagThread;
 
@@ -64,16 +63,12 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
         return instance;
     }
 
-    public static void setConnection(Connection connection) {
-        instance.connection = connection;
-    }
-    
+
     public int getSize() {
-        if (connection == null) return 0;
         int sum = 0;
         GroupWrapper groupWrapper;
         ContactWrapper contactWrapper;
-        GroupList glist = connection.getGroupList(); // using trick that it's static
+        GroupList glist = Main.standardGroupFactory.getGroupList(); // using trick that it's static
         for (int i = 0; i < glist.size(); i++) {
             Group group =  glist.get(i);
             if (ClientProperties.INSTANCE.isHideEmptyGroups()  && (group.size() == 0 || (ClientProperties.INSTANCE.isHideOffline() && (group instanceof GroupWrapper) && ((GroupWrapper) group).sizeOnline() == 0))) {
@@ -83,7 +78,7 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
             if (group instanceof GroupWrapper)
                 groupWrapper = (GroupWrapper) group;
             else
-                groupWrapper = (GroupWrapper) connection.getGroupFactory().create(group);
+                groupWrapper = (GroupWrapper) Main.standardGroupFactory.create(group);
 //            log.fine("Group: "+g.getName());
             if (groupWrapper.isShrunk())
                 continue;
@@ -102,16 +97,16 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
     
     /**
      * Returns an element at index.
-     * Todo find out why it returns nulls
+     * Sometimes returns nulls due to the fact that we don't wait for silly awt thread to do things with the underlying list.
+     * 
      * @param index of element
      * @return element or null.
      */
     public Object getElementAt(final int index) {
-        if (connection == null) return null;
         int count = 0;
         GroupWrapper groupWrapper;
         ContactWrapper contactWrapper;
-        Group[] groups = connection.getGroupList().toArray(); // using trick that it's static for the UI
+        Group[] groups = Main.standardGroupFactory.getGroupList().toArray(); // using trick that it's static for the UI
         if (ClientProperties.INSTANCE.isSortContactList()) {
             Arrays.sort(groups, GroupWrapper.COMP_NAME);
         }
@@ -119,7 +114,7 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
             if (group instanceof GroupWrapper)
                 groupWrapper = (GroupWrapper) group;
             else
-                groupWrapper = (GroupWrapper) connection.getGroupFactory().create(group);
+                groupWrapper = (GroupWrapper) Main.standardGroupFactory.create(group);
             // if we don't need to display members, move on.
             if (ClientProperties.INSTANCE.isHideEmptyGroups() && ClientProperties.INSTANCE.isHideOffline() && groupWrapper.sizeOnline() == 0) {
                 continue;
