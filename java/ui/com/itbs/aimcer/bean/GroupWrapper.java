@@ -55,6 +55,7 @@ public class GroupWrapper implements Group, Renderable {
     GroupPreferences preferences;
     private SelectableLabel displayComponent;
 
+
     /**
      * Display component for a Group.
      */

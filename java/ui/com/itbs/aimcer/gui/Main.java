@@ -24,7 +24,6 @@ import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.aimcer.commune.weather.WeatherConnection;
 import com.itbs.aimcer.gui.order.OrderEntryLog;
-import com.itbs.aimcer.gui.userlist.ContactListModel;
 import com.itbs.aimcer.gui.userlist.PeopleScreen;
 import com.itbs.aimcer.gui.userlist.UserList;
 import com.itbs.aimcer.log.LoggerEventListener;
@@ -35,15 +34,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
-import java.io.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * Main class for the JClaim.
@@ -54,7 +48,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public class Main {
     static String TITLE = "JCLAIM";
-    public static String VERSION = "Version: 5.12";
+    public static String VERSION = "Version: 5.21";
     public static final String URL_FAQ = "http://www.itbsllc.com/jclaim/User%20Documentation.htm";
     public static final String EMAIL_SUPPORT = "support@itbsllc.com";
     private static final String LICENSE = System.getProperty("client");
@@ -74,10 +68,6 @@ public class Main {
            (LICENSE==null?"":"\n\nThis version is licensed to: " + LICENSE);
 
     private static final Logger log = Logger.getLogger(Main.class.getName());
-    /** Settings file */
-    private static final File CONFIG_FILE = new File(System.getProperty("user.home"), "jclaim.ini");
-    /** Backup file */
-    private static final File CONFIG_FILE_SAV = new File(System.getProperty("user.home"), "jclaim.sav");
 
     public static final Dimension INITIAL_SIZE = new Dimension(260, 600);
 
@@ -143,6 +133,14 @@ public class Main {
         }
 
         /**
+         * Used to assign stored list.
+         * @param groupList to assign
+         */
+        public void setGroupList(GroupList groupList) {
+            this.groupList = groupList;
+        }
+
+        /**
          * Anyone who has sessions - should not have this be static, but session based hash.
          */
         private static GroupList groupList  = new GroupListImpl();
@@ -181,7 +179,7 @@ public class Main {
         System.setProperty("sun.java2d.noddraw", "true");
         
         System.out.println("" + System.getProperty("proxyHost") + System.getProperty("proxyPort") );
-        loadProperties();
+        SaveFile.loadProperties();
         LookAndFeelManager.setLookAndFeel(ClientProperties.INSTANCE.getLookAndFeelIndex());
         Toolkit.getDefaultToolkit().setDynamicLayout(true);
         motherFrame = GUIUtils.createFrame(TITLE);
@@ -283,7 +281,6 @@ public class Main {
             if (ClientProperties.INSTANCE.isShowWeather())
                 weather.connect();
             ServerStarter.update(); // bring the web server up now, if enabled.
-            ContactListModel.setConnection(weather);
         }
         connection.addEventListener(main.globalEventHandler);
         main.globalWindowHandler.addConnection(connection);
@@ -310,96 +307,13 @@ public class Main {
                     if (connection != null && connection.isLoggedIn())
                         connection.disconnect(true);
                 }
-            saveProperties();
+            SaveFile.saveProperties();
             Thread.yield();
         } finally {
             System.exit(0);
         }
     }
 
-
-    public static synchronized void loadProperties() {
-        // load data
-        if (CONFIG_FILE.exists() && CONFIG_FILE.isFile() && CONFIG_FILE.length() > 0) {
-            Object data;
-            XMLDecoder d = null;
-            try {
-/*
-                boolean newFormat = true;
-                RandomAccessFile raf = new RandomAccessFile(configFile, "r");
-                if (raf.length()>0) {
-                    newFormat = raf.readChar() != '<';
-                }
-                raf.close();
-                if (newFormat)
-*/
-                d = new XMLDecoder(new GZIPInputStream(new FileInputStream(CONFIG_FILE)));
-/*
-                else
-                    d = new XMLDecoder(new FileInputStream(configFile));
-*/
-                data = d.readObject();
-                ClientProperties.setInstance((ClientProperties)data);
-
-                try {
-                    while (true) {
-                        data = d.readObject();
-                        if (data != null) {
-                            ((Connection) data).setProperties(ClientProperties.INSTANCE);
-                            ((Connection) data).assignGroupFactory(standardGroupFactory);
-                            ((Connection) data).assignContactFactory(standardContactFactory);
-                            getConnections().add((MessageSupport) data);
-                        }
-                    }
-                } catch (ArrayIndexOutOfBoundsException  e) {
-                    // no care
-                }
-            } catch (IOException e) {
-                if (e.getMessage().startsWith("Not in ") && e.getMessage().endsWith(" format")) {
-                    Main.complain("File is corrupt.\n To cure the problem, change a setting.  Your setting will be lost, but the error will be fixed.", e);
-                } else {
-                    Main.complain("Failed to load settings.\n" + e.getMessage(), e);
-                }
-            } catch (Exception e) {
-                Main.complain("Failed to load settings\n" + e.getMessage(), e);
-            } finally {
-                if (d!=null)
-                    d.close();
-            }
-        } else {
-            ClientProperties.setFirstTimeUse(true);
-        }
-    }
-
-    public static synchronized void saveProperties() {
-        try {
-            
-            CONFIG_FILE_SAV.delete();
-            final OutputStream out = new GZIPOutputStream(new FileOutputStream(CONFIG_FILE_SAV));
-            XMLEncoder e = new XMLEncoder(out);
-            e.writeObject(ClientProperties.INSTANCE);
-
-            // addConnection what you loaded
-            if (connections.size() > 1) {
-                for (Connection connection : connections) {
-                    if (connection instanceof MessageSupport) {
-                        if (connection!=null)
-                            e.writeObject(connection);
-                    }
-                }
-            }
-            e.flush();
-            e.close();
-            out.flush();
-            out.close();
-            Thread.yield();
-            // save, rename to old.
-            if (!CONFIG_FILE.delete()) { log.severe("Failed to delete " + CONFIG_FILE);  Main.complain("Failed to delete old config file."); }
-            if (!CONFIG_FILE_SAV.renameTo(CONFIG_FILE)) { log.severe("Failed to rename " + CONFIG_FILE_SAV + " to " + CONFIG_FILE); Main.complain("Failed to rename config file."); }
-        } catch (Exception ex) {
-            Main.complain("Failed to save config file.", ex);
-        }
-    }
 
     public static boolean isMyself(String talkingTo, String medium, String as) {
         for (Connection connection: Main.getConnections()) {

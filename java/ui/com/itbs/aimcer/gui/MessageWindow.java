@@ -355,7 +355,7 @@ public class MessageWindow extends MessageWindowBase {
         contactWrapper.getPreferences().setInfoPanelVisible(personalInfo.isVisible());
         if (orderEntry != null)
             contactWrapper.getPreferences().setOrderPanelVisible(orderEntry.isVisible());
-        offUIExecutor.execute(new Runnable() { public void run () { Main.saveProperties(); } });
+        offUIExecutor.execute(new Runnable() { public void run () { SaveFile.saveProperties(); } });
     }
 
     protected Component getButtons() {

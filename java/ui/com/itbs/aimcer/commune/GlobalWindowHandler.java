@@ -35,6 +35,12 @@ public class GlobalWindowHandler implements ContactWindow {
         }
     }
 
+    public void openWindow(List <? extends Contact> allContacts, boolean forceToFront) {
+        for (ContactWindow contactWindow : windowInterfaces) {
+            contactWindow.openWindow(allContacts, forceToFront);
+        }
+    }
+
     public boolean isWindowOpen(Contact buddyWrapper) {
         for (ContactWindow contactWindow : windowInterfaces) {
             boolean wo = contactWindow.isWindowOpen(buddyWrapper);
@@ -66,4 +72,5 @@ public class GlobalWindowHandler implements ContactWindow {
             contactWindow.addPropertyChangeListener();
         }
     }
+
 }

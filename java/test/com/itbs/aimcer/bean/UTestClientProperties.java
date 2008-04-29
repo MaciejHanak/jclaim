@@ -20,7 +20,7 @@
 
 package com.itbs.aimcer.bean;
 
-import com.itbs.aimcer.gui.Main;
+import com.itbs.aimcer.gui.SaveFile;
 import junit.framework.TestCase;
 
 /**
@@ -30,6 +30,6 @@ import junit.framework.TestCase;
  */
 public class UTestClientProperties extends TestCase {
     public void testAquireConfig() throws Exception {
-        Main.loadProperties();
+        SaveFile.loadProperties();
     }
 }

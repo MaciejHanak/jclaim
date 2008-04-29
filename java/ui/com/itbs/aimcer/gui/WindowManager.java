@@ -6,6 +6,7 @@ import com.itbs.aimcer.tabbed.TabbedWindow;
 import com.itbs.util.SoundHelper;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -28,6 +29,12 @@ public class WindowManager {
         public void openWindow(Contact buddyWrapper, boolean forceToFront) {
             if (ClientProperties.INSTANCE.getInterfaceIndex()==INTERFACE_WINDOWED) { // || buddyWrapper.getPreferences().isWindowPreferred
                 MessageWindow.openWindow(buddyWrapper, forceToFront);
+            }
+        }
+
+        public void openWindow(List<? extends Contact> allContacts, boolean forceToFront) {
+            if (ClientProperties.INSTANCE.getInterfaceIndex()==INTERFACE_WINDOWED) { // || buddyWrapper.getPreferences().isWindowPreferred
+                MessageGroupWindow.openWindow(allContacts.toArray(new ContactWrapper[allContacts.size()]));
             }
         }
 
@@ -68,6 +75,13 @@ public class WindowManager {
         public void openWindow(Contact buddyWrapper, boolean forceToFront) {
             if (ClientProperties.INSTANCE.getInterfaceIndex()==INTERFACE_TABBED) {
                 TabbedWindow.getINSTANCE().addTab(buddyWrapper, forceToFront);
+            }
+        }
+
+        public void openWindow(List<? extends Contact> allContacts, boolean forceToFront) {
+            if (ClientProperties.INSTANCE.getInterfaceIndex()==INTERFACE_TABBED) {
+//                TabbedWindow.getINSTANCE().addTab(allContacts, forceToFront);
+                MessageGroupWindow.openWindow(allContacts.toArray(new ContactWrapper[allContacts.size()]));
             }
         }
 
@@ -133,6 +147,9 @@ public class WindowManager {
             if (SoundHelper.playSound(ClientProperties.INSTANCE.getSoundNewWindow())) {
                 map.put(buddyWrapper, System.currentTimeMillis()); // don't forget to update this puppy
             }
+        }
+
+        public void openWindow(List<? extends Contact> allContacts, boolean forceToFront) {            
         }
 
         public boolean isWindowOpen(Contact buddyWrapper) {

@@ -3,6 +3,7 @@ package com.itbs.aimcer.bean;
 import com.itbs.aimcer.commune.MessageSupport;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Defines the minimal calls that a window messaging implementation needs to support.
@@ -12,6 +13,7 @@ import java.io.IOException;
  */
 public interface ContactWindow {
     void openWindow(Contact buddyWrapper, boolean forceToFront);
+    void openWindow(List <? extends Contact> allContacts, boolean forceToFront);
     boolean isWindowOpen(Contact buddyWrapper);
     void closeWindow(Contact buddyWrapper);
 

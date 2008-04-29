@@ -35,7 +35,7 @@ public class UTestPropertiesDialog extends UTestFrameTest {
      */
     public void setUp() throws Exception {
         super.setUp();
-        Main.loadProperties();
+        SaveFile.loadProperties();
         JLabel label = new JLabel();
         label.setText("mo");
         label.setText("<HTML>bo<u>b</u></HTML>");

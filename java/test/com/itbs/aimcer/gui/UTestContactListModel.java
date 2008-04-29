@@ -23,6 +23,7 @@ package com.itbs.aimcer.gui;
 import com.itbs.aimcer.bean.ContactWrapper;
 import com.itbs.aimcer.bean.GroupWrapper;
 import com.itbs.aimcer.commune.Connection;
+import com.itbs.aimcer.gui.userlist.ContactListModel;
 
 import javax.swing.*;
 import java.awt.*;

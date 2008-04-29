@@ -21,10 +21,8 @@
 package com.itbs.aimcer.bean;
 
 import com.itbs.aimcer.commune.Connection;
-import com.itbs.aimcer.gui.ContactLabel;
 import com.itbs.aimcer.gui.ImageCacheUI;
-import com.itbs.aimcer.gui.ListRenderer;
-import com.itbs.gui.GUIUtils;
+import com.itbs.aimcer.gui.Main;
 import com.itbs.util.GeneralUtils;
 
 import javax.swing.*;
@@ -40,8 +38,7 @@ import java.util.*;
  * @author Alex Rass
  * @since Sep 9, 2004
  */
-public class ContactWrapper implements Contact, Renderable {
-    private final static Color SELECTED = new Color(127, 190, 240);
+public class ContactWrapper implements Contact {
 
     public static Comparator <Nameable> COMP_NAME = new NameComparator();
 
@@ -60,10 +57,8 @@ public class ContactWrapper implements Contact, Renderable {
     private ContactPreferences preferences;
     private long lastDisclaimerTime;
     private Connection connection;
-    private ContactLabel displayComponent;
-    private JPanel offsetPanel;
 
-//    private static Map<String, ContactWrapper> wrappers = new HashMap<String, ContactWrapper>(50);
+    //    private static Map<String, ContactWrapper> wrappers = new HashMap<String, ContactWrapper>(50);
     static Map<String,ContactWrapper> wrappers = Collections.synchronizedMap(new HashMap<String, ContactWrapper>(50));
 
     public static ContactWrapper create(Nameable buddy, Connection connection){
@@ -114,16 +109,6 @@ public class ContactWrapper implements Contact, Renderable {
         this.connection = con;
         this.status = createStatus();
         preferences = ClientProperties.findBuddyPreferences(name + "|" + (connection==null?"":connection.getServiceName()));
-        offsetPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        displayComponent = new ContactLabel(this);
-        updateDisplayComponent();
-        JPanel spacer = new JPanel() {
-            public Dimension getPreferredSize() {
-                return new Dimension(5, 0);
-            }
-        };
-        offsetPanel.add(spacer);
-        offsetPanel.add(displayComponent);
     }
 
     /**
@@ -184,11 +169,9 @@ public class ContactWrapper implements Contact, Renderable {
      * for example contactPreferences: made this call public.
      */
     public void updateDisplayComponent() {
-        GUIUtils.runOnAWT(new Runnable(){
-            public void run() {
-                displayComponent.update();
-            }
-        });
+        if (Main.getPeoplePanel()!=null) {
+            Main.getPeoplePanel().update();
+        }
     } // updateDisplayComponent()
 
 
@@ -263,15 +246,6 @@ public class ContactWrapper implements Contact, Renderable {
         return super.toString();
     }
 
-    public JComponent getDisplayComponent(boolean isSelected, boolean cellHasFocus) {
-        displayComponent.setBackground(isSelected ? SELECTED: ListRenderer.NOT_SELECTED);
-        displayComponent.setOpaque(isSelected);
-        return offsetPanel;
-    }
-
-    public String getToolTipText() {
-        return displayComponent.getToolTipText();
-    }
 
     private class ContactStatus extends StatusImpl {
         public ContactStatus(Contact parent) {

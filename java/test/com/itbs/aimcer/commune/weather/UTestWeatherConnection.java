@@ -22,9 +22,9 @@ package com.itbs.aimcer.commune.weather;
 
 import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.aimcer.bean.ContactWrapper;
-import com.itbs.aimcer.gui.ContactLabel;
 import com.itbs.aimcer.gui.Main;
 import com.itbs.aimcer.gui.UTestFrameTest;
+import com.itbs.aimcer.gui.userlist.ContactLabel;
 
 /**
  * Test class.

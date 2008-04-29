@@ -495,6 +495,7 @@ public class MenuManager {
                         } else {
                             int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete " + contactWrapper.getDisplayName() + " (" + contactWrapper.getName() + ")?", "Delete a contact?", JOptionPane.YES_NO_OPTION);
                             if (result == JOptionPane.YES_OPTION) {
+                                ((ContactLabel) value).getGroup().remove(contactWrapper);
                                 contactWrapper.getConnection().removeContact(contactWrapper);
                                 updateContactList(contactWrapper.getConnection());
                             }

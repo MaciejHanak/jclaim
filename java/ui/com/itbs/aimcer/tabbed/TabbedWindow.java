@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -80,7 +81,7 @@ public class TabbedWindow {
              */
             public void windowClosing(WindowEvent e) {
                 tabbedPane.removeAll();
-                offUIExecutor.execute(new Runnable() { public void run () { Main.saveProperties(); } });
+                offUIExecutor.execute(new Runnable() { public void run () { SaveFile.saveProperties(); } });
                 System.gc();
                 frame.setVisible(false);
             }
@@ -614,13 +615,20 @@ public class TabbedWindow {
             }
         }
 
-        public void pictureReceived(IconSupport connection, Contact contact) {
+        public void pictureReceived(IconSupport connection, final Contact contact) {
             tabbedPane.lock();
             try {
-                TabItself tab = findTab(contact);
-                if (tab!=null) {
-                    tab.userIcon.setIcon(contact.getPicture());
-                }
+                final TabItself tab = findTab(contact);
+                GUIUtils.runOnAWT(new Runnable() {
+                    public void run() {
+                        if (tab!=null) {
+                            tab.userIcon.setIcon(contact.getPicture());
+                            tab.userIcon.invalidate();
+                            tab.userIcon.getParent().invalidate();
+                            tab.userIcon.getParent().validate();
+                        }
+                    }
+                });
             } finally {
                 tabbedPane.unlock();
             }
@@ -659,6 +667,38 @@ public class TabbedWindow {
         }
         addTextToHistoryPanel(contact, message, false);
     }
+
+    public void addTab(List<? extends Contact> allContacts, final boolean forceToFront) {
+        tabbedPane.lock();
+        try {
+            // Lets assume they don't do this twice for no reason. so no searching.
+            final TabItself tab = new TabItself(allContacts.get(0), tabbedPane);
+            tabbedPane.addTab("Group Send", tab);
+            tab.addTabComponent();
+            tab.setLabelFromStatus();
+            GUIUtils.runOnAWT(new Runnable() {
+                public void run() {
+                    if (forceToFront || ClientProperties.INSTANCE.isForceFront()) {
+                        tabbedPane.setSelectedComponent(tab);
+                    } else {
+                        tabbedPane.setSelectedComponent(currentTab);
+                    }
+                    if (forceToFront || ClientProperties.INSTANCE.isEasyOpen()) {
+                        frame.setVisible(true);
+                        frame.toFront();
+                        frame.setState(Frame.NORMAL);
+                    }
+                    if (ClientProperties.INSTANCE.isUseAlert()) {
+                        TrayAdapter.alert(frame);
+                    }
+                }
+            });
+        } finally {
+            tabbedPane.unlock();
+        }
+    }
+
+
 
     /**
      * This will add a tab and possible force it open.

@@ -22,13 +22,13 @@ package com.itbs.aimcer.gui.userlist;
 
 import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.aimcer.bean.ContactWrapper;
+import com.itbs.aimcer.bean.Group;
 import com.itbs.aimcer.bean.GroupWrapper;
 import com.itbs.aimcer.commune.ConnectionEventListener;
 import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.commune.weather.WeatherConnection;
 import com.itbs.aimcer.gui.Main;
 import com.itbs.aimcer.gui.MenuManager;
-import com.itbs.aimcer.gui.MessageGroupWindow;
 import com.itbs.gui.AbstractFileTransferHandler;
 import com.itbs.gui.ActionAdapter;
 import com.itbs.gui.EditableJList;
@@ -183,12 +183,45 @@ final public class PeopleScreen extends JPanel implements UserList {
                                 }
                             }
                             if (allContacts.size() == 1) {
-                                Main.globalWindowHandler.openWindow(allContacts.get(0), false);
-                            } else
-                                MessageGroupWindow.openWindow(allContacts.toArray(new ContactWrapper[allContacts.size()]));
+                                Main.globalWindowHandler.openWindow(allContacts.get(0), true);
+                            } else {
+                                Main.globalWindowHandler.openWindow(allContacts, true);
+                            }
                         }
                     });
                     menu.add(item);
+
+                    { // Copy into a group code
+                        item = new JMenuItem("Copy into a group");
+                        item.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                if (items.length > 0) {
+                                    String name = JOptionPane.showInputDialog(Main.getFrame(), "Enter the new group's name", "Group", JOptionPane.QUESTION_MESSAGE);
+                                    if (name!=null) {
+                                        Group group = Main.standardGroupFactory.create(name);
+                                        for (Object selected : items) {
+                                            if (selected instanceof ContactLabel) {
+                                                group.add(((ContactLabel) selected).getContact());
+                                            } else if (selected instanceof GroupWrapper) {
+                                                GroupWrapper sgroup = (GroupWrapper) selected;
+                                                for (int j = 0; j < sgroup.size(); j++) {
+                                                    if (sgroup.get(j) instanceof ContactWrapper)
+                                                        group.add(sgroup.get(j));
+                                                }
+                                            } else {
+                                                log.info("This is weird: " + selected.getClass() + ": " + selected);
+                                            }
+                                        }
+                                        Main.standardGroupFactory.getGroupList().add(group);
+                                    }
+                                }
+                            }
+                        });
+
+                        menu.add(item);
+                    }
+
+
                     if (list.getSelectedValue() instanceof ContactLabel) {
                         final JMenuItem itemHide = new JMenuItem("Hide/Unhide (Keep Offline)");
                         final boolean hide = !((ContactLabel)list.getSelectedValue()).getContact().getPreferences().isHideFromList();

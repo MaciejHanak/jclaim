@@ -481,7 +481,7 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
 
     public static void postCheck() {
         ClientProperties.INSTANCE.setWindowBounds(Main.getFrame().getBounds());
-        Main.saveProperties(); // just in case smth crashes, lets do this early.
+        SaveFile.saveProperties(); // just in case smth crashes, lets do this early.
         TrayAdapter.updateTrayIcon(ClientProperties.INSTANCE.isUseTray());
         MenuManager.setGlobalAway(ClientProperties.INSTANCE.isIamAway());
         Main.getStatusBar().setVisible(false); // this will display properly based on setting.
