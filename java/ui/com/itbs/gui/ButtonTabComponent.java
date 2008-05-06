@@ -21,17 +21,20 @@ public class ButtonTabComponent extends JPanel {
     private final Component panel;
     ContactLabel label;
 
-    public ButtonTabComponent(final BetterTabbedPane pane, final Component panel, ContactWrapper contact) {
+
+    public ButtonTabComponent(final BetterTabbedPane pane, final Component panel, ContactLabel contact) {
         //unset default FlowLayout' gaps
         super(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        setOpaque(false);
+
         if (pane == null || panel == null) {
             throw new NullPointerException("TabbedPane is null or component is");
         }
         this.pane = pane;
         this.panel = panel;
-        setOpaque(false);
+        this.label = contact;
+        
 
-        label = new ContactLabel(contact);
         label.addMouseMotionListener(new MouseMotionListener() {
             public void mouseDragged(MouseEvent e) {
                 dispatchToParent(e);
@@ -56,11 +59,11 @@ public class ButtonTabComponent extends JPanel {
             }
 
             public void mouseEntered(MouseEvent e) {
-                getParent().getParent().dispatchEvent(new MouseEvent(((Component) e.getSource()), e.getID(), e.getWhen(), e.getModifiers(), e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(), e.getButton()));            
+                getParent().getParent().dispatchEvent(new MouseEvent(((Component) e.getSource()), e.getID(), e.getWhen(), e.getModifiers(), e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(), e.getButton()));
             }
 
             public void mouseExited(MouseEvent e) {
-//                dispatchEvent(e); 
+//                dispatchEvent(e);
                 dispatchToParent(e);
             }
         });
@@ -72,6 +75,10 @@ public class ButtonTabComponent extends JPanel {
         add(button);
         //add more space to the top of the component
         setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
+    }
+
+    public ButtonTabComponent(final BetterTabbedPane pane, final Component panel, ContactWrapper contact) {
+        this(pane, panel, new ContactLabel(contact));
     } // Constructor
 
     public void dispatchToParent(MouseEvent e) {
