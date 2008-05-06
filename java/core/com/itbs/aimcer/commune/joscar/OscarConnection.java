@@ -1164,6 +1164,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                 } // if
             } // for
 */
+        if (!isLoggedIn()) return;
         BuddyInfo binfo = connection.getBuddyInfoManager().getBuddyInfo(new Screenname(contact.getName()));
         ByteBlock byteBlock = binfo.getIconData();
         if (byteBlock != null) {
