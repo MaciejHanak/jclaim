@@ -508,6 +508,7 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
 //                } // if connected
         }
         ServerStarter.update();
+        Main.getPeoplePanel().update();
     }
 
 
