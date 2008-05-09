@@ -35,7 +35,7 @@ public class GlobalWindowHandler implements ContactWindow {
         }
     }
 
-    public void openWindow(List <? extends Contact> allContacts, boolean forceToFront) {
+    public void openWindow(List <Contact> allContacts, boolean forceToFront) {
         for (ContactWindow contactWindow : windowInterfaces) {
             contactWindow.openWindow(allContacts, forceToFront);
         }

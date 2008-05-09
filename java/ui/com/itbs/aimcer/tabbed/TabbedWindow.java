@@ -27,7 +27,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -103,18 +102,7 @@ public class TabbedWindow {
                                     Main.complain("Please select a tab first.");
                                     return;
                                 }
-                                if (tab.textPane.getText().trim().length() == 0)
-                                    return;
-                                try {
-                                    Message message = new MessageImpl(tab.getContact(), true, tab.textPane.getText());
-                                    addTextToHistoryPanel(tab.getContact(), message, true);
-                                    ((MessageSupport)tab.getContact().getConnection()).sendMessage(message);
-                                    tab.textPane.setText(""); // wipe it
-                                } catch (Exception e1) {
-                                    log.log(Level.SEVERE, "Failed to send message", e1);
-                                    ErrorDialog.displayError(frame, "Failed to send message", e1);
-                                }
-                                tab.textPane.requestFocusInWindow();
+                                tab.send(null);
                             }
                         }, 'S');
         ACTION_SEND_ALL = new ActionAdapter("Send All", "Send message to all open contacts.",
@@ -138,17 +126,9 @@ public class TabbedWindow {
                                     for (Component eachComponent : components) {
                                         if (eachComponent instanceof TabItself) {
                                             TabItself eachTab = (TabItself) eachComponent;
-                                            message.setName(eachTab.getContact());
-                                            try {
-                                                addTextToHistoryPanel(eachTab.getContact(), message, true);
-                                                ((MessageSupport) eachTab.getContact().getConnection()).sendMessage(message);
-                                            } catch (Exception e1) {
-                                                log.log(Level.SEVERE, "Failed to send message", e1);
-                                                ErrorDialog.displayError(frame, "Failed to send message", e1);
-                                            }
+                                            eachTab.send(message);
                                         }
                                     }
-
                                     tab.textPane.setText(""); // wipe it
                                     tab.textPane.requestFocusInWindow();
                                 } // if yes
@@ -347,7 +327,7 @@ public class TabbedWindow {
         }
 
         boolean found = true;
-        if (!tab.getContact().getStatus().isOnline()) {
+        if (tab.getContact()!=null && !tab.getContact().getStatus().isOnline()) {
             found = false;
             GroupList gl = tab.getContact().getConnection().getGroupList();
             for (int i = 0; i < gl.size(); i++) {
@@ -662,17 +642,21 @@ public class TabbedWindow {
      * @param message msg
      */
     public void feedForBuddy(Contact contact, Message message) {
-        if (!frame.isVisible()) {
-            frame.setVisible(true);
-        }
+        GUIUtils.runOnAWTAndWait(new Runnable() {
+            public void run() {
+                if (!frame.isVisible()) {
+                    frame.setVisible(true);
+                }
+            }
+        });
         addTextToHistoryPanel(contact, message, false);
     }
 
-    public void addTab(List<? extends Contact> allContacts, final boolean forceToFront) {
+    public void addTab(List<Contact> allContacts, final boolean forceToFront) {
         tabbedPane.lock();
         try {
             // Lets assume they don't do this twice for no reason. so no searching.
-            final TabItself tab = new TabItself(allContacts.get(0), tabbedPane);
+            final TabItself tab = new TabMultiContact(allContacts, tabbedPane);
             tabbedPane.addTab("Group Send", tab);
             tab.addTabComponent();
             tab.setLabelFromStatus();
@@ -752,14 +736,35 @@ public class TabbedWindow {
      * @return tab or null
      */
     private TabItself findTab(Contact cw) {
-        Component[] components = tabbedPane.getComponents();
-        for (Component eachComponent : components) {
-            if (eachComponent instanceof TabItself) {
-                TabItself component = (TabItself) eachComponent;
-                if (cw.equals(component.getContact())) return component;
-            }
+        FindClass findClass = new FindClass(tabbedPane, cw);
+        GUIUtils.runOnAWTAndWait(findClass);
+        return findClass.tab;
+
+    }
+    /** Need this class to get result after running it in another thread. */
+    static class FindClass implements Runnable {
+        TabItself tab;
+        BetterTabbedPane tabbedPane;
+        Contact cw;
+
+        public FindClass(BetterTabbedPane tabbedPane, Contact cw) {
+            this.tabbedPane = tabbedPane;
+            this.cw = cw;
         }
-        return null;
+
+        public void run() {
+            Component[] components = tabbedPane.getComponents();  // this blocks if off UI thread.
+            for (Component eachComponent : components) {
+                if (eachComponent instanceof TabItself) {
+                    TabItself component = (TabItself) eachComponent;
+                    if (cw.equals(component.getContact())) {
+                        tab = component;
+                        return;
+                    }
+                }
+            }
+            tab = null;
+        }
     }
 
     public void sortTabs() {

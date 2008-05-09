@@ -48,7 +48,7 @@ import java.util.logging.Logger;
  */
 public class Main {
     static String TITLE = "JCLAIM";
-    public static String VERSION = "Version: 5.21";
+    public static String VERSION = "Version: 5.23";
     public static final String URL_FAQ = "http://www.itbsllc.com/jclaim/User%20Documentation.htm";
     public static final String EMAIL_SUPPORT = "support@itbsllc.com";
     private static final String LICENSE = System.getProperty("client");
@@ -177,7 +177,9 @@ public class Main {
         System.setProperty("com.apple.macos.useScreenMenuBar", "true");
         System.setProperty("apple.laf.useScreenMenuBar", "true");
         System.setProperty("sun.java2d.noddraw", "true");
-        
+
+        ImageCacheUI.ICON_AD.hashCode(); // should load the class's icons.
+
         System.out.println("" + System.getProperty("proxyHost") + System.getProperty("proxyPort") );
         SaveFile.loadProperties();
         LookAndFeelManager.setLookAndFeel(ClientProperties.INSTANCE.getLookAndFeelIndex());

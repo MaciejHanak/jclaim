@@ -20,10 +20,7 @@
 
 package com.itbs.aimcer.gui.userlist;
 
-import com.itbs.aimcer.bean.ClientProperties;
-import com.itbs.aimcer.bean.ContactWrapper;
-import com.itbs.aimcer.bean.Group;
-import com.itbs.aimcer.bean.GroupWrapper;
+import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.ConnectionEventListener;
 import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.commune.weather.WeatherConnection;
@@ -168,7 +165,7 @@ final public class PeopleScreen extends JPanel implements UserList {
                          */
                         public void actionPerformed(ActionEvent e) {
                             // do the do
-                            List <ContactWrapper> allContacts = new ArrayList<ContactWrapper>(items.length);
+                            List <Contact> allContacts = new ArrayList<Contact>(items.length);
                             for (Object selected : items) {
                                 if (selected instanceof ContactLabel) {
                                     allContacts.add(((ContactLabel) selected).getContact());

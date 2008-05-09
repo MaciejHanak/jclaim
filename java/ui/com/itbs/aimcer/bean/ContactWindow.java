@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface ContactWindow {
     void openWindow(Contact buddyWrapper, boolean forceToFront);
-    void openWindow(List <? extends Contact> allContacts, boolean forceToFront);
+    void openWindow(List <Contact> allContacts, boolean forceToFront);
     boolean isWindowOpen(Contact buddyWrapper);
     void closeWindow(Contact buddyWrapper);
 
