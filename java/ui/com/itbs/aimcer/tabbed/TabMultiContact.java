@@ -33,7 +33,6 @@ public class TabMultiContact extends TabItself {
      */
     protected JComponent getPersonalInfo() {
         list =  new CheckBoxJList();
-        list.setCheckboxDefault(true); // lets me default checkboxes once and for all.
         return list;
     }
 
@@ -96,7 +95,7 @@ public class TabMultiContact extends TabItself {
             defModel.addElement(contact);
 
         }
-        list.setSelectionInterval(0, contacts.size());
+        list.setSelectionInterval(0, contacts.size());  // default everyone to on
 
 
         int realHeight = SwingUtilities.getWindowAncestor(tabbedPane).getHeight();
