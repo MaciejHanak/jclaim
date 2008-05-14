@@ -561,11 +561,11 @@ public class TabbedWindow {
         }
 
         public void statusChanged(Connection connection, Contact contact, Status oldStatus) {
-            if (contact.getStatus().isOnline() != oldStatus.isOnline()) {
-                notifyUser("\n" + contact + (contact.getStatus().isOnline()?" is now online.":" has disconnected."), contact);
-            }
             tabbedPane.lock();
             try {
+                if (contact.getStatus().isOnline() != oldStatus.isOnline()) {
+                    notifyUser("\n" + contact + (contact.getStatus().isOnline()?" is now online.":" has disconnected."), contact);
+                }
                 Component[] components = tabbedPane.getComponents();
                 for (Component eachComponent : components) {
                     if (eachComponent instanceof TabItself) {
@@ -642,7 +642,7 @@ public class TabbedWindow {
      * @param message msg
      */
     public void feedForBuddy(Contact contact, Message message) {
-        GUIUtils.runOnAWTAndWait(new Runnable() {
+        GUIUtils.runOnAWT(new Runnable() { //AndWait was there before. But why wait if it already exists?
             public void run() {
                 if (!frame.isVisible()) {
                     frame.setVisible(true);
