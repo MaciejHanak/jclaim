@@ -161,14 +161,28 @@ public class BetterTabbedPane extends JTabbedPane {
      *         if there is no tab for this component
      */
     public int indexOfComponent(Component component) {
-        lock();
-        try {
-            return super.indexOfComponent(component);
-        } finally {
-            unlock();
+//        lock();
+//        try {
+            FindIndex finder = new FindIndex(component);
+            GUIUtils.runOnAWTAndWait(finder); // so that we know that swing didn't mess with it
+            return finder.index;
+//        } finally {
+//            unlock();
+//        }
+    }
+    /** Helper Class */
+    class FindIndex implements Runnable {
+        int index;
+        Component component;
+
+        public FindIndex(Component component) {
+            this.component = component;
+        }
+
+        public void run() {
+            index = BetterTabbedPane.super.indexOfComponent(component);
         }
     }
-
 
     /**
      * Returns the tab component at <code>index</code>.
