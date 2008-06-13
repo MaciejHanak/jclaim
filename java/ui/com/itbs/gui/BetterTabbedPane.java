@@ -27,18 +27,21 @@ public class BetterTabbedPane extends JTabbedPane {
     private static final String TAB_CLOSE = "Tab Close";
 
     public void lock() {
-        lock.lock();
+        tryLock();
+//        lock.lock();   // I'd like to use this, but Swing hangs in paint methods (WHY!?). and so we can't.
     }
     public boolean tryLock() {
         try {
-            return lock.tryLock() || lock.tryLock(50, TimeUnit.MILLISECONDS);
+            return lock.tryLock() || lock.tryLock(1000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             return false;
         }
     }
 
     public void unlock() {
-        lock.unlock();
+        if (lock.isHeldByCurrentThread()) {
+            lock.unlock();
+        }
     }
 
     /**
