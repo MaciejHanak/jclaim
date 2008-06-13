@@ -295,7 +295,8 @@ final public class PeopleScreen extends JPanel implements UserList {
     }
 
     public void update() {
-        list.repaint();
+        ((ContactListModel)list.getModel()).runActionDataChanged();
+//        list.repaint(); // this was causing silly repaint problems.
     }
 
     public JComponent getDisplayComponent() {
