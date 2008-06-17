@@ -45,7 +45,7 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
 
 
     private ContactListModel() {
-        flagThread = new DelayedActionThread("TreeTableUpdateThread", 1000, null, null, new Runnable() {
+        flagThread = new DelayedActionThread("TreeTableUpdateThread", 500, null, null, new Runnable() {
             public void run() {
 //                log.info("Notifying the table of updates.");
                 GUIUtils.runOnAWT(new Runnable() {
@@ -56,7 +56,6 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
             }
         }); // flagThread
         flagThread.start();
-        
     }
 
     public static ContactListModel getInstance() {

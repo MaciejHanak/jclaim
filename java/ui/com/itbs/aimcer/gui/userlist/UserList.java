@@ -14,6 +14,7 @@ import java.util.List;
 public interface UserList {
     List getSelectedValues();
     ConnectionEventListener getConnectionEventListener();
+    /** Forces a refresh on the data */
     void update();
     JComponent getDisplayComponent();
 }

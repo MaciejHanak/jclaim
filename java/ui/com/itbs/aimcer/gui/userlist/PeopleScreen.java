@@ -210,6 +210,7 @@ final public class PeopleScreen extends JPanel implements UserList {
                                             }
                                         }
                                         Main.standardGroupFactory.getGroupList().add(group);
+                                        Main.getPeoplePanel().update();
                                     }
                                 }
                             }

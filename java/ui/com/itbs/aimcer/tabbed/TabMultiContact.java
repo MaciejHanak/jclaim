@@ -33,7 +33,7 @@ public class TabMultiContact extends TabItself {
      */
     protected JComponent getPersonalInfo() {
         list =  new CheckBoxJList();
-        return list;
+        return new JScrollPane(list);
     }
 
 

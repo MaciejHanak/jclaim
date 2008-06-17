@@ -528,16 +528,16 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
 
         public void stateChanged(ChangeEvent e) {
             if (e.getSource() instanceof AbstractButton)
-            for (int i = 0; i < dependents.length; i++) {
-                dependents[i].setEnabled(((AbstractButton) e.getSource()).isSelected());
-            }
+                for (JComponent dependent : dependents) {
+                    dependent.setEnabled(((AbstractButton) e.getSource()).isSelected());
+                }
         }
 
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof AbstractButton)
-            for (int i = 0; i < dependents.length; i++) {
-                dependents[i].setEnabled(((AbstractButton) e.getSource()).isSelected());
-            }
+                for (JComponent dependent : dependents) {
+                    dependent.setEnabled(((AbstractButton) e.getSource()).isSelected());
+                }
         }
     }
 }

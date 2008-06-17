@@ -235,9 +235,15 @@ public class TabItself extends JPanel {
         try {
             GUIUtils.appendText(historyPane, "\n", ATT_NORMAL);
             String prefix = (ClientProperties.INSTANCE.isShowTime() ? TIME_FORMAT.format(new Date()) : "");
-            GUIUtils.appendText(historyPane,
-                    prefix + (toBuddy? ((MessageSupport) contactWrapper.getConnection()).getUserName():contactWrapper.getDisplayName()) + ": ",
-                    toBuddy?ATT_BLUE:ATT_RED);
+            if (contactWrapper!=null) { // sometimes we don't have the contact wrapper (groups).
+                GUIUtils.appendText(historyPane,
+                        prefix + (toBuddy ? ((MessageSupport) contactWrapper.getConnection()).getUserName() : contactWrapper.getDisplayName()) + ": ",
+                        toBuddy ? ATT_BLUE : ATT_RED);
+            } else {
+                GUIUtils.appendText(historyPane,
+                        prefix + ": ",
+                        toBuddy ? ATT_BLUE : ATT_RED);                
+            }
             MutableAttributeSet color = toBuddy ? ATT_GRAY : ATT_NORMAL;
             color=message.isAutoResponse() ? ATT_RED : color;
             GUIUtils.appendText(historyPane, (message.isAutoResponse()?"Automatic: ":"") + (toBuddy?message.getText():message.getPlainText()), color);

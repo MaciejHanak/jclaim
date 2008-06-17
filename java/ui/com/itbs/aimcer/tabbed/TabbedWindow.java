@@ -533,15 +533,16 @@ public class TabbedWindow {
         }
 
         private void notifyUser(String message, Contact contact) {
-            tabbedPane.lock();
-            try {
+            // locking so that tab d/n go away, but that's not needed as the finding happens on awt and having unconnected tab is ok here.
+//            tabbedPane.lock();
+//            try {
                 TabItself tab = findTab(contact);
                 if (tab!=null) {
                     tab.appendHistoryText(new MessageImpl(contact, false, true, message), false);
                 }
-            } finally {
-                tabbedPane.unlock();
-            }
+//            } finally {
+//                tabbedPane.unlock();
+//            }
         }
         private void notifyAllUsers(String message, Connection conn) {
             tabbedPane.lock();
