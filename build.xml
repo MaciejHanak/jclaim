@@ -92,9 +92,9 @@
 
     <!-- Create our packer task, if you get an error here, go get the jar file from web or the included tools/pack200 folder.
      Another way is to replace all pack tags with move (if you are building for JDK 1.4 or below. -->
-    <taskdef name="pack200" classname="com.sun.tools.apache.ant.pack200.Pack200Task" classpath="Pack200Task.jar"/>
+    <taskdef name="pack200" classname="com.sun.tools.apache.ant.pack200.Pack200Task" classpath="lib/Pack200Task.jar"/>
     <!-- Create our unpacker task -->
-    <taskdef name="unpack200" classname="com.sun.tools.apache.ant.pack200.Unpack200Task" classpath="Pack200Task.jar"/>
+    <taskdef name="unpack200" classname="com.sun.tools.apache.ant.pack200.Unpack200Task" classpath="lib/Pack200Task.jar"/>
 
     <!-- =====================   INCLUDES    =============================-->
     <patternset id="path.additionalfiles">
@@ -362,3 +362,4 @@
         </java>
     </target>
  </project>
+    
