@@ -724,7 +724,8 @@ public class MessageWindow extends MessageWindowBase {
          * @param connectionInfo  your private object used to store protocol specific data
          */
         public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) {
-            MessageWindow window = openWindow(contact, false);
+            MessageWindow window = findWindow(contact);
+            if (window==null) return;
             description = description==null ? "": GeneralUtils.stripHTML(description);
             description = description.trim().length()==0?"":"\nDescription: " + description;
             String message = "\n" + contact.getName() + " is trying to send you a file: " + filename + description;
