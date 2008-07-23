@@ -18,7 +18,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ContactLabel extends JLabel implements Renderable {
     private final static Color SELECTED = new Color(127, 190, 240);
-    public static final int WIDTH_INC = 8;
+    public static final int SIZE_WIDTH_INC = 8;
+    public static final int SIZE_HEIGHT_INC = 2;
 
     public static final Font NORM = new Font("sansserif", Font.PLAIN, ClientProperties.INSTANCE.getFontSize());
     public static final Font BOLD = new Font("sansserif", Font.BOLD, ClientProperties.INSTANCE.getFontSize());
@@ -53,8 +54,7 @@ public class ContactLabel extends JLabel implements Renderable {
     public static ContactLabel construct(ContactWrapper contact, Group group) {
         ContactLabel returnable = INSTANCES.get(generateUID(contact, group));
         if (returnable==null) {
-            ContactLabel contactLabel = new ContactLabel(contact, group);
-            return contactLabel;
+            return new ContactLabel(contact, group);
         } else {
             returnable.update();
             return returnable;
@@ -79,7 +79,8 @@ public class ContactLabel extends JLabel implements Renderable {
             }
         } else {
             setText(contact.getDisplayName() + (contact.getStatus().isOnline()?" (Online)":" (Offline)"));
-            setIcon(null);
+//            setIcon(null);
+            setIcon(contact.getIcon());
             setFont(OFF);
             setForeground(AWAY);
             final String temp = "Last Seen on " + contact.getConnection().getServiceName() + (contact.getPreferences().getLastConnected() == null ? " Not yet." : (" " + contact.getPreferences().getLastConnected()));
@@ -102,12 +103,13 @@ public class ContactLabel extends JLabel implements Renderable {
      */
     public Dimension getPreferredSize() {
         Dimension dim = super.getPreferredSize();
-        dim.width += WIDTH_INC;
+        dim.width += SIZE_WIDTH_INC;
+        dim.height += SIZE_HEIGHT_INC;
         return dim;
     }
 
     protected void paintComponent(Graphics g) {
-        g.translate(WIDTH_INC, 0);
+        g.translate(SIZE_WIDTH_INC, SIZE_HEIGHT_INC/2);
         super.paintComponent(g);  
     }
 }
