@@ -101,7 +101,7 @@ public class GroupLabel extends JLabel implements Renderable {
         if (group.isShrunk()) { // no items displayed.
             g2.fillPolygon(new int[] {B_CLOSE_SHIFT, B_CLOSE_SHIFT+B_HEIGHT, B_CLOSE_SHIFT}, new int[] {0, B_WIDTH/2, B_WIDTH}, 3);
         } else { // items displayed
-            g2.fillPolygon(new int[] {0, B_WIDTH, B_WIDTH/2}, new int[] {0, 0, B_HEIGHT}, 3);
+            g2.fillPolygon(new int[] {0, B_WIDTH, B_WIDTH/2}, new int[] {B_CLOSE_SHIFT, B_CLOSE_SHIFT, B_CLOSE_SHIFT+B_HEIGHT}, 3);
         }
 
 //        int delta = 6;
