@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ContactLabel extends JLabel implements Renderable {
     private final static Color SELECTED = new Color(127, 190, 240);
     public static final int SIZE_WIDTH_INC = 8;
-    public static final int SIZE_HEIGHT_INC = 2;
+    public static final int SIZE_HEIGHT_INC = 3;
 
     public static final Font NORM = new Font("sansserif", Font.PLAIN, ClientProperties.INSTANCE.getFontSize());
     public static final Font BOLD = new Font("sansserif", Font.BOLD, ClientProperties.INSTANCE.getFontSize());
@@ -47,12 +47,12 @@ public class ContactLabel extends JLabel implements Renderable {
         return (cw.getName()+ "|" + cw.getConnection() + "|" + cw.getConnection().getUser().getName()).intern(); // will likely get it again and again
     }
 
-    public static String generateUID(Contact cw, Group group) {
+    protected static String generateUID(Contact cw, Group group) {
         return (cw.getName()+ "|" + cw.getConnection() + "|" + cw.getConnection().getUser().getName() + "|" + group.getName()).intern(); // will likely get it again and again
     }
 
     public static ContactLabel construct(ContactWrapper contact, Group group) {
-        ContactLabel returnable = INSTANCES.get(generateUID(contact, group));
+        ContactLabel returnable = INSTANCES.get(generateUID(contact, group)); // put is inside constructor
         if (returnable==null) {
             return new ContactLabel(contact, group);
         } else {

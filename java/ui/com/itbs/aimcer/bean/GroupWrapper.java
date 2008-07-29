@@ -21,6 +21,7 @@
 package com.itbs.aimcer.bean;
 
 import com.itbs.aimcer.commune.Connection;
+import com.itbs.aimcer.gui.userlist.GroupLabel;
 import com.itbs.util.GeneralUtils;
 
 import javax.swing.*;
@@ -47,43 +48,22 @@ public class GroupWrapper implements Group, Renderable {
     private static Map<String,GroupWrapper> wrappers = new HashMap<String, GroupWrapper>(10);
     public static Comparator <Nameable> COMP_NAME = new NameComparator();
 
-    private final static Color SELECTED = new Color(127, 127, 240);
-
     // Local stuff
     String name;
     private List<Nameable> contacts = new CopyOnWriteArrayList<Nameable>();
     GroupPreferences preferences;
-    private SelectableLabel displayComponent;
+    private GroupLabel displayComponent;
 
 
-    /**
-     * Display component for a Group.
-     */
-    static class SelectableLabel extends JLabel{
-        private boolean selected;
-        public boolean isSelected() {
-            return selected;
-        }
-        public void setSelected(boolean selected) {
-            this.selected = selected;
-        }
-
-        public void paint(Graphics g) {
-            if (!selected) {
-                Graphics2D g2d = (Graphics2D)g;
-                g2d.setPaint(new GradientPaint(0, (getHeight() + 1) / 2, Color.WHITE, 0, getHeight(), Color.GRAY, false));
-                g2d.fillRect(0,0,getWidth(),getHeight());
-            } else {
-                setBackground(SELECTED);
-            }
-            super.paint(g);   //Todo change
-        }
-    }
 //    private static Map<String, GroupWrapper> wrappers = new HashMap<String, GroupWrapper>(10);
 
+    /**
+     * Constructor
+     * @param name of the group
+     */
     private GroupWrapper(String name) {
         this.name = name;
-        displayComponent = new SelectableLabel();
+        displayComponent = new GroupLabel(this);
         preferences = ClientProperties.findGroupPreferences(name);
     }
 
@@ -136,6 +116,10 @@ public class GroupWrapper implements Group, Renderable {
         return name;
     }
 
+    /**
+     * Is Folded
+     * @return true if group is folded and no items are displayed for that list.
+     */
     public boolean isShrunk() {
         return preferences.isFold();
     }
@@ -162,27 +146,8 @@ public class GroupWrapper implements Group, Renderable {
         return create(group.getName());
     }
 
-    public static final Font NORM = new Font("sansserif", Font.BOLD, ClientProperties.INSTANCE.getFontSize() + 1);
-    public static final Color GROUP = Color.YELLOW;
-
     public JComponent getDisplayComponent(boolean isSelected, boolean cellHasFocus) {
-        String sign = isShrunk() ? "+ " : "- ";
-        displayComponent.setFont(NORM);
-        displayComponent.setText("  "  + sign + getName() + " - " + sizeOnline() + "/" + size());
-        /* {
-            public void paint(Graphics g) {
-                g.setColor(GROUP);
-                g.drawLine(0, getHeight() / 2, getWidth(), getHeight() / 2);
-                super.paint(g);
-            }
-        };*/
-        displayComponent.setSelected(isSelected);
-//        displayComponent.setBackground(isSelected ? SELECTED : ListRenderer.NOT_SELECTED);
-        displayComponent.setOpaque(isSelected);
-//        if (isSelected && !cellHasFocus)
-//            displayComponent.setBackground(ListRenderer.SELECTED_NO_FOCUS);
-        return displayComponent;
-
+        return displayComponent.getDisplayComponent(isSelected, cellHasFocus);
     }
 
     static class NameComparator implements Comparator<Nameable> {
