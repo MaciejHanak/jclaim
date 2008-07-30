@@ -68,7 +68,7 @@ public class ClientProperties implements ConnectionProperties {
     private static final int DEFAULT_PROXY_PORT = 8080;
     private static final String DISCLAIMER_DEFAULT=""; // "All the messages are being logged."
     private static final int DEFAULT_DISCLAIMER_INTERVAL = 20*60*1000;
-    private static final int DEFAULT_FONT_SIZE = 10;
+    private static final int DEFAULT_FONT_SIZE = 11;
     private static final int DEFAULT_BEEP_DELAY = 5;
     private Map<String, ConnectionInfo> proxyInfo = getPresetOrDefaultConnectionInfo(PROP_PROXY_INFO);
     private String disclaimerMessage = getPresetOrDefault(PROP_DISCLAIMER, DISCLAIMER_DEFAULT);
@@ -107,6 +107,7 @@ public class ClientProperties implements ConnectionProperties {
     private boolean orderCausesShowManageScreen = true;
     private boolean spellCheck = true;
     private boolean spellCheckAllowSlang = true;
+    private boolean matchSplitPane = true;
     private int lookAndFeelIndex = -1;
     /** Default interface.  0 - default, 1 - tabbed windows */
     private int interfaceIndex = 1;
@@ -882,5 +883,14 @@ public class ClientProperties implements ConnectionProperties {
      */
     public void setForwardee(String forwardee) {
         this.forwardee = forwardee;
+    }
+
+
+    public boolean isMatchSplitPane() {
+        return matchSplitPane;
+    }
+
+    public void setMatchSplitPane(boolean matchSplitPane) {
+        this.matchSplitPane = matchSplitPane;
     }
 }

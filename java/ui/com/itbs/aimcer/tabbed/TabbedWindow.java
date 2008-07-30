@@ -19,6 +19,7 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ public class TabbedWindow {
     /** Size of the message box. */
     public static final Rectangle DEFAULT_SIZE = new Rectangle(420, 200, 800, 600);
     public static TabbedWindow INSTANCE = new TabbedWindow();
+    SplitMatcher splitMatcher = new SplitMatcher();
 
     /** Used to execute stuff off UI thread */
     static final Executor offUIExecutor = Executors.newFixedThreadPool(2);
@@ -302,10 +304,12 @@ public class TabbedWindow {
             } catch (IOException e) {
                 // no care
             }
+            tab.splitHistoryTextPane.removePropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, splitMatcher.setTab(null));
             tab.textPane.getDocument().removeDocumentListener(documentListenerForCounter);
             tab.textPane.setAction(null);
         } // if
     }
+
 
     /**
      * Call when new tab is in focus.
@@ -345,6 +349,10 @@ public class TabbedWindow {
         charCount.setText("" + tab.textPane.getDocument().getLength());
         tab.textPane.getDocument().addDocumentListener(documentListenerForCounter);
         tab.textPane.setAction(ACTION_SEND);
+
+        // Mirrors the resized tabs.
+        tab.splitHistoryTextPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, splitMatcher.setTab(tab));
+
         delayedShow.getRunThisLast().run(); // clears typing flag
         // All GUI runtime stuff here:
         GUIUtils.runOnAWT(new Runnable() {
@@ -807,5 +815,30 @@ public class TabbedWindow {
 
     public ConnectionEventListener getConnectionEventListener() {
         return connectionEventListener;
+    }
+
+    private class SplitMatcher implements PropertyChangeListener {
+        /** Current tab */
+        private TabItself tab;
+
+        public SplitMatcher() {
+        }
+
+
+        public SplitMatcher setTab(TabItself tab) {
+            this.tab = tab;
+            return this;
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (tab==null || !ClientProperties.INSTANCE.isMatchSplitPane()) return;
+            // go through all the tabs and resize the other splitHistoryTextPanes
+            Component[] components = tabbedPane.getComponents();
+            for (Component component : components) {
+                if (component!= tab && component instanceof TabItself) {
+                    ((TabItself) component).splitHistoryTextPane.setDividerLocation(tab.splitHistoryTextPane.getDividerLocation());
+                }
+            }
+        }
     }
 } // class TabbedWindow

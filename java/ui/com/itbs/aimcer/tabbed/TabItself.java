@@ -15,9 +15,7 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import java.awt.*;
-import java.awt.event.ContainerAdapter;
-import java.awt.event.ContainerEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -26,6 +24,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * Manages the individual tab.
@@ -83,9 +83,10 @@ public class TabItself extends JPanel {
         splitHistoryTextPane.setResizeWeight(1);
         JPanel temp = new JPanel(new BorderLayout());
         temp.add(splitHistoryTextPane);
+        
         splitNotes = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, temp, getPersonalInfo());
         splitNotes.setOneTouchExpandable(true);
-        splitNotes.setResizeWeight(1);
+        splitNotes.setResizeWeight(1); // sets which site to resize on window resize
         add(splitNotes);
         tabbedPane.addContainerListener(new ContainerAdapter() {
             /**
@@ -128,6 +129,13 @@ public class TabItself extends JPanel {
         } else {
             splitNotes.setDividerLocation((contactWrapper.getPreferences().getHorizontalSeparation()));
         }
+
+        // Here, we can save the state of the side panel and restore it later.
+        splitNotes.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                System.out.println("Save state here "+evt);
+            }
+        });
 
         int index = tabbedPane.indexOfComponent(this);
         tabControl = new ButtonTabComponent(tabbedPane, this, contactWrapper);

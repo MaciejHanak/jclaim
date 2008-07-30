@@ -76,6 +76,7 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
     private final JCheckBox allowCommissionEntry = new JCheckBox("", ClientProperties.INSTANCE.isAllowCommissionEntry());
     private final JCheckBox spellCheck = new JCheckBox("", ClientProperties.INSTANCE.isSpellCheck());
     private final JCheckBox spellCheckAllowSlang = new JCheckBox("", ClientProperties.INSTANCE.isSpellCheckAllowSlang());
+    private final JCheckBox matchSplit = new JCheckBox("", ClientProperties.INSTANCE.isMatchSplitPane());
     private final JComboBox lookAndFeelIndex = LookAndFeelManager.getLookAndFeelCombo(ClientProperties.INSTANCE.getLookAndFeelIndex());
     private final JCheckBox serverEnable = new JCheckBox("", ClientProperties.INSTANCE.isHTTPServerEnabled());
     private final JTextComponent serverPort = new BetterTextField(""+ClientProperties.INSTANCE.getHTTPServerPort());
@@ -271,6 +272,8 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
         props.add(getLabel("Allow Slang: ", "Spell checker allows slang tems", spellCheckAllowSlang));
         props.add(spellCheckAllowSlang);
         spellCheck.addActionListener(new TurnOffDependents(new JComponent[] {spellCheckAllowSlang}));
+        props.add(getLabel("Match Split: ", "Will synchronize split size accross open tabs", matchSplit));
+        props.add(matchSplit);
         if (ClientProperties.INSTANCE.isEnableOrderEntryInSystem()) {
             props.add(getLabel("Show Order Entry: ", "Select if you want the enter and send orders", showOrderEntry));
             props.add(showOrderEntry);
@@ -455,6 +458,7 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
             ClientProperties.INSTANCE.setShowOrderEntry(showOrderEntry.isSelected());
             ClientProperties.INSTANCE.setSpellCheck(spellCheck.isSelected());
             ClientProperties.INSTANCE.setSpellCheckAllowSlang(spellCheckAllowSlang.isSelected());
+            ClientProperties.INSTANCE.setMatchSplitPane(matchSplit.isSelected());
             ClientProperties.INSTANCE.setOrderCausesShowManageScreen(orderCausesShowManageScreen.isSelected());
             ClientProperties.INSTANCE.setAllowCommissionEntry(allowCommissionEntry.isSelected());
             ClientProperties.INSTANCE.setLookAndFeelIndex(lookAndFeelIndex.getSelectedIndex());
