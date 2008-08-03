@@ -559,7 +559,7 @@ public class TabbedWindow {
                 for (Component eachComponent : components) {
                     if (eachComponent instanceof TabItself) {
                         TabItself tab = (TabItself) eachComponent;
-                        if (conn.equals(tab.getContact().getConnection())) {
+                        if (tab.getContact()!=null && conn.equals(tab.getContact().getConnection())) {
                             tab.appendHistoryText(new MessageImpl(tab.getContact(), false, true, message), false);
                         }                            
                     }

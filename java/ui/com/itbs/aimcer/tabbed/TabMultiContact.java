@@ -6,13 +6,12 @@ import com.itbs.aimcer.bean.MessageImpl;
 import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.gui.Main;
 import com.itbs.aimcer.gui.userlist.ContactLabel;
-import com.itbs.gui.BetterTabbedPane;
-import com.itbs.gui.ButtonTabComponent;
-import com.itbs.gui.CheckBoxJList;
-import com.itbs.gui.GUIUtils;
+import com.itbs.gui.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.util.List;
 
 /**
@@ -33,7 +32,28 @@ public class TabMultiContact extends TabItself {
      */
     protected JComponent getPersonalInfo() {
         list =  new CheckBoxJList();
-        return new JScrollPane(list);
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(new JScrollPane(list));
+        JPanel buttonPanel = new JPanel();
+//        buttonPanel.setOpaque(false);
+        buttonPanel.setBackground(UIManager.getLookAndFeel().getDefaults().getColor ("List.background"));
+        buttonPanel.add(new BetterButton(new ActionAdapter("All", "Select All", new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                list.setSelectAll();  // default everyone to on
+            }
+        })));
+        buttonPanel.add(new BetterButton(new ActionAdapter("None", "Select None", new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                list.setSelectionNone();
+            }
+        })));
+        buttonPanel.add(new BetterButton(new ActionAdapter("Invert", "Invert Selection", new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                list.setSelectionInvert();
+            }
+        })));
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+        return panel;
     }
 
 

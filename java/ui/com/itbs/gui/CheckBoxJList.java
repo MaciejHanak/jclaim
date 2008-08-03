@@ -4,11 +4,14 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.util.HashSet;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Class from the book.
  * Cleaned up a little
+ *
+ * Not synchronized, make sure all model changes and UI calls are made on the UI Thread. (AR) 
  */
 public class CheckBoxJList extends JList
     implements ListSelectionListener {
@@ -16,6 +19,7 @@ public class CheckBoxJList extends JList
     static Color listForeground, listBackground,
         listSelectionForeground,
         listSelectionBackground;
+
     static {
         UIDefaults uid = UIManager.getLookAndFeel().getDefaults();
         listForeground =  uid.getColor ("List.foreground");
@@ -24,7 +28,7 @@ public class CheckBoxJList extends JList
         listSelectionBackground =  uid.getColor ("List.selectionBackground");
     }
 
-    HashSet selectionCache = new HashSet();
+    Set <Integer> selectionCache = new CopyOnWriteArraySet<Integer>();
 
     public CheckBoxJList() {
         super();
@@ -32,14 +36,20 @@ public class CheckBoxJList extends JList
         addListSelectionListener (this);
     }
 
-    // ListSelectionListener implementation
+    /**
+     * ListSelectionListener implementation.
+     * Used to check off the checkboxes when item is selected.
+     * Called whenever the value of the selection changes.
+     * @param lse selection event object
+     */
     public void valueChanged (ListSelectionEvent lse) {
+//        if(true) return;
 //        System.out.println (lse);
         if (! lse.getValueIsAdjusting()) {
             removeListSelectionListener (this);
 
             // remember everything selected as a result of this action
-            HashSet newSelections = new HashSet();
+            HashSet <Integer> newSelections = new HashSet<Integer>();
             int size = getModel().getSize();
             for (int i=0; i<size; i++) {
                 if (getSelectionModel().isSelectedIndex(i)) {
@@ -48,37 +58,34 @@ public class CheckBoxJList extends JList
             }
 
             // turn on everything that was previously selected
-            for (Object aSelectionCache : selectionCache) {
-                int index = (Integer) aSelectionCache;
+            for (Integer index : selectionCache) {
 //                System.out.println("adding " + index);
                 getSelectionModel().addSelectionInterval(index, index);
             }
 
-            // add or remove the delta
-            for (Object newSelection : newSelections) {
-                Integer nextInt = (Integer) newSelection;
-                int index = nextInt;
-                if (selectionCache.contains(nextInt))
+            // add or remove the delta (go through newSelections now)
+            for (Integer index : newSelections) {
+                if (selectionCache.contains(index))
                     getSelectionModel().removeSelectionInterval(index, index);
                 else
                     getSelectionModel().addSelectionInterval(index, index);
             }
 
-            // save selections for next time
-            selectionCache.clear();
-            for (int i=0; i<size; i++) {
-                if (getSelectionModel().isSelectedIndex(i)) {
-//                    System.out.println ("caching " + i);
-                    selectionCache.add (i);
-                }
-            }
-
+            cacheSelection(size);
             addListSelectionListener (this);
-
         }
     }
 
-
+    private void cacheSelection(int size) {
+        // save selections for next time
+        selectionCache.clear();
+        for (int i=0; i<size; i++) {
+            if (getSelectionModel().isSelectedIndex(i)) {
+//                    System.out.println ("caching " + i);
+                selectionCache.add (i);
+            }
+        }
+    }
 
 
     public static void main (String[] args) {
@@ -99,8 +106,60 @@ public class CheckBoxJList extends JList
         frame.setVisible(true);
     }
 
+    public void setSelectionInvert() {
+        removeListSelectionListener (this);
 
-    class CheckBoxListCellRenderer extends JComponent 
+        selectionCache.clear();
+        
+        ListSelectionModel model = getSelectionModel();
+        java.util.List<Integer> selectedIndecies = new ArrayList<Integer>();
+        int size = getModel().getSize();
+        for(int i=0; i < size; i++) {
+            if (model.isSelectedIndex(i)) {
+                selectedIndecies.add(i);
+            }
+        }
+        // setAll
+        setSelectionInterval(0, getModel().getSize());
+//        model.clearSelection();
+        // set selection
+/*
+        for(Integer index:selectedIndecies) {
+            model.addSelectionInterval(index, index);
+        }
+*/
+        for(Integer index:selectedIndecies) {
+            model.removeSelectionInterval(index, index);
+        }
+
+        cacheSelection(size);
+        addListSelectionListener (this);
+    }
+
+    public void setSelectAll() {
+        removeListSelectionListener (this);
+
+        selectionCache.clear();
+        setSelectionInterval(0, getModel().getSize());
+
+        cacheSelection(getModel().getSize());
+        addListSelectionListener (this);
+    }
+
+    public void setSelectionNone() {
+        removeListSelectionListener (this);
+
+        selectionCache.clear();
+        getSelectionModel().removeSelectionInterval(0, getModel().getSize());
+        
+        addListSelectionListener (this);
+
+    }
+
+    /**
+     * Does the drawing of the 2 components as one.
+     */
+    static class CheckBoxListCellRenderer extends JComponent
         implements ListCellRenderer {
         DefaultListCellRenderer defaultComp;
         JCheckBox checkbox;
