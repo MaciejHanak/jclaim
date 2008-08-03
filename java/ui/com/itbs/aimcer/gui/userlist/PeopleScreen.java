@@ -168,12 +168,19 @@ final public class PeopleScreen extends JPanel implements UserList {
                             List <Contact> allContacts = new ArrayList<Contact>(items.length);
                             for (Object selected : items) {
                                 if (selected instanceof ContactLabel) {
-                                    allContacts.add(((ContactLabel) selected).getContact());
+                                    ContactWrapper contactWrapper = ((ContactLabel) selected).getContact();
+                                    if (!allContacts.contains(contactWrapper)) {
+                                        allContacts.add(contactWrapper);
+                                    }
                                 } else if (selected instanceof GroupWrapper) {
                                     GroupWrapper group = (GroupWrapper) selected;
                                     for (int j = 0; j < group.size(); j++) {
-                                        if (group.get(j) instanceof ContactWrapper)
-                                            allContacts.add((ContactWrapper) group.get(j));
+                                        if (group.get(j) instanceof ContactWrapper) {
+                                            ContactWrapper contactWrapper = (ContactWrapper) group.get(j);
+                                            if (!allContacts.contains(contactWrapper)) {
+                                                allContacts.add(contactWrapper);
+                                            }
+                                        }
                                     }
                                 } else {
                                     log.info("This is weird: " + selected.getClass() + ": " + selected);
