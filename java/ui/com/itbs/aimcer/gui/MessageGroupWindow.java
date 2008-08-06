@@ -32,7 +32,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -46,13 +48,13 @@ public class MessageGroupWindow  extends MessageWindowBase {
     private static final Logger log = Logger.getLogger(MessageGroupWindow.class.getName());
 
     /** Target Audience */
-    private Contact[] contactWrapper;
+    private List<Contact> contactWrapper;
 
     /**
      * Constructor
      * @param selectedBuddy buddy to work
      */
-    private MessageGroupWindow(final Contact[] selectedBuddy) {
+    private MessageGroupWindow(final List<Contact> selectedBuddy) {
         contactWrapper = selectedBuddy;
         frame = GUIUtils.createFrame("Group Shout");
         frame.setIconImage(ImageCacheUI.ICON_JC.getIcon().getImage());
@@ -64,12 +66,13 @@ public class MessageGroupWindow  extends MessageWindowBase {
                                 if (textPane.getText().trim().length() == 0)
                                     return;
                                 Message message;
-                                for (int i = 0; i < contactWrapper.length; i++) {
-                                    Contact contact = contactWrapper[i];
+                                boolean first = true;
+                                for (Contact contact : contactWrapper) {
                                     message = new MessageImpl(contact, true, textPane.getText());
                                     try {
-                                        if (i==0) {
+                                        if (first) {
                                             addTextToHistoryPanel(message);
+                                            first = false;
                                         }
                                         if (contact.getConnection() instanceof MessageSupport)
                                             ((MessageSupport) contact.getConnection()).sendMessage(message);
@@ -86,12 +89,72 @@ public class MessageGroupWindow  extends MessageWindowBase {
 
     /**
      * Find the window and open it.
-     * If doesn't exist - create one.
-     * @param wrappers to find the window by
+     *
+     * @param allContacts to find the window by
+     * @param allGroups to find the window by
+     * 
      * @return reference to the window
      */
-    public static MessageGroupWindow openWindow(Contact[] wrappers) {
-        return new MessageGroupWindow(wrappers);
+    public static MessageGroupWindow openWindow(List<Contact> allContacts, List<Group> allGroups) {
+        return new MessageGroupWindow(getContacts(allContacts, allGroups));
+    }
+
+    /**
+     * Calculates optimum name for the group.
+     * @param allContacts involved
+     * @param allGroups  involved
+     * @return name
+     */
+    public static String getGroupName(java.util.List<Contact> allContacts, java.util.List <Group> allGroups) {
+        for (Group group : allGroups) {
+            // remove blanks
+            if (group.size()==0) {
+                allGroups.remove(group);
+            }
+        }
+
+        int globalSize = allContacts.size();
+        for (Group group : allGroups) {
+            globalSize += group.size();
+        }
+
+        boolean manyGroups =  allGroups.size()>1;
+        boolean manyContacts =  allContacts.size()>1;
+        boolean contactPresent =  allContacts.size()>0;
+        boolean groupPresent =  allGroups.size()>0;
+        if (!groupPresent && !contactPresent) {
+            return "Empty";
+        }
+        if (!groupPresent && contactPresent) {
+            return (manyContacts?"[G]":"") + allContacts.get(0).getDisplayName() + (manyContacts?"+ "+globalSize:"");
+        }
+        // By now - we at least have one group.
+        return "[G] "+allGroups.get(0).getName() + ((contactPresent || manyGroups)?"+ ":" ") + globalSize;
+    }
+
+    /**
+     * Simplifies the list down to the ordered ppl.
+     * @param allContacts involved
+     * @param allGroups  involved
+     * @return short and simple list. 1 dimensional. no dups.
+     */
+    public static List <Contact> getContacts(List<Contact> allContacts, List <Group> allGroups) {
+        // do the do
+        List <Contact> result = new ArrayList<Contact>(allContacts.size() + allGroups.size());
+        for (Contact contact : allContacts) {
+            if (!result.contains(contact)) {
+                result.add(contact);
+            }
+        }
+        for (Group group : allGroups) {
+            for (int i = 0; i < group.size(); i++) {
+              Nameable contact = group.get(i);
+                if (contact instanceof Contact && !result.contains(contact)) {
+                    result.add((Contact) contact);
+                }
+            }
+        }
+        return result;
     }
 
     protected Component getButtons() {

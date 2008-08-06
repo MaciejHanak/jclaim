@@ -3,8 +3,10 @@ package com.itbs.aimcer.tabbed;
 import com.itbs.aimcer.bean.Contact;
 import com.itbs.aimcer.bean.Message;
 import com.itbs.aimcer.bean.MessageImpl;
+import com.itbs.aimcer.bean.Group;
 import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.gui.Main;
+import com.itbs.aimcer.gui.MessageGroupWindow;
 import com.itbs.aimcer.gui.userlist.ContactLabel;
 import com.itbs.gui.*;
 
@@ -21,9 +23,12 @@ import java.util.List;
 public class TabMultiContact extends TabItself {
     List<Contact> contacts;
     CheckBoxJList list;
-    public TabMultiContact(List<Contact> contacts, BetterTabbedPane tabbedPane) {
+    String tabName;
+
+    public TabMultiContact(List<Contact> contacts, List<Group> allGroups, BetterTabbedPane tabbedPane) {
         super(null, tabbedPane);
-        this.contacts = contacts;
+        this.contacts = MessageGroupWindow.getContacts(contacts, allGroups);
+        tabName = MessageGroupWindow.getGroupName(contacts, allGroups);
     }
 
     /**
@@ -127,7 +132,7 @@ public class TabMultiContact extends TabItself {
         int index = tabbedPane.indexOfComponent(this);
         tabControl = new ButtonTabComponent(tabbedPane, this, new ContactLabel(null){
             public void update() {
-                setText("Group");
+                setText(tabName);
             }
         });
         tabbedPane.setTabComponentAtReflect(index, tabControl);

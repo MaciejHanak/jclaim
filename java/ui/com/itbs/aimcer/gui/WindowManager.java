@@ -32,9 +32,9 @@ public class WindowManager {
             }
         }
 
-        public void openWindow(List<Contact> allContacts, boolean forceToFront) {
+        public void openWindow(List<Contact> allContacts, List<Group> allGroups, boolean forceToFront) {
             if (ClientProperties.INSTANCE.getInterfaceIndex()==INTERFACE_WINDOWED) { // || buddyWrapper.getPreferences().isWindowPreferred
-                MessageGroupWindow.openWindow(allContacts.toArray(new ContactWrapper[allContacts.size()]));
+                MessageGroupWindow.openWindow(allContacts, allGroups);
             }
         }
 
@@ -78,9 +78,9 @@ public class WindowManager {
             }
         }
 
-        public void openWindow(List<Contact> allContacts, boolean forceToFront) {
+        public void openWindow(List<Contact> allContacts, List<Group> allGroups, boolean forceToFront) {
             if (ClientProperties.INSTANCE.getInterfaceIndex()==INTERFACE_TABBED) {
-                TabbedWindow.getINSTANCE().addTab(allContacts, forceToFront);
+                TabbedWindow.getINSTANCE().addTab(allContacts, allGroups, forceToFront);
 //                MessageGroupWindow.openWindow(allContacts.toArray(new ContactWrapper[allContacts.size()]));
             }
         }
@@ -149,7 +149,7 @@ public class WindowManager {
             }
         }
 
-        public void openWindow(List<Contact> allContacts, boolean forceToFront) {            
+        public void openWindow(List<Contact> allContacts, List<Group> allGroups, boolean forceToFront) {
         }
 
         public boolean isWindowOpen(Contact buddyWrapper) {

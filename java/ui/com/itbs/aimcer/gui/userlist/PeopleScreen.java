@@ -166,6 +166,7 @@ final public class PeopleScreen extends JPanel implements UserList {
                         public void actionPerformed(ActionEvent e) {
                             // do the do
                             List <Contact> allContacts = new ArrayList<Contact>(items.length);
+                            List <Group> allGroups = new ArrayList<Group>(5);
                             for (Object selected : items) {
                                 if (selected instanceof ContactLabel) {
                                     ContactWrapper contactWrapper = ((ContactLabel) selected).getContact();
@@ -174,22 +175,15 @@ final public class PeopleScreen extends JPanel implements UserList {
                                     }
                                 } else if (selected instanceof GroupWrapper) {
                                     GroupWrapper group = (GroupWrapper) selected;
-                                    for (int j = 0; j < group.size(); j++) {
-                                        if (group.get(j) instanceof ContactWrapper) {
-                                            ContactWrapper contactWrapper = (ContactWrapper) group.get(j);
-                                            if (!allContacts.contains(contactWrapper)) {
-                                                allContacts.add(contactWrapper);
-                                            }
-                                        }
-                                    }
+                                    allGroups.add(group);
                                 } else {
                                     log.info("This is weird: " + selected.getClass() + ": " + selected);
                                 }
                             }
-                            if (allContacts.size() == 1) {
+                            if (allContacts.size() == 1 && allGroups.size()==0) {
                                 Main.globalWindowHandler.openWindow(allContacts.get(0), true);
                             } else {
-                                Main.globalWindowHandler.openWindow(allContacts, true);
+                                Main.globalWindowHandler.openWindow(allContacts, allGroups, true);
                             }
                         }
                     });

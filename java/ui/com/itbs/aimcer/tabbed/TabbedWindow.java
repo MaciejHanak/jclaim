@@ -661,11 +661,11 @@ public class TabbedWindow {
         addTextToHistoryPanel(contact, message, false);
     }
 
-    public void addTab(List<Contact> allContacts, final boolean forceToFront) {
+    public void addTab(List<Contact> allContacts, List<Group> allGroups, final boolean forceToFront) {
         tabbedPane.lock();
         try {
             // Lets assume they don't do this twice for no reason. so no searching.
-            final TabItself tab = new TabMultiContact(allContacts, tabbedPane);
+            final TabItself tab = new TabMultiContact(allContacts, allGroups, tabbedPane);
             tabbedPane.addTab("Group Send", tab);
             tab.addTabComponent();
             tab.setLabelFromStatus();
