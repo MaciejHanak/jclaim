@@ -150,7 +150,7 @@ public class TabItself extends JPanel {
     void recalculateAttributes() {
         ATT_NORMAL = new SimpleAttributeSet();
         StyleConstants.setFontFamily(ATT_NORMAL,"Monospaced");
-        StyleConstants.setFontSize(ATT_NORMAL, ClientProperties.INSTANCE.getFontSize()+1);
+        StyleConstants.setFontSize(ATT_NORMAL, (int) getFontSize());
         ATT_BLUE = (MutableAttributeSet) ATT_NORMAL.copyAttributes();
         ATT_RED = (MutableAttributeSet) ATT_NORMAL.copyAttributes();
         ATT_GRAY = (MutableAttributeSet) ATT_NORMAL.copyAttributes();
@@ -167,6 +167,10 @@ public class TabItself extends JPanel {
 //        offUIExecutor.execute(new Runnable() { public void run () { Main.saveProperties(); } });
     }
 
+    float getFontSize() {
+        boolean fontLess11 = ClientProperties.INSTANCE.getFontSize()<12;
+        return (fontLess11?1.0F:0.0F) + ClientProperties.INSTANCE.getFontSize();
+    }
 
     /**
      * Created the typing window.
@@ -174,7 +178,8 @@ public class TabItself extends JPanel {
      */
     JComponent getMessage() {
         textPane = new BetterTextPane();
-        textPane.setFont(textPane.getFont().deriveFont(0.0F + ClientProperties.INSTANCE.getFontSize()));
+        textPane.setFont(textPane.getFont().deriveFont(getFontSize()));
+        StyleConstants.setFontSize(ATT_GRAY, textPane.getFont().getSize());
         if (!ClientProperties.INSTANCE.isEnterSends()) {
             textPane.addModifier(KeyEvent.SHIFT_DOWN_MASK);
             textPane.addModifier(KeyEvent.CTRL_DOWN_MASK);
@@ -207,9 +212,6 @@ public class TabItself extends JPanel {
         historyPane.setEditable(false);
         final JScrollPane jScrollPane = new JScrollPane(historyPane, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         jScrollPane.getVerticalScrollBar().setValue(jScrollPane.getVerticalScrollBar().getMaximum());
-
-        if (historyPane.getFont().getSize() > 10)
-            StyleConstants.setFontSize(ATT_GRAY, ClientProperties.INSTANCE.getFontSize());
         return jScrollPane;
     }
 
