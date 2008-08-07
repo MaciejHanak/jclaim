@@ -45,7 +45,7 @@ public class GlobalEventHandler implements ConnectionEventListener {
         if (contact.getStatus().isOnline() && !contact.getStatus().isAway() && contact instanceof ContactWrapper) {
             ContactWrapper cw = (ContactWrapper) contact;
             // if notify AND old status (wasn't online or was away)
-            if (cw.getPreferences().isNotifyOnConnect() && (!contact.getStatus().isOnline() || contact.getStatus().isAway()) ) {
+            if (cw.getPreferences().isNotifyOnConnect() && !oldStatus.isOnline() && (contact.getStatus().isOnline() || contact.getStatus().isAway()) ) {
                 Main.showTooltip(contact.getDisplayName() + " came online.");
             }
         }
