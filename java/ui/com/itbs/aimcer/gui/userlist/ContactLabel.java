@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ContactLabel extends JLabel implements Renderable {
     private final static Color SELECTED = new Color(127, 190, 240);
     public static final int SIZE_WIDTH_INC = 8;
-    public static final int SIZE_HEIGHT_INC = 3;
+    public static final int SIZE_HEIGHT_INC = 2;
 
     public static final Font NORM = new Font("sansserif", Font.PLAIN, ClientProperties.INSTANCE.getFontSize());
     public static final Font BOLD = new Font("sansserif", Font.BOLD, ClientProperties.INSTANCE.getFontSize());
