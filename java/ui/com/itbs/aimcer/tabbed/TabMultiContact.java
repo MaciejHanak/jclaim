@@ -1,9 +1,6 @@
 package com.itbs.aimcer.tabbed;
 
-import com.itbs.aimcer.bean.Contact;
-import com.itbs.aimcer.bean.Message;
-import com.itbs.aimcer.bean.MessageImpl;
-import com.itbs.aimcer.bean.Group;
+import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.gui.Main;
 import com.itbs.aimcer.gui.MessageGroupWindow;
@@ -37,6 +34,7 @@ public class TabMultiContact extends TabItself {
      */
     protected JComponent getPersonalInfo() {
         list =  new CheckBoxJList();
+        list.setCellRenderer(new ContactLabelListCellRenderer());
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(new JScrollPane(list));
         JPanel buttonPanel = new JPanel();
@@ -117,8 +115,9 @@ public class TabMultiContact extends TabItself {
         DefaultListModel defModel = new DefaultListModel();
         list.setModel (defModel);
         for (Contact contact : contacts) {
-            defModel.addElement(contact);
-
+            if (contact instanceof ContactWrapper) {
+                defModel.addElement(new ContactLabel((ContactWrapper) contact));
+            }
         }
         list.setSelectionInterval(0, contacts.size());  // default everyone to on
 
@@ -146,4 +145,39 @@ public class TabMultiContact extends TabItself {
     protected void onClose() {
         // do nothing.
     }
+
+    /**
+     * Does the drawing of the 2 components as one.
+     */
+    static class ContactLabelListCellRenderer extends JComponent
+        implements ListCellRenderer {
+        DefaultListCellRenderer defaultComp;
+        JCheckBox checkbox;
+        public ContactLabelListCellRenderer() {
+            setLayout (new BorderLayout());
+            defaultComp = new DefaultListCellRenderer();
+            checkbox = new JCheckBox();
+            add (checkbox, BorderLayout.WEST);
+            add (defaultComp, BorderLayout.CENTER);
+        }
+
+        public Component getListCellRendererComponent(JList list,
+                                                      Object  value,
+                                                      int index,
+                                                      boolean isSelected,
+                                                      boolean cellHasFocus){
+            checkbox.setSelected (isSelected);
+            if (value instanceof ContactLabel) {
+                ((ContactLabel) value).update();
+            }
+            if (value instanceof JComponent) {
+                checkbox.setBackground(((JComponent) value).getBackground());
+            }
+            removeAll();
+            add (checkbox, BorderLayout.WEST);
+            add ((Component) value, BorderLayout.CENTER);
+            return this;
+        }
+    }
+
 }
