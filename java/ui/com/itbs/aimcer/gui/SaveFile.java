@@ -142,6 +142,7 @@ public class SaveFile {
         String group;
         String connectionType;
         String loginAs;
+        boolean fake;
 
         /** for xml to use */
         public ContactStub() {
@@ -192,7 +193,17 @@ public class SaveFile {
         public void setLoginAs(String loginAs) {
             this.loginAs = loginAs;
         }
+
+
+        public boolean isFake() {
+            return fake;
+        }
+
+        public void setFake(boolean fake) {
+            this.fake = fake;
+        }
     }
+    
     public static class GroupStub {
         String name;
         public GroupStub() { }
@@ -202,10 +213,11 @@ public class SaveFile {
     }
 
     /**
-     * Creates a list of objects to store for ordering information.
+     * Creates a List of objects to store for ordering information.
      * @return ordered list of simple storable objects.
      */
     static List generateTree() {
+//        if (true) return new ArrayList(); // enabling this line and restarting will kill all fake lists.
         List <Object> list  = new ArrayList<Object>(100);
         GroupWrapper groupWrapper;
         GroupList glist = Main.standardGroupFactory.getGroupList(); // using trick that it's static
@@ -225,6 +237,12 @@ public class SaveFile {
         }
         return list;
     }
+
+    /**
+     * Generates the Group/Contact objects from the stored ones.
+     * Creates a list of Objects out of the List of Objects.
+     * @param list of saved stub objects
+     */
    static void generateObjects(List list) {
         Group lastGroup = null;
         for (Object aList : list) {
@@ -235,11 +253,14 @@ public class SaveFile {
                 Connection connection = findConnection(Main.getConnections(), (ContactStub) aList);
                 if (connection!=null) {
                     Contact lastContact = Main.standardContactFactory.create(((ContactStub) aList).getName(), connection);
+                    if (((ContactStub) aList).isFake()) {
+                        ContactLabel cl = ContactLabel.construct((ContactWrapper) lastContact, lastGroup);
+                        cl.setFake(true);
+                    }
                     lastGroup.add(lastContact);
                 }
-            }
-
-        }
+            } // if ContactStub
+        } // for
     }
 
     static private Connection findConnection(List<Connection> connections, ContactStub clientStub) {
