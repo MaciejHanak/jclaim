@@ -251,10 +251,10 @@ public class TabbedWindow {
         checkBoxPane = new CheckBoxJList();
         checkBoxPane.setModel (new DefaultListModel());
         checkBoxPane.setCellRenderer(new TabMultiContact.ContactLabelListCellRenderer());
-        final JComponent surround = TabMultiContact.getSurround(checkBoxPane);
-        surround.add(new JLabel("Tab List:"), BorderLayout.NORTH);
+        final JPanel surround = TabMultiContact.getSurround(checkBoxPane);
+        ComponentFactory.fixWidget(surround, "Tab List:");
         frame.getContentPane().add(surround, BorderLayout.EAST);
-        checkBoxPane.setVisible(ClientProperties.INSTANCE.isSendListVisible()); //  to do get own property
+        surround.setVisible(ClientProperties.INSTANCE.isSendListVisible()); //  to do get own property
 
 
         ACTION_SEND_LIST = new ActionAdapter("Send List", "Displays/hides the list of tabs", new ActionListener() {

@@ -4,6 +4,7 @@ import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.gui.Main;
 import com.itbs.aimcer.gui.MessageGroupWindow;
+import com.itbs.aimcer.gui.ComponentFactory;
 import com.itbs.aimcer.gui.userlist.ContactLabel;
 import com.itbs.gui.*;
 
@@ -46,28 +47,29 @@ public class TabMultiContact extends TabItself {
     /**
      * Adds a pane around it.
      * Adds the 3 selection buttons.
-     * @param list to enclose.
+     * @param listIn to enclose.
      * @return panel with list and all of the extra features.
      */
-    public static JComponent getSurround(final CheckBoxJList list) {
+    public static JPanel getSurround(final CheckBoxJList listIn) {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JScrollPane(list));
+        JScrollPane scrollPane = new JScrollPane(listIn);
+        panel.add(scrollPane);
         JPanel buttonPanel = new JPanel();
 //        buttonPanel.setOpaque(false);
         buttonPanel.setBackground(UIManager.getLookAndFeel().getDefaults().getColor ("List.background"));
         buttonPanel.add(new BetterButton(new ActionAdapter("All", "Select All", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                list.setSelectAll();  // default everyone to on
+                listIn.setSelectAll();  // default everyone to on
             }
         })));
         buttonPanel.add(new BetterButton(new ActionAdapter("None", "Select None", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                list.setSelectionNone();
+                listIn.setSelectionNone();
             }
         })));
         buttonPanel.add(new BetterButton(new ActionAdapter("Invert", "Invert Selection", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                list.setSelectionInvert();
+                listIn.setSelectionInvert();
             }
         })));
         panel.add(buttonPanel, BorderLayout.SOUTH);
