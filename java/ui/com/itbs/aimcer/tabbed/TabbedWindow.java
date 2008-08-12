@@ -4,6 +4,7 @@ import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.aimcer.commune.SMS.InvalidDataException;
 import com.itbs.aimcer.gui.*;
+import com.itbs.aimcer.gui.userlist.ContactLabel;
 import com.itbs.gui.*;
 import com.itbs.util.DelayedThread;
 import com.itbs.util.GeneralUtils;
@@ -22,9 +23,7 @@ import java.beans.VetoableChangeListener;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -42,7 +41,12 @@ public class TabbedWindow {
 
     /** Container window */
     protected JFrame frame;
-    protected BetterTabbedPane tabbedPane;
+    /** Tabbed Pane with all the tabs */
+    protected BetterTabbedPane tabbedPane;    
+    /** Displays the list of tabs for multisend */
+    CheckBoxJList checkBoxPane;
+
+    /** Reference to the current tab */
     protected TabItself currentTab;
     protected ConnectionEventListener connectionEventListener;
 
@@ -65,7 +69,7 @@ public class TabbedWindow {
         public void changedUpdate(DocumentEvent e) { count(e); }
     };
     JazzyInterface.SpellCheckingDocumentListener documentListenerJazzy;
-    private final AbstractAction ACTION_SEND, ACTION_SEND_ALL, ACTION_ADD, ACTION_LOG, ACTION_PAGE, ACTION_EMAIL, ACTION_SORT;
+    private final AbstractAction ACTION_SEND, ACTION_SEND_ALL, ACTION_ADD, ACTION_LOG, ACTION_PAGE, ACTION_EMAIL, ACTION_SORT, ACTION_SEND_LIST;
 
     public static TabbedWindow getINSTANCE() {
         return INSTANCE;
@@ -82,6 +86,7 @@ public class TabbedWindow {
              */
             public void windowClosing(WindowEvent e) {
                 tabbedPane.removeAll();
+                ((DefaultListModel) checkBoxPane.getModel()).removeAllElements();
                 offUIExecutor.execute(new Runnable() { public void run () { SaveFile.saveProperties(); } });
                 System.gc();
                 frame.setVisible(false);
@@ -107,7 +112,7 @@ public class TabbedWindow {
                                 tab.send(null);
                             }
                         }, 'S');
-        ACTION_SEND_ALL = new ActionAdapter("Send All", "Send message to all open contacts.",
+        ACTION_SEND_ALL = new ActionAdapter("Send All", "Send message to all checked contacts.",
                         new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
                                 // use input box on this tab
@@ -121,14 +126,19 @@ public class TabbedWindow {
 
                                 Component[] components = tabbedPane.getComponents();
                                 if (components.length == 0) return;
-                                int result = JOptionPane.showConfirmDialog(frame, "This will send an IM to all " + components.length + " contacts.\nContinue?", "Confirm", JOptionPane.YES_NO_OPTION);
+                                String warning = "This will send an IM to all ";
+                                warning += ClientProperties.INSTANCE.isSendListVisible()?"checked ":components.length;
+                                warning += " contacts.\nContinue?";
+                                int result = JOptionPane.showConfirmDialog(frame, warning, "Confirm", JOptionPane.YES_NO_OPTION);
                                 if (result == JOptionPane.YES_OPTION) {
                                     MessageImpl message = new MessageImpl(tab.getContact(), true, tab.textPane.getText());
 
                                     for (Component eachComponent : components) {
                                         if (eachComponent instanceof TabItself) {
                                             TabItself eachTab = (TabItself) eachComponent;
-                                            eachTab.send(message);
+                                             if (!ClientProperties.INSTANCE.isSendListVisible() || isChecked(eachTab)) {
+                                                eachTab.send(message);
+                                             }
                                         }
                                     }
                                     tab.textPane.setText(""); // wipe it
@@ -237,6 +247,23 @@ public class TabbedWindow {
             }
         });
 
+
+        checkBoxPane = new CheckBoxJList();
+        checkBoxPane.setModel (new DefaultListModel());
+        checkBoxPane.setCellRenderer(new TabMultiContact.ContactLabelListCellRenderer());
+        final JComponent surround = TabMultiContact.getSurround(checkBoxPane);
+        surround.add(new JLabel("Tab List:"), BorderLayout.NORTH);
+        frame.getContentPane().add(surround, BorderLayout.EAST);
+        checkBoxPane.setVisible(ClientProperties.INSTANCE.isSendListVisible()); //  to do get own property
+
+
+        ACTION_SEND_LIST = new ActionAdapter("Send List", "Displays/hides the list of tabs", new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ClientProperties.INSTANCE.setSendListVisible(!ClientProperties.INSTANCE.isSendListVisible());
+                surround.setVisible(ClientProperties.INSTANCE.isSendListVisible());
+            }
+        });
+
         tabbedPane = new BetterTabbedPane();
         frame.getContentPane().add(tabbedPane);
         frame.getContentPane().add(getButtons(), BorderLayout.SOUTH);
@@ -276,19 +303,65 @@ public class TabbedWindow {
              */
             public void componentRemoved(ContainerEvent e) {
                 if (e.getChild() instanceof TabItself) {
-                    unSetupTab((TabItself) e.getChild());
+                    TabItself tab = (TabItself) e.getChild();
+
+                    // Remove from secondary list
+                    int index = getListIndexOf(tab);
+                    if (index>-1) {
+                        ((DefaultListModel) checkBoxPane.getModel()).remove(index);
+                    }
+
+                    unSetupTab(tab);
                     if (currentTab == e.getChild()) { // same reference?
                         currentTab = null; // tab no more.
                     }
-                    ACTION_SEND.setEnabled(tabbedPane.getComponentCount()>0);
-                    ACTION_SEND_ALL.setEnabled(tabbedPane.getComponentCount()>0);
-                    ACTION_ADD.setEnabled(tabbedPane.getComponentCount()>0);
-                    ACTION_LOG.setEnabled(tabbedPane.getComponentCount()>0);
-                    ACTION_PAGE.setEnabled(tabbedPane.getComponentCount()>0);
-                    ACTION_EMAIL.setEnabled(tabbedPane.getComponentCount()>0);
+
+
                 }
+                ACTION_SEND.setEnabled(tabbedPane.getComponentCount()>0);
+                ACTION_SEND_ALL.setEnabled(tabbedPane.getComponentCount()>0);
+                ACTION_ADD.setEnabled(tabbedPane.getComponentCount()>0);
+                ACTION_LOG.setEnabled(tabbedPane.getComponentCount()>0);
+                ACTION_PAGE.setEnabled(tabbedPane.getComponentCount()>0);
+                ACTION_EMAIL.setEnabled(tabbedPane.getComponentCount()>0);
             }
         });
+    }
+
+    private int getListIndexOf(TabItself tab) {
+        DefaultListModel listModel = (DefaultListModel) checkBoxPane.getModel();
+        for (int i=0; i<listModel.size(); i++) {
+            // find this element
+            JLabel listLabel = (JLabel) listModel.getElementAt(i);
+            if (isEquals(tab, listLabel)) {
+                return i;
+            }
+        } // for
+        return -1;
+    }
+
+    private boolean isChecked(TabItself tab) {
+        int index = getListIndexOf(tab);
+        return index != -1 && checkBoxPane.isSelectedIndex(index);
+    }
+
+    /**
+     * Knows how to match up tabs and labels
+     * @param tab param
+     * @param listLabel param
+     * @return true if label represents this tab.
+     */
+    private boolean isEquals(TabItself tab, JLabel listLabel) {
+        if (tab instanceof TabMultiContact) {
+            if (listLabel.getText().equals(((TabMultiContact) tab).getTabName())) {
+                return true;
+            }
+        } else {
+            if (listLabel.getText().equals(tab.tabControl.getLabel().getText())) {
+                return true;
+            }
+        } // else - normal tab
+        return false;
     }
 
     /**
@@ -353,7 +426,15 @@ public class TabbedWindow {
         // Mirrors the resized tabs.
         tab.splitHistoryTextPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, splitMatcher.setTab(tab));
 
-        delayedShow.getRunThisLast().run(); // clears typing flag
+        // Add and set the item in the Send List
+        int index= getListIndexOf(tab);
+        checkBoxPane.setSelectionNone();
+        if (index>-1) {
+            checkBoxPane.setSelectedIndex(index);
+        }
+
+        // Clear typing flag
+        delayedShow.getRunThisLast().run();
         // All GUI runtime stuff here:
         GUIUtils.runOnAWT(new Runnable() {
             public void run() {
@@ -395,8 +476,13 @@ public class TabbedWindow {
         panel.add(typing);
 
 
+        BetterButton bntSendList = new BetterButton(ACTION_SEND_LIST);
+        Font fontWeakButtons = bntSendList.getFont().deriveFont(bntSendList.getFont().getSize()-1);
+        bntSendList.setFont(fontWeakButtons);
+        panel.add(bntSendList);
+
         BetterButton btnSort = new BetterButton(ACTION_SORT);
-        btnSort.setFont(btnSort.getFont().deriveFont(btnSort.getFont().getSize()-1));
+        btnSort.setFont(fontWeakButtons);
         
         panel.add(btnSort);
         panel.add(new BetterButton(ACTION_EMAIL));
@@ -421,7 +507,7 @@ public class TabbedWindow {
 
         BetterButton sendAll = new BetterButton(ACTION_SEND_ALL);
 //        sendAll.setBackground(sendAll.getBackground().darker());
-        sendAll.setFont(sendAll.getFont().deriveFont(sendAll.getFont().getSize()-1));
+        sendAll.setFont(fontWeakButtons);
         panel.add(sendAll);
         panel.add(new BetterButton(ACTION_SEND));
         south.add(panel);
@@ -465,6 +551,10 @@ public class TabbedWindow {
         tab.appendHistoryText(message, toBuddy);
     }
 
+    /**
+     * Does not automatically get called!
+     * @param buddyWrapper for which wrapper
+     */
     public void closeTab(Contact buddyWrapper) {
         tabbedPane.lock();
         try {
@@ -472,7 +562,7 @@ public class TabbedWindow {
             TabItself tab = findTab(buddyWrapper);
             if (tab!=null) {
                 tabbedPane.remove(tab);
-            }
+            } // tab exists
         } finally {
             tabbedPane.unlock();
         }
@@ -669,6 +759,11 @@ public class TabbedWindow {
             tabbedPane.addTab("Group Send", tab);
             tab.addTabComponent();
             tab.setLabelFromStatus();
+
+            JLabel label = new JLabel(((TabMultiContact) tab).getTabName());
+            ((DefaultListModel) checkBoxPane.getModel()).addElement(label);
+
+
             GUIUtils.runOnAWT(new Runnable() {
                 public void run() {
                     if (forceToFront || ClientProperties.INSTANCE.isForceFront()) {
@@ -712,6 +807,15 @@ public class TabbedWindow {
                 tabbedPane.addTab(cw.getDisplayName(), tab);
                 tab.addTabComponent();
                 tab.setLabelFromStatus();
+
+                JLabel label;
+//                if (tab instanceof TabMultiContact) {
+//                    label = new JLabel(((TabMultiContact) tab).getTabName());
+//                } else {
+                    label = new ContactLabel(tab.getContact());
+//                }
+                ((DefaultListModel) checkBoxPane.getModel()).addElement(label);
+
             } else {
                 finalTab = tab;
             }
@@ -841,4 +945,6 @@ public class TabbedWindow {
             }
         }
     }
+
+    
 } // class TabbedWindow

@@ -133,7 +133,7 @@ public class TabItself extends JPanel {
         // Here, we can save the state of the side panel and restore it later.
         splitNotes.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                System.out.println("Save state here "+evt);
+//                System.out.println("Save state here "+evt);
             }
         });
 

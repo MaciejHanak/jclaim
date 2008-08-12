@@ -27,8 +27,14 @@ public class ContactLabel extends JLabel implements Renderable {
 
     public static final Color PRESENT = Color.BLACK;
     public static final Color AWAY = Color.GRAY;
+
+    /** Reference to contact, for speed. <br>Instead of doing lookup each time. */
     ContactWrapper contact;
+    /** Group contact belongs to. */
     Group group;
+    /** Lets us see if this was a fake contact */
+    boolean fake;
+
     static Map<String, ContactLabel> INSTANCES = new ConcurrentHashMap <String, ContactLabel> ();
 
     public ContactLabel(ContactWrapper contact) {
@@ -49,6 +55,10 @@ public class ContactLabel extends JLabel implements Renderable {
 
     protected static String generateUID(Contact cw, Group group) {
         return (cw.getName()+ "|" + cw.getConnection() + "|" + cw.getConnection().getUser().getName() + "|" + group.getName()).intern(); // will likely get it again and again
+    }
+
+    public static boolean isExists(ContactWrapper contact, Group group) {
+        return INSTANCES.get(generateUID(contact, group))!=null;
     }
 
     public static ContactLabel construct(ContactWrapper contact, Group group) {
@@ -74,7 +84,7 @@ public class ContactLabel extends JLabel implements Renderable {
             setFont(NORM);
             setForeground(contact.getStatus().isAway() ? AWAY : PRESENT);
             if (contact.getConnection() instanceof MessageSupport) {
-                final String temp = contact.getName() + " on " + contact.getConnection().getServiceName() + " as " + ((MessageSupport) contact.getConnection()).getUserName() + (contact.getStatus().isAway() ? (" Idle for " + contact.getStatus().getIdleTime() + "m") : "");
+                final String temp = contact.getName() + " on " + contact.getConnection().getServiceName() + " as " + ((MessageSupport) contact.getConnection()).getUserName() + (contact.getStatus().isAway() ? (" Idle for " + contact.getStatus().getIdleTime() + "m") : ""+ (fake?"(f)":""));
                 setToolTipText(temp);
             }
         } else {
@@ -94,6 +104,14 @@ public class ContactLabel extends JLabel implements Renderable {
 
     public Group getGroup() {
         return group;
+    }
+
+    public boolean isFake() {
+        return fake;
+    }
+
+    public void setFake(boolean fake) {
+        this.fake = fake;
     }
 
     // -------------- This removes the need for a whole panel.

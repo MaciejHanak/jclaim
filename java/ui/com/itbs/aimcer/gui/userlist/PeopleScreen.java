@@ -199,12 +199,23 @@ final public class PeopleScreen extends JPanel implements UserList {
                                         Group group = Main.standardGroupFactory.create(name);
                                         for (Object selected : items) {
                                             if (selected instanceof ContactLabel) {
-                                                group.add(((ContactLabel) selected).getContact());
+                                                ContactWrapper contactWrapper = ((ContactLabel) selected).getContact();
+                                                if (!ContactLabel.isExists(contactWrapper, group)) {
+                                                    ContactLabel newContactLabel = ContactLabel.construct(contactWrapper, group);
+                                                    newContactLabel.setFake(true);
+                                                    group.add(contactWrapper);
+                                                }
                                             } else if (selected instanceof GroupWrapper) {
                                                 GroupWrapper sgroup = (GroupWrapper) selected;
                                                 for (int j = 0; j < sgroup.size(); j++) {
-                                                    if (sgroup.get(j) instanceof ContactWrapper)
-                                                        group.add(sgroup.get(j));
+                                                    if (sgroup.get(j) instanceof ContactWrapper) {
+                                                        ContactWrapper contactWrapper = (ContactWrapper)sgroup.get(j);
+                                                        if (!ContactLabel.isExists(contactWrapper, group)) {
+                                                            ContactLabel newContactLabel = ContactLabel.construct(contactWrapper, group);
+                                                            newContactLabel.setFake(true);
+                                                            group.add(contactWrapper);
+                                                        }
+                                                    }
                                                 }
                                             } else {
                                                 log.info("This is weird: " + selected.getClass() + ": " + selected);

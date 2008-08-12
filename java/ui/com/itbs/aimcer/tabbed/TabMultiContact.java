@@ -28,6 +28,11 @@ public class TabMultiContact extends TabItself {
         tabName = MessageGroupWindow.getGroupName(contacts, allGroups);
     }
 
+
+    public String getTabName() {
+        return tabName;
+    }
+
     /**
      * Provides a list of contacts with checkboxes.
      * @return checbox list.
@@ -35,6 +40,16 @@ public class TabMultiContact extends TabItself {
     protected JComponent getPersonalInfo() {
         list =  new CheckBoxJList();
         list.setCellRenderer(new ContactLabelListCellRenderer());
+        return getSurround(list);
+    }
+
+    /**
+     * Adds a pane around it.
+     * Adds the 3 selection buttons.
+     * @param list to enclose.
+     * @return panel with list and all of the extra features.
+     */
+    public static JComponent getSurround(final CheckBoxJList list) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(new JScrollPane(list));
         JPanel buttonPanel = new JPanel();
@@ -157,8 +172,6 @@ public class TabMultiContact extends TabItself {
             setLayout (new BorderLayout());
             defaultComp = new DefaultListCellRenderer();
             checkbox = new JCheckBox();
-            add (checkbox, BorderLayout.WEST);
-            add (defaultComp, BorderLayout.CENTER);
         }
 
         public Component getListCellRendererComponent(JList list,

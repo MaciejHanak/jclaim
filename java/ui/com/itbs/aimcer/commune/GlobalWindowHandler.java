@@ -3,6 +3,7 @@ package com.itbs.aimcer.commune;
 import com.itbs.aimcer.bean.Contact;
 import com.itbs.aimcer.bean.ContactWindow;
 import com.itbs.aimcer.bean.Message;
+import com.itbs.aimcer.bean.Group;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,9 +36,9 @@ public class GlobalWindowHandler implements ContactWindow {
         }
     }
 
-    public void openWindow(List <Contact> allContacts, boolean forceToFront) {
+    public void openWindow(List<Contact> allContacts, List<Group> allGroups, boolean forceToFront) {
         for (ContactWindow contactWindow : windowInterfaces) {
-            contactWindow.openWindow(allContacts, forceToFront);
+            contactWindow.openWindow(allContacts, allGroups, forceToFront);
         }
     }
 

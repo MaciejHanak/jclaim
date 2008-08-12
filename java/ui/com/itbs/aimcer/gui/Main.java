@@ -48,7 +48,7 @@ import java.util.logging.Logger;
  */
 public class Main {
     static String TITLE = "JCLAIM";
-    public static String VERSION = "Version: 5.23";
+    public static String VERSION = "Version: 5.30";
     public static final String URL_FAQ = "http://www.itbsllc.com/jclaim/User%20Documentation.htm";
     public static final String EMAIL_SUPPORT = "support@itbsllc.com";
     private static final String LICENSE = System.getProperty("client");
@@ -168,6 +168,7 @@ public class Main {
      * Starts the GUI.
      * Standard main.
      * @param args not used
+     * @throws Exception when problems occur
      */
     public static void main(String[] args) throws Exception
     {
@@ -232,6 +233,7 @@ public class Main {
             // show add connection dialog
             new LoginPanel(null).setVisible(true);
         }
+        new PropertiesDialog(motherFrame); // and let it die. just a way to cache code and components.
     }
 
     public static UserList getPeoplePanel() {
@@ -327,6 +329,7 @@ public class Main {
         }
         return false;
     }
+    
     public static ContactWrapper findContact(String talkingTo, String medium, String as) {
         ContactWrapper wrapper = null;
         for (int i = 0; i < Main.getConnections().size() && wrapper == null; i++) {
