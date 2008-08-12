@@ -89,7 +89,7 @@ final public class PeopleScreen extends JPanel implements UserList {
             ((GroupWrapper)item).swapShrunk();
             ((ContactListModel)list.getModel()).runActionDataChanged();
         } else {
-            log.warning("Failed to find a handler of item of class "+ item.getClass());
+            log.warning("Failed to find a handler of item of class "+ (item==null?"null":item.getClass()));
         }
     }
 
