@@ -111,6 +111,7 @@ public class ClientProperties implements ConnectionProperties {
     private int lookAndFeelIndex = -1;
     /** Default interface.  0 - default, 1 - tabbed windows */
     private int interfaceIndex = 1;
+    private boolean sendListVisible = false;
     private boolean serverEnabled = false;
     private int serverPort = 2000;
     private boolean useTray = true;
@@ -892,5 +893,14 @@ public class ClientProperties implements ConnectionProperties {
 
     public void setMatchSplitPane(boolean matchSplitPane) {
         this.matchSplitPane = matchSplitPane;
+    }
+
+
+    public boolean isSendListVisible() {
+        return sendListVisible;
+    }
+
+    public void setSendListVisible(boolean sendListVisible) {
+        this.sendListVisible = sendListVisible;
     }
 }
