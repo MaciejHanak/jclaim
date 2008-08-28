@@ -23,6 +23,7 @@ package com.itbs.aimcer.gui;
 import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.*;
 import com.itbs.gui.*;
+import com.itbs.util.GeneralUtils;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -43,14 +44,18 @@ public final class LoginPanel extends JDialog implements ActionListener {
     private static final Logger log = Logger.getLogger(LoginPanel.class.getName());
     private static final String NAME = "Name: ";
     private static final String PASSWORD = "Password: ";
+    private static final String SERVER = "Server: ";
     private static final String ADD = "Add Connection";
     private static final String SAVE = "Save";
-    private final JTextField name, password;
+    private final JTextField name, password, server;
     private JComboBox service;
     /** Login button */
     private JButton login;
     /** Auto-Login checkbox */
     JCheckBox autoLogin;
+    /** Server override */
+    JCheckBox serverOverride;
+
     /** Comment displayed on the login panel. */
     public static final String DISPLAYED_TEXT = "<HTML><FONT SIZE=2>Use login credential for selected service.<p>" +
                     "Only proceed to use this software if you have<br>read and agreed with our disclaimers and notes.<p><p>" +
@@ -79,13 +84,22 @@ public final class LoginPanel extends JDialog implements ActionListener {
         Box inner = new Box(BoxLayout.Y_AXIS);
         connRef = connection;
 
-        JPanel innerPanel = new JPanel(new GridLayout(2,2)); // 4 Login fields.
+        JPanel innerPanel = new JPanel(new GridLayout(3,2)); // 4 Login fields.
         innerPanel.setOpaque(false);
+
         innerPanel.add(new JLabel(NAME, JLabel.RIGHT)); // name
         name = new BetterTextField(connection==null?"":connection.getUserName(), 10);
         innerPanel.add(name);
+
         innerPanel.add(new JLabel(PASSWORD, JLabel.RIGHT)); // pw
-        innerPanel.add(password = new BetterPasswordField(connection==null?"":connection.getPassword(), 10));
+        password = new BetterPasswordField(connection==null?"":connection.getPassword(), 10);
+        innerPanel.add(password);
+
+        innerPanel.add(new JLabel(SERVER, JLabel.RIGHT)); // Server
+        server = new BetterTextField(connection==null?"":connection.getServerName(), 10);
+        server.setEnabled(false); // start out with it off
+        innerPanel.add(server);
+
         panel.add(ComponentFactory.getTopBar(connection==null?"Please login:":"Login Info"), BorderLayout.NORTH);
         inner.add(innerPanel);
         inner.add(getButtons(connection==null));
@@ -125,10 +139,19 @@ public final class LoginPanel extends JDialog implements ActionListener {
     }
 
     private JComponent getSettings(Connection connection) {
+        JPanel panel = new JPanel();
+        panel.setOpaque(false);
         autoLogin = new JCheckBox("Auto login on startup");
         autoLogin.setOpaque(false);
         autoLogin.setSelected(connection==null || connection.isAutoLogin());
-        return autoLogin;
+        panel.add(autoLogin);
+        serverOverride = new JCheckBox("Server override");
+        serverOverride.setOpaque(false);
+//        serverOverride.setSelected(connection==null || connection.isAutoLogin());
+        panel.add(serverOverride);
+        serverOverride.addActionListener(new TurnOffDependents(new JComponent[] {server}));
+        
+        return panel;
     }
 
 
@@ -159,12 +182,16 @@ public final class LoginPanel extends JDialog implements ActionListener {
                         connection.assignContactFactory(Main.standardContactFactory);
                         connection.setUserName(name.getText());  // set prior to menu add
                         connection.setPassword(password.getText());
+                        connection.setServerName(server.getText());
                         Main.addConnection(connection);
                     } else {
                         connection = connRef;
                     }
                     connection.setUserName(name.getText());  // set in case we already had a connection
                     connection.setPassword(password.getText());
+                    if (server.isEnabled() && GeneralUtils.isNotEmpty(server.getText())) {
+                        connection.setServerName(server.getText());
+                    }
                     connection.setAutoLogin(autoLogin.isSelected());
                     connection.addEventListener(new LoginMonitor());
 
@@ -200,6 +227,7 @@ public final class LoginPanel extends JDialog implements ActionListener {
         login.setEnabled(value);
         name.setEnabled(value);
         password.setEnabled(value);
+        server.setEnabled(value && serverOverride.isSelected());
         service.setEnabled(value);
         autoLogin.setEnabled(value);
     }
