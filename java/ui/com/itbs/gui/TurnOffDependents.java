@@ -7,9 +7,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 /**
-     * Allows to easily disable all other buttons.
+ * Allows to easily disable all other buttons.
+ * To use, just assign it to the component:
+ *    cbComponent.addActionListener(new TurnOffDependents(new JComponent[] {clientComponent}));
+ * 
  */
 public class TurnOffDependents implements ActionListener, ChangeListener {
+    /** Keeps the list of the components to control */
     JComponent[] dependents;
 
     /**
@@ -20,6 +24,10 @@ public class TurnOffDependents implements ActionListener, ChangeListener {
         dependents = components;
     }
 
+    /**
+     * ChangeListener call. For checkboxes.
+     * @param e change event
+     */
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() instanceof AbstractButton)
             for (JComponent dependent : dependents) {
@@ -27,6 +35,10 @@ public class TurnOffDependents implements ActionListener, ChangeListener {
             }
     }
 
+    /**
+     * ActionListener call. For buttons.
+     * @param e action event
+     */
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() instanceof AbstractButton)
             for (JComponent dependent : dependents) {
