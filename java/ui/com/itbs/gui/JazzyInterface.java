@@ -23,6 +23,7 @@ package com.itbs.gui;
 import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.util.ClassUtil;
 import com.itbs.util.DelayedThread;
+import com.itbs.util.GeneralUtils;
 import com.swabunga.spell.engine.SpellDictionary;
 import com.swabunga.spell.engine.SpellDictionaryHashMap;
 import com.swabunga.spell.event.DocumentWordTokenizer;
@@ -153,8 +154,9 @@ public class JazzyInterface {
     }
 
     public List getSuggestions(String word) {
-        if (word!=null && word.trim().length()>0)
+        if (GeneralUtils.isNotEmpty(word)) {
             return spellCheck.getSuggestions(word, 2);
+        }
         return new ArrayList();
     }
 
