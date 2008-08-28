@@ -25,7 +25,6 @@ import com.itbs.aimcer.gui.userlist.GroupLabel;
 import com.itbs.util.GeneralUtils;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +42,7 @@ import java.util.logging.Logger;
  * @author Alex Rass
  * @since Sep 9, 2004
  */
-public class GroupWrapper implements Group, Renderable {
+public class GroupWrapper implements Group, Renderable, Comparable {
     private static final Logger log = Logger.getLogger(GroupWrapper.class.getName());
     private static Map<String,GroupWrapper> wrappers = new HashMap<String, GroupWrapper>(10);
     public static Comparator <Nameable> COMP_NAME = new NameComparator();
@@ -114,6 +113,17 @@ public class GroupWrapper implements Group, Renderable {
 
     public String toString() {
         return name;
+    }
+
+
+    public int compareTo(Object o) {
+        if (o==null) return 0;
+        if (o instanceof GroupWrapper) return getName().compareToIgnoreCase(((GroupWrapper)o).getName());
+        if (name!=null && o.toString()!=null) {
+            return getName().compareToIgnoreCase(o.toString());
+        } else {
+            return 0;
+        }
     }
 
     /**

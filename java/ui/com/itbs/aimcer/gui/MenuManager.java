@@ -42,6 +42,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 /**
@@ -64,6 +65,7 @@ public class MenuManager {
     private static final String COMMAND_BUDDY_ADD       = "Add Contact";
     public  static final String COMMAND_BUDDY_REMOVE    = "Remove Contact";
     public  static final String COMMAND_BUDDY_MOVE      = "Move Contact";
+    public  static final String COMMAND_BUDDY_COPY      = "Copy into a Group";
     private static final String COMMAND_PICTURE_SEND    = "Set Picture";
     private static final String COMMAND_PICTURE_RESET   = "Clear Picture";
     private static final String COMMAND_GLOBAL_AWAY     = "Away All";
@@ -515,6 +517,40 @@ public class MenuManager {
                         JOptionPane.showMessageDialog(Main.getFrame(), "Can only delete normal contacts.", "Can not proceed:", JOptionPane.ERROR_MESSAGE);
                     }
                 }
+            } else if (COMMAND_BUDDY_COPY.equals(command)) {
+                List items = Main.getPeoplePanel().getSelectedValues();
+                if (items.size() > 0) {
+                    Returned result = genericPrompter(Main.getConnections().get(0), Main.getFrame(), null, "Copy contacts?");
+                    if (result == null) return;
+                    Group group = result.group;
+
+                    for (Object selected : items) {
+                        if (selected instanceof ContactLabel) {
+                            ContactWrapper contactWrapper = ((ContactLabel) selected).getContact();
+                            if (!ContactLabel.isExists(contactWrapper, group)) {
+                                ContactLabel newContactLabel = ContactLabel.construct(contactWrapper, group);
+                                newContactLabel.setFake(true);
+                                group.add(contactWrapper);
+                            }
+                        } else if (selected instanceof GroupWrapper) {
+                            GroupWrapper sgroup = (GroupWrapper) selected;
+                            for (int j = 0; j < sgroup.size(); j++) {
+                                if (sgroup.get(j) instanceof ContactWrapper) {
+                                    ContactWrapper contactWrapper = (ContactWrapper)sgroup.get(j);
+                                    if (!ContactLabel.isExists(contactWrapper, group)) {
+                                        ContactLabel newContactLabel = ContactLabel.construct(contactWrapper, group);
+                                        newContactLabel.setFake(true);
+                                        group.add(contactWrapper);
+                                    }
+                                }
+                            }
+                        } else {
+                            log.info("This is weird: " + selected.getClass() + ": " + selected);
+                        }
+                    }
+                    Main.standardGroupFactory.getGroupList().add(group);
+                    Main.getPeoplePanel().update();
+                }
             } else if (COMMAND_HELP_FAQ.equals(command)) {
                 try {
                     Desktop.browse(new URL(Main.URL_FAQ));
@@ -709,7 +745,9 @@ public class MenuManager {
         }
 */
         pane.add(PropertiesDialog.getLabel("Group: ", "Which group to add the contact to"));
-        groupBox = new JComboBox(conn.getGroupList().toArray());
+        Group groups[] = conn.getGroupList().toArray();
+        Arrays.sort(groups); // prompt should be nice. 
+        groupBox = new JComboBox(groups);
         groupBox.setEditable(true);
         pane.add(groupBox);
 

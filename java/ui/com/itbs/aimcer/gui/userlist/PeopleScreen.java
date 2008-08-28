@@ -189,48 +189,8 @@ final public class PeopleScreen extends JPanel implements UserList {
                     });
                     menu.add(item);
 
-                    { // Copy into a group code
-                        item = new JMenuItem("Copy into a group");
-                        item.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                if (items.length > 0) {
-                                    String name = JOptionPane.showInputDialog(Main.getFrame(), "Enter the new group's name", "Group", JOptionPane.QUESTION_MESSAGE);
-                                    if (name!=null) {
-                                        Group group = Main.standardGroupFactory.create(name);
-                                        for (Object selected : items) {
-                                            if (selected instanceof ContactLabel) {
-                                                ContactWrapper contactWrapper = ((ContactLabel) selected).getContact();
-                                                if (!ContactLabel.isExists(contactWrapper, group)) {
-                                                    ContactLabel newContactLabel = ContactLabel.construct(contactWrapper, group);
-                                                    newContactLabel.setFake(true);
-                                                    group.add(contactWrapper);
-                                                }
-                                            } else if (selected instanceof GroupWrapper) {
-                                                GroupWrapper sgroup = (GroupWrapper) selected;
-                                                for (int j = 0; j < sgroup.size(); j++) {
-                                                    if (sgroup.get(j) instanceof ContactWrapper) {
-                                                        ContactWrapper contactWrapper = (ContactWrapper)sgroup.get(j);
-                                                        if (!ContactLabel.isExists(contactWrapper, group)) {
-                                                            ContactLabel newContactLabel = ContactLabel.construct(contactWrapper, group);
-                                                            newContactLabel.setFake(true);
-                                                            group.add(contactWrapper);
-                                                        }
-                                                    }
-                                                }
-                                            } else {
-                                                log.info("This is weird: " + selected.getClass() + ": " + selected);
-                                            }
-                                        }
-                                        Main.standardGroupFactory.getGroupList().add(group);
-                                        Main.getPeoplePanel().update();
-                                    }
-                                }
-                            }
-                        });
-
-                        menu.add(item);
-                    }
-
+                    // Copy into a group code
+                    menu.add(ActionAdapter.createMenuItem(MenuManager.COMMAND_BUDDY_COPY, new MenuManager.MenuHandler(), 'c'));
 
                     if (list.getSelectedValue() instanceof ContactLabel) {
                         final JMenuItem itemHide = new JMenuItem("Hide/Unhide (Keep Offline)");
@@ -251,9 +211,9 @@ final public class PeopleScreen extends JPanel implements UserList {
                             }
                         });
                         menu.add(itemHide);
-                        menu.add(ActionAdapter.createMenuItem(MenuManager.COMMAND_BUDDY_REMOVE, new MenuManager.MenuHandler(), 'r'));
                         menu.add(ActionAdapter.createMenuItem(MenuManager.COMMAND_BUDDY_MOVE, new MenuManager.MenuHandler(), 'm'));
                     } // if contact wrapper
+                    menu.add(ActionAdapter.createMenuItem(MenuManager.COMMAND_BUDDY_REMOVE, new MenuManager.MenuHandler(), 'r'));
 
                     menu.show(evt.getComponent(), evt.getX(), evt.getY());
                 } // if more than one selected
