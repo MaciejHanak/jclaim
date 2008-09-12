@@ -357,8 +357,15 @@ public class TabbedWindow {
                 return true;
             }
         } else {
-            if (listLabel.getText().equals(tab.tabControl.getLabel().getText())) {
-                return true;
+            if (listLabel!=null
+//                    && GeneralUtils.assertNotNull(listLabel) 
+                    && ErrorDialog.assertNotNull(listLabel.getText(), "gt1")
+                    && ErrorDialog.assertNotNull(tab, "t1") && ErrorDialog.assertNotNull(tab.tabControl, "t1c")
+                    && ErrorDialog.assertNotNull(tab.tabControl.getLabel(), "t1cl") && ErrorDialog.assertNotNull(tab.tabControl.getLabel().getText(), "t1clt")
+            ) {
+                if (listLabel!=null && listLabel.getText().equals(tab.tabControl.getLabel().getText())) {
+                    return true;
+                }
             }
         } // else - normal tab
         return false;

@@ -195,4 +195,9 @@ public class ErrorDialog {
 
         return buf.toString();
     }
+
+    public static boolean assertNotNull(Object test, String label) {
+        if (test==null) displayError(null, "Variable "+label+" turned out to be null", new RuntimeException());
+        return true;
+    }
 }
