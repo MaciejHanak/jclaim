@@ -43,8 +43,13 @@ public class MessageForwarder implements ConnectionEventListener {
     }
 
     public boolean emailReceived(MessageSupport connection, Message message) throws Exception {
+        if (forwardContact != null && forwardContact.getConnection().isLoggedIn() && forwardContact.getConnection() instanceof MessageSupport) {
+            String newText = message.getPlainText();
+            Message newMessage = new MessageImpl(forwardContact, true, newText.substring(0, Math.min(MAX_LEN, newText.length())));
+            ((MessageSupport)(forwardContact.getConnection())).sendMessage(newMessage);
+        } // if
         return false;
-    }
+    } // func
 
     public void typingNotificationReceived(MessageSupport connection, Nameable contact) {
     }
