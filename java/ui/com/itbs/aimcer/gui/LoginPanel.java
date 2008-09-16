@@ -182,7 +182,9 @@ public final class LoginPanel extends JDialog implements ActionListener {
                         connection.assignContactFactory(Main.standardContactFactory);
                         connection.setUserName(name.getText());  // set prior to menu add
                         connection.setPassword(password.getText());
-                        connection.setServerName(server.getText());
+                        if (server.isEnabled() && GeneralUtils.isNotEmpty(server.getText())) {
+                            connection.setServerName(server.getText());
+                        }
                         Main.addConnection(connection);
                     } else {
                         connection = connRef;
