@@ -132,7 +132,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
         session.addSessionListener(new SessionHandler());
         log.fine(session.getConnectionHandler().toString());
 
-//        todo see about this later
+//        todo see about this later, it needs to be setup and removed each time. send back keyTyped to tell others.
 //        session.addTypingNotification(inputTF,username);
         new Thread() {
             public void run() {
