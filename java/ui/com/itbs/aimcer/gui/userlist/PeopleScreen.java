@@ -29,6 +29,7 @@ import com.itbs.aimcer.gui.MenuManager;
 import com.itbs.gui.AbstractFileTransferHandler;
 import com.itbs.gui.ActionAdapter;
 import com.itbs.gui.EditableJList;
+import com.itbs.gui.TypingFilter;
 import org.jdesktop.jdic.desktop.Desktop;
 
 import javax.swing.*;
@@ -119,7 +120,7 @@ final public class PeopleScreen extends JPanel implements UserList {
         list.setSelectionMode(ClientProperties.INSTANCE.isMultiSelectAllowed()?ListSelectionModel.MULTIPLE_INTERVAL_SELECTION:ListSelectionModel.SINGLE_SELECTION);
 
         list.addKeyListener(new KeyAdapter() {
-            public void keyReleased(KeyEvent e) {
+            public void keyPressed(KeyEvent e) {
                 if ((e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_PLUS || e.getKeyCode() == KeyEvent.VK_MINUS) && e.getModifiers() == 0) {
                     if (list.getSelectedIndices().length==1) {
                         handleItem(list.getSelectedValue());
@@ -128,7 +129,13 @@ final public class PeopleScreen extends JPanel implements UserList {
                 }
             }
         });
-
+        list.addKeyListener(new TypingFilter(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ((ContactListModel)list.getModel()).setFilterBy(e.getActionCommand());
+                update();
+            }
+        }));
+        
         // Add a listener for mouse clicks
         list.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {

@@ -42,7 +42,15 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
     private static final Logger log = Logger.getLogger(ContactListModel.class.getName());
     private static ContactListModel instance = new ContactListModel();
     DelayedThread flagThread;
+    String filterBy="";
 
+    public void setFilterBy(String filterBy) {
+        if (filterBy==null) {
+            this.filterBy = "";
+        } else {
+            this.filterBy = filterBy.toLowerCase();
+        }
+    }
 
     private ContactListModel() {
         flagThread = new DelayedActionThread("TreeTableUpdateThread", 500, null, null, new Runnable() {
@@ -79,13 +87,22 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
             else
                 groupWrapper = (GroupWrapper) Main.standardGroupFactory.create(group);
 //            log.fine("Group: "+g.getName());
-            if (groupWrapper.isShrunk())
+            if (groupWrapper.isShrunk() && filterBy.length()==0)
                 continue;
             for (int contactCount = 0; contactCount < group.size(); contactCount++) {
                 Nameable b = group.get(contactCount);
                 if (b instanceof ContactWrapper) {
                     contactWrapper = (ContactWrapper) b;//ContactWrapper.create(b, connection.get(connIndex));
-                    if (contactWrapper.getStatus().isOnline() || !ClientProperties.INSTANCE.isHideOffline() || contactWrapper.getPreferences().isShowInList())
+                    if (
+                            (contactWrapper.getStatus().isOnline()
+                            || !ClientProperties.INSTANCE.isHideOffline()
+                            || contactWrapper.getPreferences().isShowInList()
+                            )
+                        && (filterBy.length()==0
+                                    || contactWrapper.getName().toLowerCase().indexOf(filterBy)>-1
+                                    || contactWrapper.getDisplayName().toLowerCase().indexOf(filterBy)>-1
+                                    )
+                    )
                         sum++;
                 }
             }
@@ -121,7 +138,7 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
             if (index == count)
                 return groupWrapper;
             count++;
-            if (groupWrapper.isShrunk())
+            if (groupWrapper.isShrunk() && filterBy.length()==0)
                 continue;
             Nameable[] contacts = group.toArray();
             if (ClientProperties.INSTANCE.isSortContactList()) {
@@ -130,7 +147,17 @@ public class ContactListModel extends AbstractListModel implements ConnectionEve
             for (Nameable contact : contacts) {
                 if (contact instanceof ContactWrapper) {
                     contactWrapper = (ContactWrapper) contact;//ContactWrapper.create(b, connection.get(connIndex));
-                    if (contactWrapper.getStatus().isOnline() || !ClientProperties.INSTANCE.isHideOffline() || contactWrapper.getPreferences().isShowInList()) {
+                    if (
+                            ( contactWrapper.getStatus().isOnline()
+                             || !ClientProperties.INSTANCE.isHideOffline()
+                             || contactWrapper.getPreferences().isShowInList()
+                            )
+                            && (filterBy.length()==0
+                                        || contactWrapper.getName().toLowerCase().indexOf(filterBy)>-1
+                                        || contactWrapper.getDisplayName().toLowerCase().indexOf(filterBy)>-1
+                                )
+
+                            ) {
                         if (index == count)
                             return ContactLabel.construct(contactWrapper, groupWrapper);
                         count++;
