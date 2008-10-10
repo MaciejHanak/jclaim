@@ -63,8 +63,15 @@ public class DelayedThread extends Thread {
     /**
      * Determines if we should run the block b/c someone said "mark!".
      * False if no one has initiated or if the block already ran.
+     *
+     * In other words: is the final block allowed to run yet? T/F
      */
     private SyncBoolean flag = new SyncBoolean(false);
+    /**
+     * Determines if we want run block to be executed each time someone hits mark
+     */
+    private boolean runStartEachMark = false;
+    
     private final long delay;
     /** Object on which to sync. */
     protected final Object notifyObject = new Object();
@@ -102,12 +109,17 @@ public class DelayedThread extends Thread {
      * @param snippetEnd      code to run after @NotNull
      */
     public DelayedThread(String threadName, long delayMillis, StillAliveMonitor aliveMonitor, Runnable snippetStart, Runnable snippetEnd) {
+        this(threadName, delayMillis, aliveMonitor, snippetStart, false, snippetEnd);
+    }
+
+    public DelayedThread(String threadName, long delayMillis, StillAliveMonitor aliveMonitor, Runnable snippetStart, boolean runStartEachMark, Runnable snippetEnd) {
         runThisFirst = snippetStart;
         if (snippetEnd == null)
             throw new NullPointerException("If you don't need anything run with a delay - why this class?");
         runThisLast = snippetEnd;
         delay = delayMillis;
         stillAliveMonitor = aliveMonitor;
+        this.runStartEachMark = runStartEachMark;
         setName(threadName);
         setPriority(Thread.MIN_PRIORITY);
         setDaemon(true); // don't stop VM from exit
@@ -120,7 +132,7 @@ public class DelayedThread extends Thread {
         clock = System.currentTimeMillis(); // make sure it d/n start w/o us running first code
         lock.lock();
         try {
-            if (runThisFirst != null)
+            if (runThisFirst != null && (!flag.isValue() || runStartEachMark))
                 runThisFirst.run();
 //            runThisFirst = null; // done
             flag.setValue(true);
@@ -165,7 +177,7 @@ public class DelayedThread extends Thread {
                 logger.finest("Waited for " + newDelay);
                 //                     old clock + del < now
                     if (internalCheck && flag.isValue() && (clock + delay <= System.currentTimeMillis())) {
-                        flag.setValue(false);
+                        flag.setValue(false); // setting so no one will enter here again
                         runThisLast.run();
                     } else {
                         logger.finest("No run for now. flag:" + flag
