@@ -119,6 +119,7 @@ final public class PeopleScreen extends JPanel implements UserList {
         list.setDragEnabled(true);
         list.setSelectionMode(ClientProperties.INSTANCE.isMultiSelectAllowed()?ListSelectionModel.MULTIPLE_INTERVAL_SELECTION:ListSelectionModel.SINGLE_SELECTION);
 
+        // Add an enter listener
         list.addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
                 if ((e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_PLUS || e.getKeyCode() == KeyEvent.VK_MINUS) && e.getModifiers() == 0) {
@@ -129,6 +130,8 @@ final public class PeopleScreen extends JPanel implements UserList {
                 }
             }
         });
+
+        // Add a typing filter to the list
         list.addKeyListener(new TypingFilter(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ((ContactListModel)list.getModel()).setFilterBy(e.getActionCommand());
