@@ -112,7 +112,7 @@ public class TabbedWindow {
                                 tab.send(null);
                             }
                         }, 'S');
-        ACTION_SEND_ALL = new ActionAdapter("Send All", "Send message to all checked contacts.",
+        ACTION_SEND_ALL = new ActionAdapter("Send All", "Send message to all open tabs.",
                         new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
                                 // use input box on this tab
@@ -357,10 +357,11 @@ public class TabbedWindow {
                 return true;
             }
         } else {
-            if (listLabel!=null
+            if (listLabel!=null && tab.tabControl!=null
 //                    && GeneralUtils.assertNotNull(listLabel) 
                     && ErrorDialog.assertNotNull(listLabel.getText(), "gt1")
-                    && ErrorDialog.assertNotNull(tab, "t1") && ErrorDialog.assertNotNull(tab.tabControl, "t1c")
+                    && ErrorDialog.assertNotNull(tab, "t1")
+//                    && ErrorDialog.assertNotNull(tab.tabControl, "t1c")
                     && ErrorDialog.assertNotNull(tab.tabControl.getLabel(), "t1cl") && ErrorDialog.assertNotNull(tab.tabControl.getLabel().getText(), "t1clt")
             ) {
                 if (listLabel!=null && listLabel.getText().equals(tab.tabControl.getLabel().getText())) {
