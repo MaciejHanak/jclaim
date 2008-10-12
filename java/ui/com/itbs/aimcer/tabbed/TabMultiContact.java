@@ -109,20 +109,25 @@ public class TabMultiContact extends TabItself {
         if (text.length() == 0)
             return;
         int index=0;
+        boolean found = false;
         for( Contact contact: contacts) {
             if (list.isSelectedIndex(index++) && contact.getConnection().isLoggedIn()) {
                 try {
                     Message message = new MessageImpl(contact, true, text);
-                    appendHistoryText(message, true);
+                    if (!found) {
+                        appendHistoryText(message, true);
+                    }
                     ((MessageSupport)contact.getConnection()).sendMessage(message);
-                    textPane.setText(""); // wipe it
+                    if (!found) {
+                        textPane.setText(""); // wipe it
+                        found = true; // make sure this happens!
+                    }
                 } catch (Exception e1) {
                     Main.complain("Failed to send message", e1);
                 }
                 textPane.requestFocusInWindow();
             } // if
         } // for
-
     }
 
     public void addTabComponent() {
