@@ -48,7 +48,7 @@ import java.util.logging.Logger;
  */
 public class Main {
     static String TITLE = "JCLAIM";
-    public static String VERSION = "Version: 5.30";
+    public static String VERSION = "Version: 5.37";
     public static final String URL_FAQ = "http://www.itbsllc.com/jclaim/User%20Documentation.htm";
     public static final String EMAIL_SUPPORT = "support@itbsllc.com";
     private static final String LICENSE = System.getProperty("client");
@@ -82,7 +82,7 @@ public class Main {
     private UserList peopleScreen;
     private StatusPanel statusBar;
     
-    public static GroupFactory standardGroupFactory = new GroupWrapperFactory();
+    public static GroupFactory standardGroupFactory = new GroupFactoryImpl();
 
 
     /**
@@ -107,60 +107,7 @@ public class Main {
         return main.messageForwarder!=null && main.messageForwarder.getForwardContact()!=null;
     }
 
-    static class GroupWrapperFactory implements GroupFactory {
-        public GroupWrapperFactory() {
-//            new Exception("creating gwf").printStackTrace();
-        }
-
-        public Group create(String group) {
-            return GroupWrapper.create(group);
-        }
-
-        public Group create(Group group) {
-            return GroupWrapper.create(group);
-        }
-
-        /**
-         * Returns the reference to main static list.
-         * Anyone who has sessions:
-         *   should not have this be static, but session based hash.
-         *   basically map the factory based on session.
-         *
-         * @return list of groups.
-         */
-        public GroupList getGroupList() {
-            return groupList;
-        }
-
-        /**
-         * Used to assign stored list.
-         * @param groupList to assign
-         */
-        public void setGroupList(GroupList groupList) {
-            this.groupList = groupList;
-        }
-
-        /**
-         * Anyone who has sessions - should not have this be static, but session based hash.
-         */
-        private static GroupList groupList  = new GroupListImpl();
-
-    }
-
-    public static ContactFactory standardContactFactory = new ContactWrapperFactory();
-    static class ContactWrapperFactory implements ContactFactory {
-        public Contact create(Nameable buddy, Connection connection) {
-            return ContactWrapper.create(buddy, connection);
-        }
-
-        public Contact create(String name, Connection connection) {
-            return ContactWrapper.create(name, connection);
-        }
-
-        public Contact get(String name, Connection connection) {
-            return ContactWrapper.get( name, connection);
-        }
-    }
+    public static ContactFactory standardContactFactory = new ContactFactoryImpl();
 
 //    private final static int SCREEN_PROPERTIES    = 2;
 //    private static final String MENU_ACTION = "Action";
