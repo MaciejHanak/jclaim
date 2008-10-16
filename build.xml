@@ -53,6 +53,9 @@
     <property name="file.socks.lib.jar" value="${dir.lib}/jsocks-klea.jar"/>    
     <!-- ^^^ JOscar ^^^ -->
 
+    <property name="file.daim.o.jar" value="${dir.dist}/daim.jar"/>
+    <property name="file.daim.lib.jar" value="${dir.lib}/daim.jar"/>
+
     <property name="file.jazzy.o.jar" value="${dir.dist}/jazzy.jar"/>
     <property name="file.jazzy.lib.jar" value="${dir.lib}/jazzy-core.eng.jar"/>
 
@@ -141,6 +144,7 @@
         <delete file="${file.oscar.o.jar}"/>
         <delete file="${file.joscar-common.o.jar}"/>
         <delete file="${file.joscar.o.jar}"/>
+        <delete file="${file.daim.o.jar}"/>
         <delete file="${file.jazzy.o.jar}"/>
         <delete file="${file.smack.o.jar}"/>
         <delete file="${file.smackx.o.jar}"/>
@@ -275,6 +279,9 @@
 
         <pack200 src="${file.substance.lib.jar}" destfile="${file.substance.o.jar}"	repack="true"/>
         <signjar jar="${file.substance.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
+
+        <pack200 src="${file.daim.lib.jar}" destfile="${file.daim.o.jar}"	repack="true"/>
+        <signjar jar="${file.daim.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.jazzy.lib.jar}" destfile="${file.jazzy.o.jar}"	repack="true"/>
         <signjar jar="${file.jazzy.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
