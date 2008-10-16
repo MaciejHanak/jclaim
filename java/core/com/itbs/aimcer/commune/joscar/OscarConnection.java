@@ -910,6 +910,10 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         }));
     } // removeContact
 
+    /**
+     * Tells the protocol to add a group.
+     * @param group to add
+     */
     public void addContactGroup(Group group) {
         connection.getSsiService().getBuddyList().addGroup(group.getName());
     }

@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  * @author Alex Rass
  * @since Mar 26, 2005
  */
-public class YMsgConnection extends AbstractMessageConnection {//implements FileTransferSupport {
+public class YMsgConnection extends AbstractMessageConnection {// implements ChatRoomSupport {//implements FileTransferSupport {
     private static final Logger log = Logger.getLogger(YMsgConnection.class.getName());
     
     // -----The session object - our way into the Yahoo API
@@ -134,7 +134,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
 
 //        todo see about this later, it needs to be setup and removed each time. send back keyTyped to tell others.
 //        session.addTypingNotification(inputTF,username);
-        new Thread() {
+        new Thread("ConnectReal-YMsg") {
             public void run() {
                 connectReal();
             }
@@ -331,7 +331,7 @@ public class YMsgConnection extends AbstractMessageConnection {//implements File
     public void setAway(boolean away) {
         if (session != null) {
             try {
-                if (away && getProperties().getIamAwayMessage().length() > 0) // STATUS_CUSTOM
+                    if (away && getProperties().getIamAwayMessage().length() > 0) // STATUS_CUSTOM
                     session.setStatus(getProperties().getIamAwayMessage(), true);
                 else
                     session.setStatus(away?StatusConstants.STATUS_BRB:StatusConstants.STATUS_AVAILABLE);

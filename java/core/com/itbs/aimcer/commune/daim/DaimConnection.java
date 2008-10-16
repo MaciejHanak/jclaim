@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Map;
 
 /**
  * Manages AIM connectivity.  Singlehandedly.
@@ -26,6 +27,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
     private static Logger log = Logger.getLogger(DaimConnection.class.getName());
     DaimClient connection;
     ConnectionInfo connectionInfo = new ConnectionInfo(AIMConstants.LOGIN_SERVER_DEFAULT, AIMConstants.LOGIN_PORT);
+    boolean loggedIn = false;
 
     public String getServiceName() {
         return "AIM";
@@ -88,6 +90,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
         } catch (Exception e) {
             log.log(Level.SEVERE, "Failed to login", e);
             connection = null;
+            loggedIn = false;
             notifyConnectionFailed(e.getMessage());
         }
     }
@@ -106,12 +109,13 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
         if (connection!=null) {
             AIMConnection.killAllInSess(connection.getSession());
             connection = null;
+            loggedIn = false;
         }
         super.disconnect(intentional);
     }
 
     public boolean isLoggedIn() {
-        return connection!=null;   // todo make sure connection is connected.
+        return connection!=null && loggedIn; // todo see if there's a better way that checks with protocol
     }
 
     public void cancel() {
@@ -328,6 +332,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
      * todo implement
      */
     public void uploadPicture(final File picture) {
+
     } // uploadPicture
 
     /**
@@ -345,17 +350,46 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
 
 
         public void loginDone(DaimLoginEvent dle) {
+            loggedIn = true;
             notifyConnectionEstablished();
         }
 
         public void loginError(DaimLoginEvent dle) {
             String errorMsg = dle.getErrorMsg()==null?"Unknown":dle.getErrorMsg();
-            notifyConnectionFailed(errorMsg); 
+            loggedIn = false;
+            notifyConnectionFailed(errorMsg);
+        }
+
+        /**
+         * Apparently ICQ can send URLs.
+         *
+         * @param from user
+         * @param uin  UIN# (ICQ)
+         * @param url that was passed
+         * @param description of the url
+         * @param massmessage message
+         */
+        public void receivedURL(UserInfo from, int uin, String url, String description, boolean massmessage) {
+            incomingICQ(from, uin, 0, description); 
+        }
+
+        /**
+         * ICQ can send contact info back and forth.
+         * @param from initiator
+         * @param uin icq
+         * @param contact list of contacts
+         * @param massmessage related message
+         */
+        public void receivedContacts(UserInfo from, int uin, Map contact, boolean massmessage) {
+            incomingICQ(from, uin, 0, contact.toString() + massmessage); // todo figure this out, if anyone cares 
         }
 
         public void incomingIM(Buddy buddy, UserInfo from, AOLIM args) {
-            Message message = new MessageImpl(getContactFactory().create(AIMUtil.normalize(buddy.getName()), DaimConnection.this),
-            false, (args.getFlags() & AIMConstants.AIM_IMFLAGS_AWAY) != 0, args.getMsg());  // todo the away flag d/n look right
+            Message message = new MessageImpl(
+                    getContactFactory().create(AIMUtil.normalize(buddy.getName()), DaimConnection.this),
+                    false,
+                    (args.getFlags() & (AIMConstants.AIM_IMFLAGS_AWAY | AIMConstants.AIM_IMFLAGS_OFFLINE)) != 0, // todo check flags
+                    args.getMsg());
 
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 try {
@@ -367,8 +401,11 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
         }
 
         public void incomingICQ(UserInfo from, int uin, int args, String msg) {
-            Message message = new MessageImpl(getContactFactory().create(from.getSN(), DaimConnection.this),
-            false, from.getIdleTime()>0, msg);  // todo the away flag d/n look right
+            Message message = new MessageImpl(
+                    getContactFactory().create(from.getSN(), DaimConnection.this),
+                    false,
+                    from.getIdleTime()>0, // todo check flags
+                    msg);
 
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 try {
@@ -380,9 +417,11 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
         }
 
         public void receivedICQSMS(UserInfo from, int uin, ICQSMSMessage msg, boolean massmessage) {
-            Message message = new MessageImpl(getContactFactory().create(from.getSN(), DaimConnection.this),
-            false, massmessage, msg.getText());
-
+            Message message = new MessageImpl(
+                    getContactFactory().create(from.getSN(), DaimConnection.this),
+                    false,
+                    massmessage,
+                    msg.getText());
 
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 try {
@@ -408,12 +447,36 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
             }
         }
 
+        private String printProperty(Buddy buddy, Object property) {
+            Object res = buddy.getProperty(property);
+            if (res!=null)
+                return "  " + property + ": "+buddy.getProperty(property)+"\n";
+            else return "";
+        }
+
+        private void printProperties(String prefix, Buddy buddy) {
+            if (false)
+                log.info(
+                            prefix+ ":" + buddy.getName() + ": \n" +
+                            printProperty(buddy, Buddy.AVAILABLE) +
+                            printProperty(buddy, Buddy.CAPABILITIES) +
+                            printProperty(buddy, Buddy.GROUP) +
+                            printProperty(buddy, Buddy.IDLE_TIME) +
+                            printProperty(buddy, Buddy.MEMBER_SINCE) +
+                            printProperty(buddy, Buddy.SIGNON_TIME) +
+                            printProperty(buddy, Buddy.STATE) +
+                            printProperty(buddy, Buddy.WARN_LEVEL)
+                );
+        }
+
         public void newBuddyList(Buddy[] buddies) {
             removeOldBuddies();
             for (Buddy buddy:buddies) {
                 Group bGroup = getGroupFactory().create(buddy.getProperty(Buddy.GROUP).toString());
                 Contact contact = getContactFactory().create(AIMUtil.normalize(buddy.getName()), DaimConnection.this);
                 contact.setDisplayName(buddy.getName());
+                printProperties("newBuddyList",buddy);
+//                contact.getStatus().setWireless(); //(info.getFlags() & FullUserInfo.MASK_WIRELESS) > 0
                 bGroup.add(contact);
                 getGroupFactory().getGroupList().add(bGroup);
             } // that should reorder it.
@@ -431,6 +494,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
             Contact contact = getContactFactory().create(AIMUtil.normalize(buddy.getName()), DaimConnection.this);
             Status status = (Status) contact.getStatus().clone();
             contact.getStatus().setOnline(false);
+            printProperties("buddyOffline", buddy);
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 try {
                     eventHandler.statusChanged(DaimConnection.this, contact, status);
@@ -447,6 +511,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
             contact.getStatus().setAway(buddy.isTrue(Buddy.STATE, Buddy.BUDDY_STATE_AWAY));
             int idle = GeneralUtils.getInt(buddy.getProperty(Buddy.IDLE_TIME));
             contact.getStatus().setIdleTime(idle);
+            printProperties("buddyOnline", buddy);
             for (ConnectionEventListener eventHandler : eventHandlers) {
                 try {
                     eventHandler.statusChanged(DaimConnection.this, contact, status);
@@ -467,7 +532,16 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
                     eventHandler.typingNotificationReceived(DaimConnection.this, contact);
             }
         }
-    }
+
+        public void logout() {
+            notifyConnectionLost();
+            loggedIn = false;
+        }
+
+        public void setIcon(File icon) {
+             // figure out how to set icons.
+        }
+    } // class DaimClient
 
     public String veryfySupport(String id) {
         if (!GeneralUtils.isNotEmpty(id))
