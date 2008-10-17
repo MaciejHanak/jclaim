@@ -3,7 +3,6 @@ package com.itbs.aimcer.commune.joscsarlib;
 import JOscarLib.Core.OscarConnection;
 import JOscarLib.Integration.Event.*;
 import JOscarLib.Packet.Sent.AddToContactList;
-import JOscarLib.Packet.Sent.Icq.ClientMeta;
 import JOscarLib.Setting.Enum.StatusModeEnum;
 import JOscarLib.Tool.OscarInterface;
 import com.itbs.aimcer.bean.*;
@@ -48,7 +47,7 @@ public class AIMConnection extends AbstractMessageConnection {
         return "AIM";
     }
 
-    public void connect() throws SecurityException, Exception {
+    public void connect() {
         notifyConnectionInitiated();
         user = ContactWrapper.create(getUserName(), this);
         session = new OscarConnection(HOST, PORT, getUserName(), getPassword());
