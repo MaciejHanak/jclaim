@@ -3,6 +3,7 @@ package com.itbs.aimcer.commune.joscsarlib;
 import JOscarLib.Core.OscarConnection;
 import JOscarLib.Integration.Event.*;
 import JOscarLib.Packet.Sent.AddToContactList;
+import JOscarLib.Packet.Sent.Icq.ClientMeta;
 import JOscarLib.Setting.Enum.StatusModeEnum;
 import JOscarLib.Tool.OscarInterface;
 import com.itbs.aimcer.bean.*;
@@ -84,12 +85,20 @@ public class AIMConnection extends AbstractMessageConnection {
         });
         session.addContactListListener(new ContactListListener() {
             public void updateContactList(ContactListEvent contactListEvent) {
+                System.out.println(contactListEvent + "  - updateContactList");
+//                contactListEvent.
                 //TODO Change
+                // Supposed to do something here as per:
+                // https://sourceforge.net/forum/forum.php?thread_id=1670176&forum_id=166562
+//                session.sendFlap(ClientMeta.searchByUinTlv(session, ii.getId())) 
+//                ii beeing a contact ContactListItem.
+
             }
         });
         session.addMetaInfoListener(new MetaInfoListener() {
             public void updateContactMetaInfo(MetaInfoEvent metaInfoEvent) {
                 //TODO Change
+                System.out.println(metaInfoEvent + "  - updateContactList");
             }
         });
         session.addMessagingListener(new MessagingListener() {
@@ -128,6 +137,9 @@ public class AIMConnection extends AbstractMessageConnection {
             }
         });
         disconnect = false;
+        // Following is a way to get the user list as per:
+        // https://sourceforge.net/forum/forum.php?thread_id=1670176&forum_id=166562
+        OscarInterface.checkRoster(session, 0, (short)0);
     }
 
     /**
