@@ -24,9 +24,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
 /**
- * Makes sure the action is only done once, based on a delay.                      <br>
- * Persists along with the window                                                  <br>
+ * Makes sure the action is only done once, within a given delay.                  <br>
+ * Along with the alive monitor (can monitor a window).                            <br>
  * Useful for statuses etc.                                                        <br>
+ * Marks will trigger new delay each time.                                         <br>
  * If the code needs to run on AWT, arrange for it yourself.                       <br>
  *                                                                                 <br>
  * <code>                                                                          <br>
@@ -77,7 +78,8 @@ public class DelayedThread extends Thread {
     protected final Object notifyObject = new Object();
     private final ReentrantLock lock = new ReentrantLock();
 
-    /** Used to control the loop. */
+    /** Used to control the loop.
+     * <br>Other processes can call stopProcessing() to control the run. */
     private boolean internalCheck = true;
 
     /** Snippet of code to run. */
@@ -130,7 +132,7 @@ public class DelayedThread extends Thread {
      */
     public void mark() {
         clock = System.currentTimeMillis(); // make sure it d/n start w/o us running first code
-        lock.lock();
+        lock.lock(); // make sure we don't run/lock from multiple callers.
         try {
             if (runThisFirst != null && (!flag.isValue() || runStartEachMark))
                 runThisFirst.run();
@@ -175,7 +177,7 @@ public class DelayedThread extends Thread {
                 long newDelay = delay - (System.currentTimeMillis() - clock); // correct for other marks()
                 Thread.sleep(newDelay>0?newDelay:100); // negative - we are cycling through
                 logger.finest("Waited for " + newDelay);
-                //                     old clock + del < now
+                //    no one stopped us && first one ran && (old clock + del < now)
                     if (internalCheck && flag.isValue() && (clock + delay <= System.currentTimeMillis())) {
                         flag.setValue(false); // setting so no one will enter here again
                         runThisLast.run();
@@ -191,10 +193,18 @@ public class DelayedThread extends Thread {
 //        log.info("Delayed Thread Finished work.");
     }
 
+    /**
+     * Someone may want it back.
+     * @return reference
+     */
     public Runnable getRunThisFirst() {
         return runThisFirst;
     }
 
+    /**
+     * Someone may want it back.
+     * @return reference
+     */
     public Runnable getRunThisLast() {
         return runThisLast;
     }
