@@ -199,9 +199,9 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
 
     /**
      *
-     * @param contact
-     * @param group
-     * @param inGroup
+     * @param contact contact
+     * @param group  group
+     * @param inGroup true/false
      * @return
      * todo implement
      */
@@ -533,7 +533,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
             }
         }
 
-        public void logout() {
+        public void logout() {// todo see why this d/n get called.
             notifyConnectionLost();
             loggedIn = false;
         }

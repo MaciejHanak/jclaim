@@ -106,7 +106,7 @@ public class DelayedThread extends Thread {
      * Constructor.
      * @param threadName      Name of the thread
      * @param delayMillis     delay in milliseconds
-     * @param aliveMonitor    allows to see when it's time to die (window is destroyed etc.)
+     * @param aliveMonitor    allows to see when it's time to die (window is destroyed etc.), nulls allowed
      * @param snippetStart    code to run before.  nulls allowed. will run on each mark().
      * @param snippetEnd      code to run after @NotNull
      */
@@ -114,6 +114,15 @@ public class DelayedThread extends Thread {
         this(threadName, delayMillis, aliveMonitor, snippetStart, false, snippetEnd);
     }
 
+    /**
+     * Constructor.
+     * @param threadName      Name of the thread
+     * @param delayMillis     delay in milliseconds
+     * @param aliveMonitor    allows to see when it's time to die (window is destroyed etc.), nulls allowed
+     * @param snippetStart    code to run before.  nulls allowed. will run on each mark().
+     * @param runStartEachMark true if mark() should execute snippetStart code each time or just the first time ever
+     * @param snippetEnd      code to run after @NotNull
+     */
     public DelayedThread(String threadName, long delayMillis, StillAliveMonitor aliveMonitor, Runnable snippetStart, boolean runStartEachMark, Runnable snippetEnd) {
         runThisFirst = snippetStart;
         if (snippetEnd == null)
@@ -150,6 +159,7 @@ public class DelayedThread extends Thread {
 
     /**
      * Kills the thread.
+     * Can be called multiple times if needed, no harm.
      */
     public void stopProcessing() {
         internalCheck = false;
@@ -167,7 +177,7 @@ public class DelayedThread extends Thread {
 
         try {
 //            sleep(delay); // this way the window gets created.
-            while (internalCheck && stillAliveMonitor.isAlive()) {
+            while (internalCheck && (stillAliveMonitor==null || stillAliveMonitor.isAlive())) {
                 if (!flag.value) { // if nothing to do - then wait for notify
                     logger.finest("Waiting indefinitely.");
                     synchronized(notifyObject) { // wake it up

@@ -49,7 +49,7 @@ public class AIMConnection extends AbstractMessageConnection {
 
     public void connect() {
         notifyConnectionInitiated();
-        user = ContactWrapper.create(getUserName(), this);
+        user = getContactFactory().create(getUserName(), this);
         session = new OscarConnection(HOST, PORT, getUserName(), getPassword());
         session.getPacketAnalyser().setDebug(true);
 
@@ -102,7 +102,7 @@ public class AIMConnection extends AbstractMessageConnection {
         });
         session.addMessagingListener(new MessagingListener() {
             public void onIncomingMessage(IncomingMessageEvent e) {
-                Message message = new MessageImpl(ContactWrapper.create(e.getSenderID(), AIMConnection.this), false, e.getMessage());
+                Message message = new MessageImpl(getContactFactory().create(e.getSenderID(), AIMConnection.this), false, e.getMessage());
                 for (ConnectionEventListener eventHandler : eventHandlers) {
                     try {
                         eventHandler.messageReceived(AIMConnection.this, message);
@@ -125,7 +125,7 @@ public class AIMConnection extends AbstractMessageConnection {
             }
 
             public void onOfflineMessage(OfflineMessageEvent e) {
-                Message message = new MessageImpl(ContactWrapper.create(e.getSenderUin(), AIMConnection.this), false, e.getMessage());
+                Message message = new MessageImpl(getContactFactory().create(e.getSenderUin(), AIMConnection.this), false, e.getMessage());
                 for (ConnectionEventListener eventHandler : eventHandlers) {
                     try {
                         eventHandler.messageReceived(AIMConnection.this, message);
@@ -205,7 +205,7 @@ public class AIMConnection extends AbstractMessageConnection {
     }
 
     public void setAway(boolean away) {
-        if (away && ClientProperties.INSTANCE.getIamAwayMessage().length() > 0) // STATUS_CUSTOM
+        if (away && getProperties().getIamAwayMessage().length() > 0) // STATUS_CUSTOM
             OscarInterface.changeStatus(session, new StatusModeEnum(StatusModeEnum.AWAY));
 // todo see about the msg  session.setStatus(ClientProperties.INSTANCE.getIamAwayMessage(), true);
         else
