@@ -492,11 +492,20 @@ public class MenuManager {
                 for (Object value : values) {
                     if (value instanceof ContactLabel) {
                         ContactWrapper contactWrapper = ((ContactLabel) value).getContact();
-                        if (!contactWrapper.getConnection().isLoggedIn()) {
-                            JOptionPane.showMessageDialog(Main.getFrame(), "Need to be online via " + contactWrapper.getConnection().getServiceName() + " to delete contacts.", "Can not remove:", JOptionPane.ERROR_MESSAGE);
-                        } else {
-                            int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete " + contactWrapper.getDisplayName() + " (" + contactWrapper.getName() + ")?", "Delete a contact?", JOptionPane.YES_NO_OPTION);
+                        if (((ContactLabel) value).isFake()) {
+                            int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete phantom contact " + contactWrapper.getDisplayName() + " (" + contactWrapper.getName() + ")?", "Delete a contact?", JOptionPane.YES_NO_OPTION);
                             if (result == JOptionPane.YES_OPTION) {
+                                ((ContactLabel) value).getGroup().remove(contactWrapper);
+                                ContactLabel.destruct(contactWrapper, ((ContactLabel) value).getGroup());
+                            }
+                        } else if (!contactWrapper.getConnection().isLoggedIn()) { // isn't fake and not logged in
+                            JOptionPane.showMessageDialog(Main.getFrame(), "Need to be online via " + contactWrapper.getConnection().getServiceName() + " to delete contacts.", "Can not remove:", JOptionPane.ERROR_MESSAGE);
+                        } else { // isn't fake and logged in.
+                            //todo see if this is the last real item to be deleted.
+                            int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete " + contactWrapper.getDisplayName() + " (" + contactWrapper.getName() + ") on account "+contactWrapper.getConnection().getUser()+"?\n" +
+                                    "Warning: all related phantom contacts will be deleted.", "Delete a contact?", JOptionPane.YES_NO_OPTION);
+                            if (result == JOptionPane.YES_OPTION) {
+                                // todo go through all the groups and delete anyone from same connection.
                                 ((ContactLabel) value).getGroup().remove(contactWrapper);
                                 if (!((ContactLabel) value).isFake()) {
                                     contactWrapper.getConnection().removeContact(contactWrapper);
