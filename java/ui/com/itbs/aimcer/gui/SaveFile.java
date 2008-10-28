@@ -148,18 +148,21 @@ public class SaveFile {
         public ContactStub() {
         }
 
-        public ContactStub(ContactWrapper cw, Group group) {
+        public ContactStub(ContactWrapper cw, Group group, boolean fake) {
             name = cw.getName();
             connectionType = cw.getConnection().getServiceName();
             loginAs = cw.getConnection().getUser().getName();
             this.group = group.getName();
+            this.fake = fake;
         }
 
+        // don't think this one's used yet
         public ContactStub(ContactLabel cl) {
             name = cl.getContact().getName();
             connectionType = cl.getContact().getConnection().getServiceName();
             loginAs = cl.getContact().getConnection().getUser().getName();
             this.group = cl.getGroup().getName();
+            this.fake = cl.isFake();
         }
 
         public String getName() {
@@ -228,9 +231,10 @@ public class SaveFile {
                 list.add(new GroupStub(groupWrapper));
 //              log.fine("Group: "+g.getName());
                 for (int contactCount = 0; contactCount < group.size(); contactCount++) {
-                    Nameable b = group.get(contactCount);
-                    if (b instanceof ContactWrapper) {
-                        list.add(new ContactStub((ContactWrapper) b, groupWrapper));
+                    Nameable contact = group.get(contactCount);
+                    if (contact instanceof ContactWrapper) {
+                        ContactLabel cl = ContactLabel.construct((ContactWrapper) contact, groupWrapper); // look up: fake?
+                        list.add(new ContactStub((ContactWrapper) contact, groupWrapper, cl.isFake()));
                     }
                 }
             }
