@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ContactLabel extends JLabel implements Renderable {
     private final static Color SELECTED = new Color(127, 190, 240);
+    private Color NOT_SELECTED;
     public static final int SIZE_WIDTH_INC = 8;
     public static final int SIZE_HEIGHT_INC = 2;
 
@@ -29,13 +30,14 @@ public class ContactLabel extends JLabel implements Renderable {
     public static final Color AWAY = Color.GRAY;
 
     /** Reference to contact, for speed. <br>Instead of doing lookup each time. */
-    ContactWrapper contact;
+    private ContactWrapper contact;
     /** Group contact belongs to. */
-    Group group;
+    private Group group;
     /** Lets us see if this was a fake contact */
-    boolean fake;
+    private boolean fake;
 
     static Map<String, ContactLabel> INSTANCES = new ConcurrentHashMap <String, ContactLabel> ();
+    private static final Color FAKE = new Color(238,238,255);
 
     public ContactLabel(ContactWrapper contact) {
         this.contact = contact;
@@ -70,10 +72,14 @@ public class ContactLabel extends JLabel implements Renderable {
             return returnable;
         }
     }
+    public static void destruct(ContactWrapper contact, Group group) {
+        INSTANCES.remove(generateUID(contact, group)); // put is inside constructor
+    }
 
     public JComponent getDisplayComponent(boolean isSelected, boolean cellHasFocus) {
-        setBackground(isSelected ? SELECTED: ListRenderer.NOT_SELECTED);
-        setOpaque(isSelected);
+        NOT_SELECTED = isFake() ? FAKE : ListRenderer.NOT_SELECTED;
+        setBackground(isSelected ? SELECTED: NOT_SELECTED);
+        setOpaque(isSelected || isFake());
         return this;
     }
 
