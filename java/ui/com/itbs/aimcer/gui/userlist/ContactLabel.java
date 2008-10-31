@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ContactLabel extends JLabel implements Renderable {
     private final static Color SELECTED = new Color(127, 190, 240);
-    private Color NOT_SELECTED;
+    private Color NOT_SELECTED = ListRenderer.NOT_SELECTED;
     public static final int SIZE_WIDTH_INC = 8;
     public static final int SIZE_HEIGHT_INC = 2;
 
@@ -30,7 +30,7 @@ public class ContactLabel extends JLabel implements Renderable {
     public static final Color AWAY = Color.GRAY;
 
     /** Reference to contact, for speed. <br>Instead of doing lookup each time. */
-    private ContactWrapper contact;
+    private Contact contact;
     /** Group contact belongs to. */
     private Group group;
     /** Lets us see if this was a fake contact */
@@ -39,12 +39,12 @@ public class ContactLabel extends JLabel implements Renderable {
     static Map<String, ContactLabel> INSTANCES = new ConcurrentHashMap <String, ContactLabel> ();
     private static final Color FAKE = new Color(238,238,255);
 
-    public ContactLabel(ContactWrapper contact) {
+    public ContactLabel(Contact contact) {
         this.contact = contact;
         update();
     }
 
-    private ContactLabel(ContactWrapper contact, Group group) {
+    private ContactLabel(Contact contact, Group group) {
         this.contact = contact;
         this.group = group;
         INSTANCES.put(generateUID(contact, group), this);
@@ -59,11 +59,11 @@ public class ContactLabel extends JLabel implements Renderable {
         return (cw.getName()+ "|" + cw.getConnection() + "|" + cw.getConnection().getUser().getName() + "|" + group.getName()).intern(); // will likely get it again and again
     }
 
-    public static boolean isExists(ContactWrapper contact, Group group) {
+    public static boolean isExists(Contact contact, Group group) {
         return INSTANCES.get(generateUID(contact, group))!=null;
     }
 
-    public static ContactLabel construct(ContactWrapper contact, Group group) {
+    public static ContactLabel construct(Contact contact, Group group) {
         ContactLabel returnable = INSTANCES.get(generateUID(contact, group)); // put is inside constructor
         if (returnable==null) {
             return new ContactLabel(contact, group);
@@ -72,12 +72,11 @@ public class ContactLabel extends JLabel implements Renderable {
             return returnable;
         }
     }
-    public static void destruct(ContactWrapper contact, Group group) {
+    public static void remove(Contact contact, Group group) {
         INSTANCES.remove(generateUID(contact, group)); // put is inside constructor
     }
 
     public JComponent getDisplayComponent(boolean isSelected, boolean cellHasFocus) {
-        NOT_SELECTED = isFake() ? FAKE : ListRenderer.NOT_SELECTED;
         setBackground(isSelected ? SELECTED: NOT_SELECTED);
         setOpaque(isSelected || isFake());
         return this;
@@ -99,12 +98,15 @@ public class ContactLabel extends JLabel implements Renderable {
             setIcon(contact.getIcon());
             setFont(OFF);
             setForeground(AWAY);
-            final String temp = "Last Seen on " + contact.getConnection().getServiceName() + (contact.getPreferences().getLastConnected() == null ? " Not yet." : (" " + contact.getPreferences().getLastConnected()));
-            setToolTipText(temp);
+            if (contact instanceof ContactWrapper) {
+                ContactWrapper contactWrapper = (ContactWrapper) contact;
+                final String temp = "Last Seen on " + contact.getConnection().getServiceName() + (contactWrapper.getPreferences().getLastConnected() == null ? " Not yet." : (" " + contactWrapper.getPreferences().getLastConnected()));
+                setToolTipText(temp);
+            }
         }
     }
 
-    public ContactWrapper getContact() {
+    public Contact getContact() {
         return contact;
     }
 
@@ -118,6 +120,7 @@ public class ContactLabel extends JLabel implements Renderable {
 
     public void setFake(boolean fake) {
         this.fake = fake;
+        NOT_SELECTED = isFake() ? FAKE : ListRenderer.NOT_SELECTED;
     }
 
     // -------------- This removes the need for a whole panel.

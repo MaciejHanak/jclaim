@@ -40,9 +40,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Arrays;
 import java.util.logging.Logger;
 
 /**
@@ -491,12 +491,11 @@ public class MenuManager {
                 List values = Main.getPeoplePanel().getSelectedValues();
                 for (Object value : values) {
                     if (value instanceof ContactLabel) {
-                        ContactWrapper contactWrapper = ((ContactLabel) value).getContact();
+                        ContactWrapper contactWrapper = (ContactWrapper) ((ContactLabel) value).getContact();
                         if (((ContactLabel) value).isFake()) {
                             int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete phantom contact " + contactWrapper.getDisplayName() + " (" + contactWrapper.getName() + ")?", "Delete a contact?", JOptionPane.YES_NO_OPTION);
                             if (result == JOptionPane.YES_OPTION) {
                                 ((ContactLabel) value).getGroup().remove(contactWrapper);
-                                ContactLabel.destruct(contactWrapper, ((ContactLabel) value).getGroup());
                             }
                         } else if (!contactWrapper.getConnection().isLoggedIn()) { // isn't fake and not logged in
                             JOptionPane.showMessageDialog(Main.getFrame(), "Need to be online via " + contactWrapper.getConnection().getServiceName() + " to delete contacts.", "Can not remove:", JOptionPane.ERROR_MESSAGE);
@@ -506,10 +505,10 @@ public class MenuManager {
                                     "Warning: all related phantom contacts will be deleted.", "Delete a contact?", JOptionPane.YES_NO_OPTION);
                             if (result == JOptionPane.YES_OPTION) {
                                 // todo go through all the groups and delete anyone from same connection.
-                                ((ContactLabel) value).getGroup().remove(contactWrapper);
                                 if (!((ContactLabel) value).isFake()) {
-                                    contactWrapper.getConnection().removeContact(contactWrapper);
+                                    contactWrapper.getConnection().removeContact(contactWrapper, ((ContactLabel) value).getGroup());
                                 }
+                                ((ContactLabel) value).getGroup().remove(contactWrapper); // double-delete is ok
                                 updateContactList(contactWrapper.getConnection());
                             }
                         }
@@ -535,7 +534,7 @@ public class MenuManager {
 
                     for (Object selected : items) {
                         if (selected instanceof ContactLabel) {
-                            ContactWrapper contactWrapper = ((ContactLabel) selected).getContact();
+                            ContactWrapper contactWrapper = (ContactWrapper) ((ContactLabel) selected).getContact();
                             if (!ContactLabel.isExists(contactWrapper, group)) {
                                 ContactLabel newContactLabel = ContactLabel.construct(contactWrapper, group);
                                 newContactLabel.setFake(true);

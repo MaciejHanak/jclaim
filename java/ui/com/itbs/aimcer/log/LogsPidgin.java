@@ -156,7 +156,7 @@ public class LogsPidgin implements Runnable{
         public void cancel() { }
         public void setTimeout(int timeout) { }
         public void addContact(Nameable contact, Group group) { }
-        public void removeContact(Nameable contact) { }
+        public boolean removeContact(Nameable contact, Group group) { return false;}
         public void addContactGroup(Group group) { }
         public void removeContactGroup(Group group) { }
         public void moveContact(Nameable contact, Group oldGroup, Group newGroup) { }

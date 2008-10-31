@@ -60,7 +60,7 @@ public class ServerStarter {
 //        server.addServlet("/h:/", new FileServlet());
 //        server.addServlet("/login", new LoginServlet());
         server.addServlet("/", new LoginServlet());
-        new Thread() {
+        new Thread("ACMEServerStarter") {
             /**
              * @see Runnable#run()
              */

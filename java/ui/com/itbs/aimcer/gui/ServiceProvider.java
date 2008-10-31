@@ -21,6 +21,7 @@
 package com.itbs.aimcer.gui;
 
 import com.itbs.aimcer.commune.MessageSupport;
+import com.itbs.aimcer.commune.daim.DaimConnection;
 import com.itbs.aimcer.commune.jaim.JAIMConnection;
 import com.itbs.aimcer.commune.joscar.ICQConnection;
 import com.itbs.aimcer.commune.joscar.OscarConnection;
@@ -48,7 +49,7 @@ public class ServiceProvider {
     static ServiceProvider[] providers = {
 //        new ServiceProvider(UTestFakeConnection.class, "Fake"),
         new ServiceProvider(OscarConnection.class,       "AIM - Oscar"   ),
-//        new ServiceProvider(DaimConnection.class,        "DAIM - Oscar"   ),
+        new ServiceProvider(DaimConnection.class,        "DAIM - Oscar"  ),
         new ServiceProvider(ICQConnection.class,         "ICQ"           ),
 //        new ServiceProvider(AIMConnection.class,       "AIM - Oscar 2" ),
         new ServiceProvider(YMsgConnection.class,        "Yahoo!"        ),

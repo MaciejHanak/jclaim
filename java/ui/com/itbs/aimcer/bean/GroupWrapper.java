@@ -21,6 +21,7 @@
 package com.itbs.aimcer.bean;
 
 import com.itbs.aimcer.commune.Connection;
+import com.itbs.aimcer.gui.userlist.ContactLabel;
 import com.itbs.aimcer.gui.userlist.GroupLabel;
 import com.itbs.util.GeneralUtils;
 
@@ -104,6 +105,9 @@ public class GroupWrapper implements Group, Renderable, Comparable {
     }
 
     public boolean remove(Nameable contact) {
+        if (contact instanceof Contact) {
+            ContactLabel.remove((Contact) contact, this);
+        }
         return contacts.remove(contact);
     }
 

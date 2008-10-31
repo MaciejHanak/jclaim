@@ -48,6 +48,7 @@ public final class LoginPanel extends JDialog implements ActionListener {
     private static final String ADD = "Add Connection";
     private static final String SAVE = "Save";
     private final JTextField name, password, server;
+    JLabel serverLabel;
     private JComboBox service;
     /** Login button */
     private JButton login;
@@ -95,7 +96,8 @@ public final class LoginPanel extends JDialog implements ActionListener {
         password = new BetterPasswordField(connection==null?"":connection.getPassword(), 10);
         innerPanel.add(password);
 
-        innerPanel.add(new JLabel(SERVER, JLabel.RIGHT)); // Server
+        serverLabel = new JLabel(SERVER, JLabel.RIGHT);
+        innerPanel.add(serverLabel); // Server w/ Label
         server = new BetterTextField(connection==null?"":connection.getServerName(), 10);
         server.setEnabled(false); // start out with it off
         innerPanel.add(server);
@@ -149,7 +151,7 @@ public final class LoginPanel extends JDialog implements ActionListener {
         serverOverride.setOpaque(false);
 //        serverOverride.setSelected(connection==null || connection.isAutoLogin());
         panel.add(serverOverride);
-        serverOverride.addActionListener(new TurnOffDependents(new JComponent[] {server}));
+        serverOverride.addActionListener(new TurnOffDependents(new JComponent[] {server, serverLabel}));
         
         return panel;
     }

@@ -179,7 +179,7 @@ final public class PeopleScreen extends JPanel implements UserList {
                             List <Group> allGroups = new ArrayList<Group>(5);
                             for (Object selected : items) {
                                 if (selected instanceof ContactLabel) {
-                                    ContactWrapper contactWrapper = ((ContactLabel) selected).getContact();
+                                    ContactWrapper contactWrapper = (ContactWrapper) ((ContactLabel) selected).getContact();
                                     if (!allContacts.contains(contactWrapper)) {
                                         allContacts.add(contactWrapper);
                                     }
@@ -204,7 +204,7 @@ final public class PeopleScreen extends JPanel implements UserList {
 
                     if (list.getSelectedValue() instanceof ContactLabel) {
                         final JMenuItem itemHide = new JMenuItem("Hide/Unhide (Keep Offline)");
-                        final boolean hide = !((ContactLabel)list.getSelectedValue()).getContact().getPreferences().isHideFromList();
+                        final boolean hide = !((ContactWrapper) ((ContactLabel) list.getSelectedValue()).getContact()).getPreferences().isHideFromList();
                         itemHide.addActionListener(new ActionListener() {
                             /**
                              * Invoked when an action occurs.
