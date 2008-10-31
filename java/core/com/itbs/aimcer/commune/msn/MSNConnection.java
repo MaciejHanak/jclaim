@@ -420,14 +420,16 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
 
     }// addContact()
 
-    public void removeContact(Nameable contact) {
+    public boolean removeContact(Nameable contact, Group group) {
+        //todo protocol: would be nice to delete from a group
         try {
             connection.removeFriend(contact.getName());
+            cleanGroup(group, contact);
         } catch (IOException e) {
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.errorOccured("ERROR removing a contact.", e);
-            }
+            notifyErrorOccured("ERROR removing a contact "+contact, e);
+            return false;
         }
+        return true;
     }
 
     public void addContactGroup(Group group) {

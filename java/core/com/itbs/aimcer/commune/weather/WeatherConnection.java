@@ -292,8 +292,9 @@ public class WeatherConnection extends AbstractConnection {
         updateList();
     }
 
-    public void removeContact(Nameable contact) {
+    public boolean removeContact(Nameable contact, Group group) {
         weather.remove(contact);
+        return true;
     }
 
     public void addContactGroup(Group group) {

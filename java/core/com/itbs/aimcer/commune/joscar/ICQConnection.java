@@ -37,6 +37,8 @@ public class ICQConnection extends OscarConnection {
     // todo when offline, getIcbmService will return null
     public void processMessage(Message message) {
         Conversation conversation = connection.getIcbmService().getImConversation(new Screenname(message.getContact().getName()));
-        conversation.sendMessage(new  SimpleMessage(message.getText(), message.isAutoResponse()));
+        // the offline thing is to send properly in offline.
+        SimpleMessage actualMessage = new SimpleMessage(message.getText(), message.isAutoResponse() || !message.getContact().getStatus().isOnline());
+        conversation.sendMessage(actualMessage);
     }
 }

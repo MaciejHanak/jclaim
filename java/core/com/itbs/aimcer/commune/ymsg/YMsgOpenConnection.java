@@ -57,12 +57,6 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
         }
     }
 
-/*
-    public String getSupportAccount() {
-        return "SashasEmail";
-    }
-*/
-
     public void connect() throws Exception {
         super.connect();
         notifyConnectionInitiated();
@@ -166,38 +160,6 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
         }
     }
 
-    public void moveContact(Nameable contact, Group group) {
-        if (session != null) {
-            boolean found = false;
-            GroupList list = getGroupList();
-            for (int i = list.size(); i>0 && !found; i--) {
-                try {
-                    if (list.get(i).remove(contact) && !list.get(i).getName().equalsIgnoreCase(group.getName())) {
-                        found = true;
-                        session.removeFriendFromGroup(contact.getName(), list.get(i).getName());
-                    }
-                } catch (IOException e) {
-                    log.log(Level.SEVERE, "", e);//Todo change?
-                }
-            }
-            if (found) {
-                addContact(contact, group);
-            }
-        }
-    }
-
-    public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
-        if (session != null) {
-            try {
-                session.removeFriendFromGroup(contact.getName(), oldGroup.getName());
-            } catch (IOException e) {
-                log.log(Level.SEVERE, "Failed to remove a friend.", e);//Todo change to error?
-                notifyErrorOccured("Failed to remove a friend.", e);
-            }
-            addContact(contact, newGroup);
-        }
-    }
-
     public void addContactGroup(Group group) {
         //todo Yahoo d/n support this directly. Use addContact... keep checking if new versions implemement code for adding a group
     }
@@ -209,22 +171,24 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
     /**
      * Use to remove contacts.
      * @param contact to delete
+     * @param group to delete from
      */
-    public void removeContact(Nameable contact) {
+    public boolean removeContact(Nameable contact, Group group) {
         if (session != null) {
-            // do it for the server
-            GroupList list = getGroupList();
-            for (int i = list.size()-1; i >= 0; i--) {
+            if (group==null) {
+                group = findGroupViaBuddy(contact);
+            }
+            if (group!=null) {
                 try {
-                    if (list.get(i).remove(contact)) {
-                        session.removeFriendFromGroup(contact.getName(), list.get(i).getName());
-                        return; // just 1 at a time, jik
-                    }
+                    session.removeFriendFromGroup(contact.getName(), group.getName());
+                    cleanGroup(group, contact);
                 } catch (IOException e) {
-                    log.log(Level.SEVERE, "", e);  //Todo change?
+                    notifyErrorOccured("Failed to delete", e);
+                    return false;
                 }
             }
         }
+        return true;
     }
 
     public void disconnect(boolean intentional) {

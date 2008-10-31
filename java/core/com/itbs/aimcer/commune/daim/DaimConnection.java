@@ -159,22 +159,6 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
 */
         return null;
     }
-    /**
-     * Finds a group.  Helper.
-     * @param contact to find by
-     * @return group or null
-     */
-    Group findGroupViaBuddy(com.itbs.aimcer.bean.Nameable contact) {
-        GroupList list = getGroupList();
-        for (int i = list.size(); i>0; i--) {
-            Group group = list.get(i);
-            for (int j = group.size(); j>0; j--) {
-                if (group.get(j).getName().equalsIgnoreCase(contact.getName()))
-                    return group;
-            }
-        }
-        return null;
-    }
 
     /**
      * Helper method for finding a buddy.
@@ -241,14 +225,22 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
      * Call to remove a contact you no longer want.
      *
      * @param contact to remove
+     * @param group to delete from
      */
-    public void removeContact(final Nameable contact) {
-        Group group = findGroupViaBuddy(contact);
-        try {
-            connection.removeBuddy(contact.getName(), group.getName());
-        } catch (IOException e) {
-            notifyErrorOccured("Error while removing contact", e);
+    public boolean removeContact(final Nameable contact, Group group) {
+        boolean result = false;
+        if (group==null) {
+            group = findGroupViaBuddy(contact);
         }
+        if (group!=null) {
+            try {
+                result = connection.removeBuddy(contact.getName(), group.getName());
+            } catch (IOException e) {
+                notifyErrorOccured("Error while removing contact", e);
+            }
+        }
+        cleanGroup(group, contact);
+        return result;
     } // removeContact
 
     /**
@@ -273,14 +265,9 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
      *
      * @param contact to move
      * @param group to move to
-     * todo implement
      */
     public void moveContact(Nameable contact, com.itbs.aimcer.bean.Group group) {
-        try {
-            connection.moveBuddy(contact.getName(), findGroupViaBuddy(contact).getName(), group.getName());
-        } catch (IOException e) {
-            notifyErrorOccured("Error while removing contact", e);
-        }
+        moveContact(contact, findGroupViaBuddy(contact), group);
     }
 
     public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {

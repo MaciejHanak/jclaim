@@ -310,48 +310,29 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
         return name + "@" + getServerName();
     }
 
-    public void removeContact(Nameable contact) {
+    public boolean removeContact(Nameable contact, Group group) {
         for (RosterGroup rosterGroup : connection.getRoster().getGroups()) {
-            for (RosterEntry rosterEntry : rosterGroup.getEntries()) {
-                if (rosterEntry.getName().equals(contact.getName())) {
-                    try {
-                        rosterGroup.removeEntry(rosterEntry);
-                    } catch (XMPPException e) {
-                        for (ConnectionEventListener connectionEventListener : eventHandlers) {
-                            connectionEventListener.errorOccured("Found, but failed to remove the contact", e);
+            if (group==null || rosterGroup.getName().equalsIgnoreCase(group.getName())) { // for the right group
+                for (RosterEntry rosterEntry : rosterGroup.getEntries()) {
+                    if (rosterEntry.getName().equals(contact.getName())) {
+                        try {
+                            rosterGroup.removeEntry(rosterEntry);
+                            cleanGroup(group, contact); // if you change code, make sure this executes once only!
+                        } catch (XMPPException e) {
+                            notifyErrorOccured("Found, but failed to remove the contact", e);
+                            return false;
                         }
+                        return true;
                     }
-                    return;
                 }
             }
-        }
-    }
-
-    public void moveContact(Nameable contact, Group group) {
-        removeContact(contact);
-        addContact(contact, group);
+        } // for
+        return false;
     }
 
     public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
-        RosterGroup rosterGroup = connection.getRoster().getGroup(oldGroup.getName());
-        if (rosterGroup==null) {
-            moveContact(contact, newGroup);
-        } else {
-            for (RosterEntry rosterEntry : rosterGroup.getEntries()) {
-                if (rosterEntry.getName().equals(contact.getName())) {
-                    try {
-                        rosterGroup.removeEntry(rosterEntry);
-                        oldGroup.remove(contact);
-                    } catch (XMPPException e) {
-                        for (ConnectionEventListener connectionEventListener : eventHandlers) {
-                            connectionEventListener.errorOccured("Found, but failed to remove the contact", e);
-                        }
-                    }
-                    return;
-                }
-            }
-            addContact(contact, newGroup);
-        }
+        removeContact(contact, oldGroup);
+        addContact(contact, newGroup);
     }
 
     public void addContactGroup(Group group) {

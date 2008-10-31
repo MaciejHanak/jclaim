@@ -133,8 +133,23 @@ abstract public class AbstractConnection implements Connection {
      * @param group destination group
      */
     public void moveContact(Nameable contact, Group group) {
-        removeContact(contact);
-        addContact(contact, group);
+        if (isLoggedIn() && removeContact(contact, null)) {
+            addContact(contact, group);
+        }
+    }
+
+
+    /**
+     * Moves contact from one group to another.
+     * Anyone who can do a better job
+     * @param contact  to move
+     * @param oldGroup source group
+     * @param newGroup destination group
+     */
+    public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
+        if (isLoggedIn() && removeContact(contact, oldGroup)) {
+            addContact(contact, newGroup);
+        }
     }
 
     // ********************   Event Listeners   ********************

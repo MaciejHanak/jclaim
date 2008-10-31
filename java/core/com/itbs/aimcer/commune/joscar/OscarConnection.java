@@ -197,13 +197,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                 null,
                 new Runnable() {
                     public void run() {
-                        if (isLoggedIn()) {
-                            processMessage(new MessageImpl(getContactFactory().create(getSystemName(), OscarConnection.this), true, true, "Awake"));
-                            // Pseudo: aimconnection.getFlapConnection().sendFlap(new FlapPacket() { public void getPacketType() { return 5; } }
-//                            connection.getSsiService().getOscarConnection().sendFlap(
-//                                    new FlapPacket() {
-//                                        public void getPacketType() { return 5; } });
-                        }
+                        getUserInfo(getUserName());
                     }
                 }
 
@@ -753,7 +747,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     }
 
     /**
-     * Finds a group.  Helper.
+     * Finds an Oscar group from Our Group.  Helper.
      * @param group to find
      * @return group or null
      */
@@ -779,12 +773,26 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         }
         return null;
     }
+
+    /**
+     * Finds a contact.
+     * It's either matched to be in the group or not to be in the group.
+     * @param contact to find
+     * @param group to search
+     * @param inGroup only match those in the group or only not in group
+     * @return buddy reference
+     */
     Buddy findBuddyViaGroup(Nameable contact, Group group, boolean inGroup) {
+        // get a list of all groups
         java.util.List<? extends net.kano.joustsim.oscar.oscar.service.ssi.Group> list = connection.getSsiService().getBuddyList().getGroups();
+        // for each group
         for (net.kano.joustsim.oscar.oscar.service.ssi.Group aimGroup : list) {
+            // gm = groups matched
             boolean groupMatch = group.getName().equalsIgnoreCase(aimGroup.getName());
+            // define type of search
             if (!inGroup)
               groupMatch = !groupMatch;
+            // if really a group and not smth else, and if we match/not, then search for buddy in it.
             if (aimGroup instanceof MutableGroup && groupMatch) {
                 for(Buddy buddy: aimGroup.getBuddiesCopy()) {
                     if (contact.getName().equalsIgnoreCase(buddy.getScreenname().getNormal()))
@@ -878,8 +886,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
      * Call to remove a contact you no longer want.
      *
      * @param contact to remove
+     * @param group to erase from
      */
-    public void removeContact(final Nameable contact) {
+    public boolean removeContact(final Nameable contact, final Group group) {
 //        if (contact instanceof ContactWrapper) {
 //            Group group = ((ContactWrapper) contact).get
 //        }
@@ -917,6 +926,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                     SsiItem inparam[] = new SsiItem[1];
                     inparam[0] = newContact.toSsiItem();
                     processor.sendSnac(new SnacRequest(new DeleteItemsCmd(inparam), new SnacRequestAdapter() {
+
                         public void handleResponse(SnacResponseEvent event) {
                             // handle errors
                             if (event.getSnacCommand() instanceof SsiDataModResponse) {
@@ -924,10 +934,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                                 if (response.getResults()[0] != SsiDataModResponse.RESULT_SUCCESS) {
                                     log.fine("Problem deleting a user: " + response.toString());
                                 } else {
-                                    GroupList list = getGroupList();
-                                    for (int i = 0; i < list.size(); i++) {
-                                        list.get(i).remove(contact);
-                                    }
+                                    cleanGroup(group, contact);
                                     for (ConnectionEventListener eventHandler : eventHandlers) {
                                         eventHandler.statusChanged(OscarConnection.this);
                                     }
@@ -939,11 +946,12 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                     }));
 
                 } else {
-                    log.fine("Problem: couldn't find contact! " + contact.getName());
+                    log.warning("Problem: couldn't find contact! " + contact.getName());
                     // todo what to do if group isn't found
                 }
             }
         }));
+        return true; // SO FAKE! But we have moveContact implemented properly.
     } // removeContact
 
     /**
@@ -963,25 +971,35 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     }
 
     public void moveContact(Nameable contact, Group group) {
+        moveContact(contact, findGroupViaBuddy(contact), group);
+    }
+    
+    public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
         heartbeat.mark();
-        net.kano.joustsim.oscar.oscar.service.ssi.Group aimGroup = findGroup(group);
+        net.kano.joustsim.oscar.oscar.service.ssi.Group aimGroup = findGroup(newGroup);
         if (aimGroup == null) {
-            addContactGroup(group);
+            addContactGroup(newGroup);
             try {
-                Thread.sleep(200);
+                Thread.sleep(500);
             } catch (InterruptedException e) {// no need
             }
-            aimGroup = findGroup(group);
+            aimGroup = findGroup(newGroup);
         }
         if (aimGroup == null) { // still null?
-            notifyErrorOccured("Failed to create the group.  Try again.", null);
+            notifyErrorOccured("Failed to create the newGroup.  Try again.", null);
             return;
         }
 
         List <Buddy> buddies = new ArrayList<Buddy>();
-        Buddy buddy = findBuddyViaGroup(contact, group, false);
+        Buddy buddy;
+        if (oldGroup==null) {
+            buddy = findBuddyViaGroup(contact, newGroup, false);
+        } else { // better way
+            buddy = findBuddyViaGroup(contact, oldGroup, true);
+        }
+        
         if (buddy == null) {
-            notifyErrorOccured("Failed to find buddy " + contact.getName() + " not in target group.  Try again.", null);
+            notifyErrorOccured("Failed to find buddy " + contact.getName() + " not in source group.  Try again.", null);
             return;
         }
         buddies.add(buddy);
@@ -989,11 +1007,6 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             connection.getSsiService().getBuddyList().moveBuddies(buddies, (MutableGroup)aimGroup);
         }
     }
-
-    public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
-        moveContact(contact,  newGroup);
-    }
-
 
     public void initiateFileTransfer(final FileTransferListener ftl) throws IOException {
         heartbeat.mark();
@@ -1217,6 +1230,54 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             }
         }
     } // requestPictureForUser
+
+    public List<String> getUserInfoColumns() {
+        List<String> result = new ArrayList<String>(10);
+        result.add("Screen Name");
+        result.add("Screen ID");
+        result.add("Away Message");
+        result.add("Capabilities");
+        result.add("iTunes URL");
+        result.add("Last Expression");
+        result.add("Idle Since");
+        result.add("Online Since");
+        result.add("Status Message");
+        result.add("User Profile");
+        result.add("Warning Level");
+        result.add("Aol User");
+        result.add("Away");
+        result.add("Mobile");
+        result.add("On Buddy List");
+        result.add("Online");
+        result.add("Robot");
+        result.add("Typing Notifications");
+        return result;
+    }
+    
+    public List<String> getUserInfo(String userName) {
+        if (!isLoggedIn()) return null;
+        List<String> result = new ArrayList<String>(10);
+        BuddyInfo binfo = connection.getBuddyInfoManager().getBuddyInfo(new Screenname(userName));
+        result.add(binfo.getScreenname().getFormatted());
+        result.add(binfo.getScreenname().getNormal());
+        result.add(binfo.getAwayMessage());
+        result.add(binfo.getCapabilities().toString());
+        result.add(binfo.getItunesUrl());
+        result.add(binfo.getLastAimExpression());
+        result.add(binfo.getIdleSince().toString());
+        result.add(binfo.getOnlineSince()==null?"Not Available": binfo.getOnlineSince().toString());
+        result.add(binfo.getStatusMessage());
+        result.add(binfo.getUserProfile());
+        result.add(binfo.getWarningLevel()+"");
+        result.add(""+binfo.isAolUser());
+        result.add(""+binfo.isAway());
+        result.add(""+binfo.isMobile());
+        result.add(""+binfo.isOnBuddyList());
+        result.add(""+binfo.isOnline());
+        result.add(""+binfo.isRobot());
+        result.add(""+binfo.supportsTypingNotifications());
+        return result;
+    }
 
     /**
      * Will remove the picture.

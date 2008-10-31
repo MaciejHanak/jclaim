@@ -166,10 +166,12 @@ public class AIMConnection extends AbstractMessageConnection {
     /**
      * Use to remove contacts.
      * @param contact to delete
+     * @param group
      */
-    public void removeContact(Nameable contact) {
+    public boolean removeContact(Nameable contact, Group group) {
         // do it for the server
         notifyErrorOccured("Sorry, this funtionality is not supported by this library", null);
+        return false;
     }
 
     public Nameable getUser() {

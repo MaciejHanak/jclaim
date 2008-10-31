@@ -20,9 +20,7 @@
 
 package com.itbs.aimcer.commune;
 
-import com.itbs.aimcer.bean.ContactFactory;
-import com.itbs.aimcer.bean.Message;
-import com.itbs.aimcer.bean.Nameable;
+import com.itbs.aimcer.bean.*;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
@@ -167,6 +165,43 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
             }
         }
     }
+
+    // ------------------------------- G R O U P ----------------------------------------------
+
+    /**
+     * Will try to delete contact from group.
+     * Will find it if it has to.
+     * @param group to delete from
+     * @param contact to delete
+     */
+    protected void cleanGroup(Group group, Nameable contact) {
+        if (group != null) {
+            group.remove(contact);
+        } else {
+            GroupList list = getGroupList();
+            for (int i = list.size(); i>0; i--) {
+                if (list.get(i).remove(contact)) break;
+            }
+        }
+    }
+
+    /**
+     * Finds a group.  Helper.
+     * @param contact to find by
+     * @return group or null
+     */
+    protected Group findGroupViaBuddy(com.itbs.aimcer.bean.Nameable contact) {
+        GroupList list = getGroupList();
+        for (int i = list.size(); i>0; i--) {
+            Group group = list.get(i);
+            for (int j = group.size(); j>0; j--) {
+                if (group.get(j).getName().equalsIgnoreCase(contact.getName()))
+                    return group;
+            }
+        }
+        return null;
+    }
+
 
     // ------------------------------- M E S S A G E ----------------------------------------------
     public boolean isSecureMessageSupported() {

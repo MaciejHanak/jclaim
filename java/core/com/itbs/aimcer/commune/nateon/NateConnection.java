@@ -351,18 +351,16 @@ public class NateConnection extends AbstractMessageConnection implements FileTra
         group.add(contact);
     }
 
-    public void removeContact(Nameable contact) {
+    public boolean removeContact(Nameable contact, Group group) {
 //        NateFriend friend = connection.getBuddyGroup().getFriendUid(contact.getName());
         connection.getBuddyGroup().removeFriend(contact.getName());
-    }
-
-    public void moveContact(Nameable contact, Group group) {
-        removeContact(contact);
-        addContact(contact, group);
+        cleanGroup(group, contact);
+        return true;
     }
 
     public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
-        moveContact(contact, newGroup);
+        removeContact(contact, oldGroup);
+        addContact(contact, newGroup);
     }
 
     public void addContactGroup(Group group) {

@@ -297,9 +297,11 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 	}
 
 
-	public void removeContact(Nameable contact) {
-		connection.removeFriend(Email.parseStr(contact.getName()), false);
-	}
+	public boolean removeContact(Nameable contact, Group group) {
+        connection.removeFriend(Email.parseStr(contact.getName()), group.getName());
+        cleanGroup(group, contact);
+        return true;
+    }
 
 	public void removeContactGroup(Group group) {
 		connection.removeGroup(group.getName());

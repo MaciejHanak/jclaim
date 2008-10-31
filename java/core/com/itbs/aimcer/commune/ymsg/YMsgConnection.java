@@ -232,26 +232,6 @@ public class YMsgConnection extends AbstractMessageConnection {// implements Cha
         }
     }
 
-    public void moveContact(Nameable contact, Group group) {
-        if (session != null) {
-            boolean found = false;
-            GroupList list = getGroupList();
-            for (int i = list.size(); i>0 && !found; i--) {
-                try {
-                    if (list.get(i).remove(contact) && !list.get(i).getName().equalsIgnoreCase(group.getName())) {
-                        found = true;
-                        session.removeFriend(contact.getName(), list.get(i).getName());
-                    }
-                } catch (IOException e) {
-                    log.log(Level.SEVERE, "", e);//Todo change?
-                }
-            }
-            if (found) {
-                addContact(contact, group);
-            }
-        }
-    }
-
     public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
         if (session != null) {
             try {
@@ -275,22 +255,24 @@ public class YMsgConnection extends AbstractMessageConnection {// implements Cha
     /**
      * Use to remove contacts.
      * @param contact to delete
+     * @param group to remove from
      */
-    public void removeContact(Nameable contact) {
+    public boolean removeContact(Nameable contact, Group group) {
         if (session != null) {
-            // do it for the server
-            GroupList list = getGroupList();
-            for (int i = list.size()-1; i >= 0; i--) {
+            if (group==null) {
+                group = findGroupViaBuddy(contact);
+            }
+            if (group!=null) {
                 try {
-                    if (list.get(i).remove(contact)) {
-                        session.removeFriend(contact.getName(), list.get(i).getName());
-                        return; // just 1 at a time, jik
-                    }
+                    session.removeFriend(contact.getName(), group.getName());
+                    cleanGroup(group, contact);
                 } catch (IOException e) {
                     log.log(Level.SEVERE, "", e);  //Todo change?
+                    return false;
                 }
             }
         }
+        return true;
     }
 
     public void disconnect(boolean intentional) {

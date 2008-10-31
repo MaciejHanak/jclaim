@@ -105,21 +105,22 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
     }
 
     public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
-        moveContact(contact, newGroup);
+        removeContact(contact, oldGroup);
+        addContact(contact, newGroup);
     }
 
     /**
      * Use to remove contacts.
      * @param contact to delete
+     * @param group to delete from, nulls ok
      */
-    public void removeContact(Nameable contact) {
+    public boolean removeContact(Nameable contact, Group group) {
         // do it for the server
         connection.unwatchBuddy(contact.getName());
-        GroupList list = getGroupList();
-        for (int i = list.size(); i>0; i--) {
-            list.get(i).remove(contact);
-        }
+        cleanGroup(group, contact);
+        return true;
     }
+
 
     private void receiveConfig() {
         //run through them all and add watches for all

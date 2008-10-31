@@ -54,8 +54,8 @@ public interface Connection {
     /**
      * Allows one to check credentials withoout looking in.
      * For secondary services. (like web)
-     * @param name
-     * @param pass
+     * @param name login name
+     * @param pass pword
      * @return true if match
      */
     public boolean isLoginInfoGood(String name, String pass);
@@ -96,9 +96,17 @@ public interface Connection {
     public Iterator getEventListenerIterator();
 
     void addContact(Nameable contact, Group group);
-    void removeContact(Nameable contact);
+    /**
+     * Call to remove a contact you no longer want.
+     *
+     * @param contact to remove
+     * @param group to delete from, nulls ok
+     * @return true if we think we deleted it (optimistic)
+     */
+    boolean removeContact(Nameable contact, Group group);
     void addContactGroup(Group group);
     void removeContactGroup(Group group);
+    /** Deprecated. Please use the longer version */
     void moveContact(Nameable contact, Group group);
     void moveContact(Nameable contact, Group oldGroup, Group newGroup);
     GroupList getGroupList();
