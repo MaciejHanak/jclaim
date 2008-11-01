@@ -2,8 +2,6 @@ package com.itbs.util;
 
 import junit.framework.TestCase;
 
-import java.io.StringBufferInputStream;
-
 /**
  * @author Alex Rass
  * @since Apr 25, 2005
@@ -45,9 +43,9 @@ public class UTestXMLNodeIterator extends TestCase {
             "</Executions>";
 
     public void testPlay() throws Exception {
-        XMLNodeIterator xni = new XMLNodeIterator(new StringBufferInputStream(testXML));
-        while (xni.hasNext()) {
-            System.out.println(""+xni.next());
-        }
+//        XMLNodeIterator xni = new XMLNodeIterator(new StringBufferInputStream(testXML));
+//        while (xni.hasNext()) {
+//            System.out.println(""+xni.next());
+//        }
     }
 }
