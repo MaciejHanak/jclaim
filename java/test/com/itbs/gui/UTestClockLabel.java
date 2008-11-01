@@ -21,7 +21,6 @@
 package com.itbs.gui;
 
 import com.itbs.aimcer.gui.UTestFrameTest;
-import org.jdesktop.swingx.VerticalLayout;
 
 import javax.swing.*;
 import java.awt.*;
@@ -79,7 +78,7 @@ public class UTestClockLabel extends UTestFrameTest {
             }
 
         };
-        window.setLayout(new VerticalLayout());
+        window.setLayout(new FlowLayout());
         add(plainLabel);
         add(offsetLabel);
         window.setVisible(true);
