@@ -39,7 +39,7 @@ public class UTestHTMLDocLinkDetector extends UTestFrameTest {
     public void testMain() throws Exception {
         comp.setText("This is the story\nof the hare who\nlost his spectacles.");
         comp.setEditorKit(new HTMLEditorKit());
-        comp.setDocument(new HTMLDocLinkDetector(comp));
+//        comp.setDocument(new HTMLDocLinkDetector(comp));
         window.setLayout(new BorderLayout());
         window.add(new JScrollPane(comp), BorderLayout.CENTER);
 
