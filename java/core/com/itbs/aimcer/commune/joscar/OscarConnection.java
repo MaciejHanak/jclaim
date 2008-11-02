@@ -710,7 +710,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     }
 
     public void disconnect(boolean intentional) {
-        heartbeat.stopProcessing();
+        if (heartbeat!=null) {
+            heartbeat.stopProcessing();
+        }
         if (connection!=null)
             connection.disconnect(intentional);
         super.disconnect(intentional);
