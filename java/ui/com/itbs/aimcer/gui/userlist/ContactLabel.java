@@ -5,6 +5,8 @@ import com.itbs.aimcer.commune.MessageSupport;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -72,6 +74,17 @@ public class ContactLabel extends JLabel implements Renderable {
             return returnable;
         }
     }
+
+    public static List<ContactLabel> getAllInstances(ContactWrapper wrapper) {
+        List<ContactLabel> result = new ArrayList<ContactLabel>();
+        for (ContactLabel label : INSTANCES.values()) {
+            if (label.contact.equals(wrapper)) {
+                result.add(label);
+            }
+        }
+        return result;
+    }
+
     public static void remove(Contact contact, Group group) {
         INSTANCES.remove(generateUID(contact, group)); // put is inside constructor
     }
