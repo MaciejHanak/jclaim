@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -151,7 +152,7 @@ public class MenuManager {
         submenu.add(menuItemBuddyAdd);  onOffListener.add(menuItemBuddyAdd, true); //   Add
         submenu.add(menuItemSendMessage);  onOffListener.add(menuItemSendMessage, true); //   Send Message
         submenu.add(menuItemLogin);     onOffListener.add(menuItemLogin, false);
-        submenu.add(menuItemLogOff);    onOffListener.add(menuItemLogOff, true);
+        submenu.add(menuItemLogOff);    //onOffListener.add(menuItemLogOff, true);
         submenu.addSeparator();
         submenu.add(ActionAdapter.createMenuItem(COMMAND_CONN_MANAGE, connectionMenuEventHandler, 'm'));
         submenu.add(ActionAdapter.createMenuItem(COMMAND_CONN_REMOVE, connectionMenuEventHandler));
@@ -362,7 +363,11 @@ public class MenuManager {
                 } else if (COMMAND_CONN_REMOVE.equals(e.getActionCommand())) {
                     int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete " + connRef.getServiceName() + " for " + connRef.getUserName(), "Delete connection?", JOptionPane.YES_NO_OPTION);
                     if (result == JOptionPane.YES_OPTION) {
-                        connRef.disconnect(true);
+                        try {
+                            connRef.disconnect(true);
+                        } catch (Exception e1) {
+                            log.log(Level.WARNING, "Failed to disconnect on remove", e1);
+                        }
                         Main.getConnections().remove(connRef);
                         connectionMenu.remove(menuRef); // remove from self
                     }
@@ -492,23 +497,41 @@ public class MenuManager {
                 for (Object value : values) {
                     if (value instanceof ContactLabel) {
                         ContactWrapper contactWrapper = (ContactWrapper) ((ContactLabel) value).getContact();
-                        if (((ContactLabel) value).isFake()) {
-                            int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete phantom contact " + contactWrapper.getDisplayName() + " (" + contactWrapper.getName() + ")?", "Delete a contact?", JOptionPane.YES_NO_OPTION);
+                        String name = contactWrapper.getDisplayName() + " (" + contactWrapper.getName() + ")";
+                        String title = "Delete a contact?";
+
+                        if (((ContactLabel) value).isFake()) { // fake 1
+                            int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete phantom contact "+name+"?", title, JOptionPane.YES_NO_OPTION);
                             if (result == JOptionPane.YES_OPTION) {
                                 ((ContactLabel) value).getGroup().remove(contactWrapper);
                             }
                         } else if (!contactWrapper.getConnection().isLoggedIn()) { // isn't fake and not logged in
-                            JOptionPane.showMessageDialog(Main.getFrame(), "Need to be online via " + contactWrapper.getConnection().getServiceName() + " to delete contacts.", "Can not remove:", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(Main.getFrame(), "Need to be online via " + contactWrapper.getConnection().getServiceName() + " to delete contact "+name, "Can not remove:", JOptionPane.ERROR_MESSAGE);
                         } else { // isn't fake and logged in.
-                            //todo see if this is the last real item to be deleted.
-                            int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete " + contactWrapper.getDisplayName() + " (" + contactWrapper.getName() + ") on account "+contactWrapper.getConnection().getUser()+"?\n" +
-                                    "Warning: all related phantom contacts will be deleted.", "Delete a contact?", JOptionPane.YES_NO_OPTION);
+                            // see if this is the last real item to be deleted.
+                            // run through all groups, collect a list of all contacts like this.
+                            List <ContactLabel> labels = ContactLabel.getAllInstances(contactWrapper);
+                            int fake=0;
+                            int real=0;
+                            for (ContactLabel contactLabel : labels) {
+                                fake+=contactLabel.isFake()?1:0;
+                                real+=contactLabel.isFake()?0:1;
+                            }
+                            String warning = (fake > 0 && real == 1)?"\nWarning: all related phantom contacts ("+fake+") will be deleted.":""; 
+                            int result = JOptionPane.showConfirmDialog(Main.getFrame(), "Delete " + name + " on account "+contactWrapper.getConnection().getUser()+"?" + warning
+                                    , title, JOptionPane.YES_NO_OPTION);
                             if (result == JOptionPane.YES_OPTION) {
-                                // todo go through all the groups and delete anyone from same connection.
-                                if (!((ContactLabel) value).isFake()) {
-                                    contactWrapper.getConnection().removeContact(contactWrapper, ((ContactLabel) value).getGroup());
+                                // detele actual contact
+                                contactWrapper.getConnection().removeContact(contactWrapper, ((ContactLabel) value).getGroup());
+                                // go through all the groups and delete anyone fake from same connection.
+                                if (fake > 0 && real == 1) {
+                                    // run and delete fakes
+                                    for (ContactLabel contactLabel : labels) {
+                                        if (contactLabel.isFake()) {
+                                            contactLabel.getGroup().remove(contactWrapper);
+                                        }
+                                    }
                                 }
-                                ((ContactLabel) value).getGroup().remove(contactWrapper); // double-delete is ok
                                 updateContactList(contactWrapper.getConnection());
                             }
                         }
