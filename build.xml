@@ -19,7 +19,7 @@
   ~
   -->
 
-<project basedir="." default="run" name="TS">
+<project basedir="." default="run" name="JClaim">
     <property file="build.properties"/>
 
 
