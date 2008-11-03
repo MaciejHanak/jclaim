@@ -42,6 +42,7 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * @author Alex Rass
@@ -75,7 +76,7 @@ public class Grep {
 //            " &nbsp; &nbsp; Special characters: \\t - tab<br>" +
             "</FONT>"
             + "</FONT></HTML>";
-    Executor offUIThread = Executors.newSingleThreadExecutor();
+    Executor offUIThread;
 
     static {
         ATT_NORMAL = new SimpleAttributeSet();
@@ -99,6 +100,13 @@ public class Grep {
             public void windowClosing(final WindowEvent event) {
                 stopIsQuiet = false; // stop all we are doing
                 motherFrame.dispose();
+            }
+        });
+        offUIThread = Executors.newSingleThreadExecutor(new ThreadFactory() {
+            public Thread newThread(Runnable r) {
+                Thread t = new Thread(r, "Grep");
+                t.setPriority(Thread.MIN_PRIORITY);
+                return t;
             }
         });
         result = new Search.Result() {
