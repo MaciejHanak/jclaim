@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<!--
+  ~
+  ~
+  ~
+  ~      I F    Y O U    S E E   T H I S inside the browser window,  
+  ~            PLEASE INSTALL JAVA AND START AGAIN.
+  ~
+  ~
+  ~	If this appeared in it's own window, please drop us a note in the forums.
+  ~
+  ~
+  ~            See site for setup instructions.
+  ~
+  ~
+  ~
+  ~
+  ~
+  ~ Copyright (c) 2006, 2007, 2008 ITBS LLC. All Rights Reserved.
+  ~
+  ~     This file is part of JClaim.
+  ~
+  ~     JClaim is free software; you can redistribute it and/or modify
+  ~     it under the terms of the GNU General Public License as published by
+  ~     the Free Software Foundation; version 2 of the License.
+  ~
+  ~     JClaim is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU General Public License
+  ~     along with JClaim; if not, find it at gnu.org or write to the Free Software
+  ~     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  ~
+  -->
+
+<jnlp
+  spec="1.0+" 
+  codebase="http://jclaim.sourceforge.net"
+  href="/jclaimsf.jnlp"
+  >
+  <information> 
+    <title>JCLAIM</title> 
+    <vendor>ITBS LLC</vendor> 
+    <description>Java Compliant Logging and Auditing Instant Messenger.</description> 
+    <description kind="short">JCLAIM</description> 
+    <icon href="/logo.gif"/>
+  </information> 
+  <security> 
+    <all-permissions/> 
+  </security> 
+  <resources>     
+    <j2se version="1.5+" max-heap-size="42m"/>
+    <jar href="jclaim.jar" main="true"/>  
+    <jar href="cos.jar" />  
+    <jar href="jaimlib.jar" />  
+    <jar href="jazzy.jar" />  
+    <jar href="jdic.jar" />  
+    <!--jar href="joscar.jar" />  
+    <jar href="oscar.jar" /-->  
+    <jar href="joscar-common.jar" />  
+    <jar href="joscar-protocol.jar" />  
+    <jar href="joscar-client.jar" />  
+    <jar href="jsocks.jar" />  
+    <jar href="msnm.jar" />  
+    <jar href="jml.jar" />  
+    <jar href="cindy.jar" />  
+    <jar href="commons-logging.jar" />  
+    <jar href="smack.jar" />  
+    <jar href="smackx.jar" />  
+    <jar href="ymsg.jar" />
+    <jar href="openymsg.jar" />
+    <jar href="natelib.jar" />
+    <jar href="substance.jar" />
+  </resources> 
+  <resources os="Mac">
+     <jar         href="lib/mac/jdic_misc.jar"/> 
+  </resources>
+  <resources os="Windows">
+     <jar         href="lib/win32/jdic_misc.jar"/> 
+     <jar         href="lib/win32/jdic_stub.jar"/> 
+     <nativelib   href="lib/win32/native.jar"/>
+   </resources>
+   <resources os="Linux">
+       <jar       href="lib/linux/jdic_stub.jar"/> 
+     <nativelib   href="lib/linux/native.jar"/>
+   </resources>
+   <resources os="SunOS" arch="x86">
+      <jar        href="lib/sunos/jdic_stub.jar"/> 
+     <nativelib   href="lib/sunos/native.jar"/>
+   </resources>
+   <resources os="SunOS" arch="sparc">
+      <jar        href="lib/sunos/jdic_stub.jar"/> 
+     <nativelib   href="lib/sunos/native.jar"/>
+   </resources>
+
+  <application-desc main-class="com.itbs.aimcer.gui.Main">   
+  </application-desc>
+</jnlp> 

@@ -1,0 +1,25 @@
+<HTML>
+<HEAD>
+<title>JClaim</title>
+<%refresh%>
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+<style type="text/css">
+<!--
+.styleYellow {color: #FFFF00}
+-->
+</style>
+</HEAD>
+<body>
+
+<CENTER><a href="<%page%>">Refresh<FONT size=1><br>( <%date%> )<br></FONT></a>Use this screen to easily get to your shared files.</CENTER>
+<%list%>
+<FORM  METHOD=POST ENCTYPE="multipart/form-data">
+    <INPUT TYPE=FILE NAME=file1>
+    <INPUT TYPE=SUBMIT value=Send>
+</FORM>
+
+<CENTER><a href="<%page%>"><FONT size=1>( <%date%> )</FONT><br>Refresh</a></CENTER>
+[<a href="<%logoffpage%>"><FONT size=1>Logoff</FONT></a>] [<a href="<%optionspage%>"><FONT size=1>Options</FONT></a>] [<a href="<%helppage%>"><FONT size=1>Help</FONT></a>]
+</body>
+</HTML>

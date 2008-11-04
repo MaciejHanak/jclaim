@@ -1,0 +1,1 @@
+Take the pack200Task.jar and add it to your ant's lib folder.
