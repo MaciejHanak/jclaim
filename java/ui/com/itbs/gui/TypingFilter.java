@@ -2,14 +2,19 @@ package com.itbs.gui;
 
 import com.itbs.util.DelayedThread;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.ActionEvent;
 
 /**
+ * Lets us add a customizeable key filter to any component.
+ *
+ * command will keep collecting keystrokes within 5 sec fromn each other.
+ * Then wait 5 seconds and send a blank command back to component for a reset.
+ *
  * @author Alex Rass
- * @since Oct 9, 2008 4:01:26 AM
+ * @since Oct 9, 2008
  */
 public class TypingFilter extends KeyAdapter {
     ActionListener actionListener;
@@ -53,7 +58,7 @@ public class TypingFilter extends KeyAdapter {
         if ((last+DELAY)<System.currentTimeMillis()) {
             command =""; // clear it;
         }
-        if (e.isControlDown() && e.isAltDown()) {
+        if (e.isControlDown() || e.isAltDown()) {
             return; // nothing we care for.
         }
         if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
