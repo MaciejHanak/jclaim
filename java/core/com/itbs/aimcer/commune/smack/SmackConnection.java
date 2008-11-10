@@ -263,7 +263,9 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
 
     public void reconnect() {
         try {
-            connection.disconnect();
+            if (connection!=null) {
+                connection.disconnect();
+            }
             connect();
         } catch (Exception e) {
 //            GeneralUtils.sleep(1000);
