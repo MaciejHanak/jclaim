@@ -24,8 +24,8 @@ import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.bean.Group;
 import com.itbs.aimcer.bean.Message;
 import com.itbs.aimcer.commune.*;
-import com.itbs.util.DelayedThread;
 import com.itbs.util.GeneralUtils;
+import com.itbs.util.HeartBeat;
 import net.kano.joscar.ByteBlock;
 import net.kano.joscar.FileWritable;
 import net.kano.joscar.flapcmd.SnacCommand;
@@ -82,7 +82,17 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     /** Conversation support */
     IcbmListener lastIcbmListener;
 
-    DelayedThread heartbeat;
+    HeartBeat heartbeat = HeartBeat.INSTANCE;
+    HeartBeat.MonitoredItem monitoredItem = new HeartBeat.MonitoredItem() {
+        public boolean testAlive() {
+            getUserInfo(getUserName());
+            return true;  
+        }
+
+        public void actionFail() {
+            disconnect(false);
+        }
+    };
 
     /**
      * Handle buddy alias changes.
@@ -120,7 +130,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     }
 
     public void setAway(boolean away) {
-        heartbeat.mark();
+//        heartbeat.mark();
         if (connection != null && connection.getInfoService() != null)
             connection.getInfoService().setAwayMessage(away ? getProperties().getIamAwayMessage() : null);
         super.setAway(away);
@@ -188,20 +198,10 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             throw new SecurityException("Login information was not available");
         }
         if (heartbeat!=null) {
-            heartbeat.stopProcessing();
+            heartbeat.stopMonitoring(monitoredItem);
         }
-        heartbeat = new DelayedThread(
-                this.toString()+" heartbeat",
-                29*1000*60, // 29 min
-                null, // todo figure out how this should work, cause isLoggedIn isn't right.
-                null,
-                new Runnable() {
-                    public void run() {
-                        getUserInfo(getUserName());
-                    }
-                }
+        // todo create monitoring object.
 
-        );
         final Screenname screenName = new Screenname(getUserName());
         AppSession appSession = new AppSession() {
             public AimSession openAimSession(Screenname sn) {
@@ -253,6 +253,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                     public void removeCapabilityListener(CapabilityListener capabilityListener) {}
                 });
         connection.connect();
+        heartbeat.startMonitoring(monitoredItem);
     }
 
 /*
@@ -711,7 +712,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
     public void disconnect(boolean intentional) {
         if (heartbeat!=null) {
-            heartbeat.stopProcessing();
+            heartbeat.stopMonitoring(monitoredItem);
         }
         if (connection!=null)
             connection.disconnect(intentional);
@@ -732,7 +733,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
     // todo when offline, getIcbmService will return null
     public void processMessage(Message message) {
-        heartbeat.mark();
+//        heartbeat.mark();
 //        Old way:
 //        Conversation conversation = connection.getIcbmService().getImConversation(new Screenname(message.getContact().getName()));
 //        conversation.sendMessage(new  SimpleMessage(GeneralUtils.makeHTML(message.getText()), message.isAutoResponse()));
@@ -812,7 +813,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
      * @param group   to add to
      */
     public void addContact(final Nameable contact, final Group group) {
-        heartbeat.mark();
+//        heartbeat.mark();
         net.kano.joustsim.oscar.oscar.service.ssi.Group aimGroup = findGroup(group);
         if (aimGroup == null) {
             addContactGroup(group);
@@ -965,7 +966,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     }
 
     public void removeContactGroup(Group group) {
-        heartbeat.mark();
+//        heartbeat.mark();
         net.kano.joustsim.oscar.oscar.service.ssi.Group aimGroup = findGroup(group);
         if (aimGroup != null && aimGroup instanceof MutableGroup) {
             connection.getSsiService().getBuddyList().deleteGroupAndBuddies(aimGroup);
@@ -977,7 +978,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     }
     
     public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
-        heartbeat.mark();
+//        heartbeat.mark();
         net.kano.joustsim.oscar.oscar.service.ssi.Group aimGroup = findGroup(newGroup);
         if (aimGroup == null) {
             addContactGroup(newGroup);
@@ -1011,7 +1012,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     }
 
     public void initiateFileTransfer(final FileTransferListener ftl) throws IOException {
-        heartbeat.mark();
+//        heartbeat.mark();
         OutgoingFileTransfer oft = connection.getIcbmService().getRvConnectionManager().createOutgoingFileTransfer(new Screenname(ftl.getContactName()));
         oft.addEventListener(new FileTransferEventListener(ftl));
 
@@ -1266,7 +1267,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         result.add(binfo.getCapabilities().toString());
         result.add(binfo.getItunesUrl());
         result.add(binfo.getLastAimExpression());
-        result.add(binfo.getIdleSince().toString());
+        if (binfo.getIdleSince()!=null) {
+            result.add(binfo.getIdleSince().toString());
+        }
         result.add(binfo.getOnlineSince()==null?"Not Available": binfo.getOnlineSince().toString());
         result.add(binfo.getStatusMessage());
         result.add(binfo.getUserProfile());
@@ -1298,7 +1301,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
      * @param picture filename
      */
     public void uploadPicture(final File picture) {
-        heartbeat.mark();
+//        heartbeat.mark();
 /*
         final SnacRequestListener listener = new SnacRequestListener() {
                             public void handleResponse(SnacResponseEvent e) {
