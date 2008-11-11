@@ -27,7 +27,7 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
     // -----The session object - our way into the Yahoo API
     private Session session;
     private static String EMPTY_EMAIL_STATE = "Unread Email Count: 0";
-    private String emailState = EMPTY_EMAIL_STATE;
+//    private String emailState = EMPTY_EMAIL_STATE;
 
     /** Login Mode */
     public static final int SOCKS=0;
@@ -352,6 +352,9 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
                     eventHandler.errorOccured("ERROR received from yahoo network: " + ev.getMessage(), null);
                 }
             }
+            if (!isLoggedIn()) {
+                disconnect(false);
+            }
         }
 
         public void inputExceptionThrown(SessionExceptionEvent ev) {
@@ -361,6 +364,9 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
             if (ev.getException() instanceof YMSG9BadFormatException) {
                 YMSG9BadFormatException ex = (YMSG9BadFormatException) ev.getException();
                 log.log(Level.SEVERE, "", ex.getCause());
+            }
+            if (!isLoggedIn()) {
+                disconnect(false);
             }
         }
 
@@ -515,13 +521,14 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
         }
 
         public void newMailReceived(SessionNewMailEvent event) {
-            final String text = (event.getEmailAddress()==null?"":("Yahoo! mail from: " + event.getFrom() + " (" + event.getEmailAddress() + ")\n"))
+            String text = (event.getEmailAddress()==null?"":("Yahoo! mail from: " + event.getFrom() + " (" + event.getEmailAddress() + ")\n"))
                     + (event.getSubject()==null?"":("Subject: " + event.getSubject() + "\n"))
                     + "Unread Email Count: " + event.getMailCount();
             if (EMPTY_EMAIL_STATE.equals(text)) { // || emailState.equals(text)) { // same as empty or last
-                return;
+//                return;
+                text="Detected mail activity."; return;
             }
-            emailState = text;
+//            emailState = text;
 
             Message message = new MessageImpl(getContactFactory().create(getUserName(), YMsgOpenConnection.this), false, text);
             notifyEmailReceived(message);
