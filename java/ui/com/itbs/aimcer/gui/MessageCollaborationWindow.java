@@ -149,7 +149,7 @@ public class MessageCollaborationWindow  extends MessageWindowBase implements Co
     }
 
     public boolean contactRequestReceived(final String user, final MessageSupport connection) {
-        return false;
+        return true;
     }
 
 

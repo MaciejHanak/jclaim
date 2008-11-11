@@ -78,6 +78,6 @@ public class MessageForwarder implements ConnectionEventListener {
     }
 
     public boolean contactRequestReceived(final String user, final MessageSupport connection) {
-        return false;
+        return true;
     }
 }
