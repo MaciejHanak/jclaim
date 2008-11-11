@@ -143,8 +143,9 @@ public class DelayedThread extends Thread {
         clock = System.currentTimeMillis(); // make sure it d/n start w/o us running first code
         lock.lock(); // make sure we don't run/lock from multiple callers.
         try {
-            if (runThisFirst != null && (!flag.isValue() || runStartEachMark))
+            if (runThisFirst != null && (!flag.isValue() || runStartEachMark)) {
                 runThisFirst.run();
+            }
 //            runThisFirst = null; // done
             flag.setValue(true);
             clock = System.currentTimeMillis();
