@@ -135,7 +135,7 @@ public class WindowManager {
                 public void pictureReceived(IconSupport connection, Contact contact) { }
                 public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) { }
                 public void errorOccured(String message, Exception exception) { }
-                public boolean contactRequestReceived(final String user, final MessageSupport connection) { return false; }
+                public boolean contactRequestReceived(final String user, final MessageSupport connection) { return true; }
             });
         }
 
