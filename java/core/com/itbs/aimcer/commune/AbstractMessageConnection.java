@@ -214,7 +214,7 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
         } else {
             executor.execute(new Runnable() {
                 public void run() {
-                    if (!isLoggedIn()) {
+                    if (isLoggedIn()) {
                         try {
                             processMessage(message);
                             notifyOfAMessage(message);
