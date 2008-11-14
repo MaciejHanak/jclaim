@@ -214,11 +214,15 @@ abstract public class AbstractMessageConnection extends AbstractConnection imple
         } else {
             executor.execute(new Runnable() {
                 public void run() {
-                    try {
-                        processMessage(message);
-                        notifyOfAMessage(message);
-                    } catch (Exception e) {
-                        notifyErrorOccured("Failed to send a message", e);
+                    if (!isLoggedIn()) {
+                        try {
+                            processMessage(message);
+                            notifyOfAMessage(message);
+                        } catch (Exception e) {
+                            notifyErrorOccured("Failed to send a message", e);
+                        }
+                    } else {
+                        notifyErrorOccured("You are not logged in.", null);
                     }
                 }
             });
