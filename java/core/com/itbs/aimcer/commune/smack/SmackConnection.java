@@ -218,10 +218,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
                 contact.getStatus().setOnline(presence.isAvailable());
                 contact.getStatus().setAway(presence.isAway());
                 contact.getStatus().setIdleTime(0);
-
-                for (ConnectionEventListener eventHandler : eventHandlers) {
-                    eventHandler.statusChanged(SmackConnection.this, contact, status);
-                }
+                notifyStatusChanged(contact, status);
             }
 
         }); // class RosterListener

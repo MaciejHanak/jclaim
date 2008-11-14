@@ -251,17 +251,12 @@ public class NateConnection extends AbstractMessageConnection implements FileTra
                 }
 */
 
-
               // Next version will have this code:
                 Status oldStatus = (Status) contact.getStatus().clone();
                 contact.getStatus().setOnline(true);
                 contact.getStatus().setAway(false);
                 contact.getStatus().setIdleTime(0);
-
-                for (ConnectionEventListener eventHandler : eventHandlers) {
-                    eventHandler.statusChanged(NateConnection.this, contact, oldStatus);
-                }
-
+                notifyStatusChanged(contact, oldStatus);
             }
 
             public void killed() {

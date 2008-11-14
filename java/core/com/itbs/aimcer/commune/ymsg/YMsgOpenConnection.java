@@ -411,23 +411,29 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
             disconnect(false);
         }
 
-        public void listReceived(SessionEvent ev) {
-            log.fine("list received " + ev);
+        public void listReceived(SessionListEvent event) {
+            log.fine("List received.");
+            event.getContacts();
+            for (YahooUser yahooUser : event.getContacts()) {
+                friendsUpdateReceived(yahooUser);
+            }
         }
 
         public void friendsUpdateReceived(SessionFriendEvent ev) {
-            YahooUser aYu  = ev.getUser();
-//          log.fine("Updated: " + yu[i].toString());
-            if (aYu==null) return;
-            Contact contact = getContactFactory().create(aYu.getId(), YMsgOpenConnection.this);
-            com.itbs.aimcer.bean.Status oldStatus = (com.itbs.aimcer.bean.Status) contact.getStatus().clone();
-            contact.getStatus().setOnline(aYu.isLoggedIn());
-            contact.getStatus().setAway(isAway(aYu));
-            contact.getStatus().setIdleTime(0);
+            YahooUser yahooUser  = ev.getUser();
+            friendsUpdateReceived(yahooUser);
+        }
 
-            for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                eventHandler.statusChanged(YMsgOpenConnection.this, contact, oldStatus);
-            }
+        private void friendsUpdateReceived(YahooUser yahooUser) {
+//          log.fine("Updated: " + yu[i].toString());
+            if (yahooUser==null) return;
+            Contact contact = getContactFactory().create(yahooUser.getId(), YMsgOpenConnection.this);
+            com.itbs.aimcer.bean.Status oldStatus = (com.itbs.aimcer.bean.Status) contact.getStatus().clone();
+            contact.getStatus().setOnline(yahooUser.isLoggedIn());
+            contact.getStatus().setAway(isAway(yahooUser));
+            contact.getStatus().setIdleTime(0);
+            // notify everyone
+            notifyStatusChanged(contact, oldStatus);
         }
 
         public void friendAddedReceived(SessionFriendEvent ev) {
@@ -439,6 +445,7 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
                 group.add(contact);
                 getGroupList().add(group);
             }
+            notifyStatusChanged();
         }
 
         public void friendRemovedReceived(SessionFriendEvent ev) {

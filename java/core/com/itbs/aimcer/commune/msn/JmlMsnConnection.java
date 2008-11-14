@@ -188,11 +188,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
             contact.getStatus().setOnline(online);
             contact.getStatus().setAway(away);
             contact.getStatus().setIdleTime(0);
-
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                (eventHandler).statusChanged(JmlMsnConnection.this, contact, status);
-            }
-
+            notifyStatusChanged(contact, status);
         } // contactStatusChanged
 
 		public void ownerStatusChanged(MsnMessenger messenger) {

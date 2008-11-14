@@ -13,9 +13,9 @@ import org.walluck.oscar.handlers.icq.ICQSMSMessage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Map;
 
 /**
  * Manages AIM connectivity.  Singlehandedly.
@@ -482,13 +482,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
             Status status = (Status) contact.getStatus().clone();
             contact.getStatus().setOnline(false);
             printProperties("buddyOffline", buddy);
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                try {
-                    eventHandler.statusChanged(DaimConnection.this, contact, status);
-                } catch (Exception e) {
-                    notifyErrorOccured("Failure while receiving an ICQ message", e);
-                }
-            }
+            notifyStatusChanged(contact, status);
         }
 
         public void buddyOnline(String sn, Buddy buddy) {
@@ -499,13 +493,7 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
             int idle = GeneralUtils.getInt(buddy.getProperty(Buddy.IDLE_TIME));
             contact.getStatus().setIdleTime(idle);
             printProperties("buddyOnline", buddy);
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                try {
-                    eventHandler.statusChanged(DaimConnection.this, contact, status);
-                } catch (Exception e) {
-                    notifyErrorOccured("Failure while receiving an ICQ message", e);
-                }
-            }
+            notifyStatusChanged(contact, status);
         }
 
         public void sendFile(String contactName, File file) {
@@ -514,9 +502,8 @@ public class DaimConnection extends AbstractMessageConnection implements IconSup
 
         public void typingNotification(String sn, short typing) {
             Contact contact = getContactFactory().create(AIMUtil.normalize(sn), DaimConnection.this);
-            
             for (ConnectionEventListener eventHandler : eventHandlers) {
-                    eventHandler.typingNotificationReceived(DaimConnection.this, contact);
+                eventHandler.typingNotificationReceived(DaimConnection.this, contact);
             }
         }
 

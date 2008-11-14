@@ -503,9 +503,7 @@ public class YMsgConnection extends AbstractMessageConnection {// implements Cha
                 contact.getStatus().setAway(isAway(aYu));
                 contact.getStatus().setIdleTime(0);
 
-                for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                    eventHandler.statusChanged(YMsgConnection.this, contact, oldStatus);
-                }
+                notifyStatusChanged(contact, oldStatus);
             }
         }
 

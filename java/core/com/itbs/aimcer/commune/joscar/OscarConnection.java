@@ -637,9 +637,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                     contact.getStatus().setIdleTime(info.getIdleMins());
 //                    fullUserInfoCache.put(contact, info); // no longer using this. it's been tracked
 //                    requestPictureForUser(contact, info);
-                    for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                        eventHandler.statusChanged(OscarConnection.this, contact, oldStatus);
-                    }
+                    notifyStatusChanged(contact, oldStatus);
                 } catch (Exception e) {
                     log.log(Level.SEVERE, "Problem with buddy service", e);
                 }
@@ -650,9 +648,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                 Contact contact = getContactFactory().create(buddy.getFormatted(), OscarConnection.this);
                 Status oldStatus = (Status) contact.getStatus().clone();
                 contact.getStatus().setOnline(false);
-                for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                    eventHandler.statusChanged(OscarConnection.this, contact, oldStatus);
-                }
+                notifyStatusChanged(contact, oldStatus);
             }
         });
     }

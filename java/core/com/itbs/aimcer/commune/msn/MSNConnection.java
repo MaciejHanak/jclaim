@@ -111,10 +111,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
                 contact.getStatus().setOnline(true);
                 contact.getStatus().setAway(false);
                 contact.getStatus().setIdleTime(0);
-
-                for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                    eventHandler.statusChanged(MSNConnection.this, contact, oldStatus);
-                }
+                notifyStatusChanged(contact, oldStatus);
             } else {
                 log.fine("got MSN contact status w/o it being in the list");
             }
@@ -126,9 +123,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
             if (contact != null) {
                 Status oldStatus = (Status) contact.getStatus().clone();
                 contact.getStatus().setOnline(false);
-                for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                    eventHandler.statusChanged(MSNConnection.this, contact, oldStatus);
-                }
+                notifyStatusChanged(contact, oldStatus);
             } else {
                 log.fine("got MSN contact status w/o it being in the list");
             }
@@ -226,10 +221,7 @@ public class MSNConnection extends AbstractMessageConnection { //implements File
             contact.getStatus().setOnline(true);
             contact.getStatus().setAway(false);
             contact.getStatus().setIdleTime(0);
-
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                (eventHandler).statusChanged(MSNConnection.this, contact, status);
-            }
+            notifyStatusChanged(contact, status);
         }
 
         public void switchboardSessionStarted(SwitchboardSession ss) {

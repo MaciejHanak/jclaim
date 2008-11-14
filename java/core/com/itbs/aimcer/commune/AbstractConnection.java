@@ -193,9 +193,30 @@ abstract public class AbstractConnection implements Connection {
     public void notifyStatusChanged() {
         Iterator <ConnectionEventListener >iter = getEventListenerIterator();
         while (iter.hasNext()) {
-            iter.next().statusChanged(this);
+            try { 
+                iter.next().statusChanged(this);
+            } catch (Exception e) {
+                notifyErrorOccured("Failure while processing events", e);
+            }
         }
     }
+    
+    /**
+     * Tells everyone someone's status changed.
+     * @param contact contact
+     * @param oldStatus previous status
+     */
+    public void notifyStatusChanged(Contact contact, Status oldStatus) {
+        Iterator <ConnectionEventListener >iter = getEventListenerIterator();
+        while (iter.hasNext()) {
+            try {
+                iter.next().statusChanged(this, contact, oldStatus);
+            } catch (Exception e) {
+                notifyErrorOccured("Failure while processing events", e);
+            }
+        }
+    }
+    
     /**
      * Notifies of an email received.
      * @param message that was received.

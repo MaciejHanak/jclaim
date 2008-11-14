@@ -224,9 +224,7 @@ public class JAIMConnection extends AbstractMessageConnection implements JaimEve
         contact.getStatus().setOnline(response.isOnline());
         contact.getStatus().setAway(response.isAway());
         contact.getStatus().setIdleTime(response.getIdleTime());
-        for (ConnectionEventListener connectionEventListener: eventHandlers) {
-            connectionEventListener.statusChanged(this, contact, status);
-        }
+        notifyStatusChanged(contact, status);
     }
 
 
