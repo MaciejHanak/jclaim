@@ -138,7 +138,7 @@ public class HeartBeat extends Thread {
         } catch (Exception e) {
             log.log(Level.INFO, "Failed alive test", e);
         }
-        long duration = timeIn - System.currentTimeMillis();
+        long duration = System.currentTimeMillis() - timeIn;
 
         result = result && duration<=TIMEOUT;
         return result;
