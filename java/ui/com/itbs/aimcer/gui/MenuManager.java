@@ -67,6 +67,7 @@ public class MenuManager {
     public  static final String COMMAND_BUDDY_REMOVE    = "Remove Contact";
     public  static final String COMMAND_BUDDY_MOVE      = "Move Contact";
     public  static final String COMMAND_BUDDY_COPY      = "Copy into a Group";
+    public  static final String COMMAND_BUDDY_INFO      = "Info";
     private static final String COMMAND_PICTURE_SEND    = "Set Picture";
     private static final String COMMAND_PICTURE_RESET   = "Clear Picture";
     private static final String COMMAND_GLOBAL_AWAY     = "Away All";
@@ -492,6 +493,35 @@ public class MenuManager {
                     }
                 }
                 Main.getPeoplePanel().update();
+            } else if (COMMAND_BUDDY_INFO.equals(command)) {
+                List values = Main.getPeoplePanel().getSelectedValues();
+                for (Object value : values) {
+                    if (value instanceof ContactLabel) {
+                        ContactLabel contactLabel = (ContactLabel) value;
+                        if (contactLabel.getContact().getConnection() instanceof InfoSupport) {
+                            InfoSupport connection = (InfoSupport) contactLabel.getContact().getConnection();
+                            JDialog dialog = new JDialog();
+                            dialog.setLayout(new BorderLayout());
+                            dialog.setTitle(contactLabel.getToolTipText());
+
+                            List<String> titles = connection.getUserInfoColumns();
+                            List<String> info = connection.getUserInfo(contactLabel.getContact());
+                            JPanel innerds = new JPanel(new GridLayout(0, 2));
+                            for (int i = 0; i < titles.size() && i<info.size(); i++) {
+                                String title = titles.get(i);
+                                String line = info.get(i);
+                                if (line!=null && line.length()<50) {
+                                    innerds.add(new JLabel(title));
+                                    innerds.add(new JLabel(line));
+                                }
+                            }
+                            dialog.getContentPane().add(new JScrollPane(innerds, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
+                            dialog.setSize(350, 300);
+                            GUIUtils.addCancelByEscape(dialog);
+                            dialog.setVisible(true);
+                        }
+                    }
+                }
             } else if (COMMAND_BUDDY_REMOVE.equals(command)) {
                 List values = Main.getPeoplePanel().getSelectedValues();
                 for (Object value : values) {

@@ -224,6 +224,7 @@ final public class PeopleScreen extends JPanel implements UserList {
                         menu.add(ActionAdapter.createMenuItem(MenuManager.COMMAND_BUDDY_MOVE, new MenuManager.MenuHandler(), 'm'));
                     } // if contact wrapper
                     menu.add(ActionAdapter.createMenuItem(MenuManager.COMMAND_BUDDY_REMOVE, new MenuManager.MenuHandler(), 'r'));
+                    menu.add(ActionAdapter.createMenuItem(MenuManager.COMMAND_BUDDY_INFO, new MenuManager.MenuHandler(), 'i'));
 
                     menu.show(evt.getComponent(), evt.getX(), evt.getY());
                 } // if more than one selected

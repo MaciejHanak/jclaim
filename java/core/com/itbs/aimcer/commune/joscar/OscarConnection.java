@@ -74,7 +74,7 @@ import java.util.logging.Logger;
  * @author Alex Rass
  * @since Sep 22, 2004
  */
-public class OscarConnection extends AbstractMessageConnection implements FileTransferSupport, IconSupport, SMSSupport {
+public class OscarConnection extends AbstractMessageConnection implements FileTransferSupport, IconSupport, SMSSupport, InfoSupport {
     private static Logger log = Logger.getLogger(OscarConnection.class.getName());
     AimConnection connection;
     private AimConnectionProperties connectionProperties = new AimConnectionProperties(null, null); // use to hold on connection settings
@@ -85,7 +85,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     HeartBeat heartbeat = HeartBeat.INSTANCE;
     HeartBeat.MonitoredItem monitoredItem = new HeartBeat.MonitoredItem() {
         public boolean testAlive() {
-            getUserInfo(getUserName());
+            getUserInfo(getUser());
             return true;  
         }
 
@@ -1253,10 +1253,10 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         return result;
     }
     
-    public List<String> getUserInfo(String userName) {
+    public List<String> getUserInfo(Nameable user) {
         if (!isLoggedIn()) return null;
         List<String> result = new ArrayList<String>(10);
-        BuddyInfo binfo = connection.getBuddyInfoManager().getBuddyInfo(new Screenname(userName));
+        BuddyInfo binfo = connection.getBuddyInfoManager().getBuddyInfo(new Screenname(user.getName()));
         result.add(binfo.getScreenname().getFormatted());
         result.add(binfo.getScreenname().getNormal());
         result.add(binfo.getAwayMessage());
