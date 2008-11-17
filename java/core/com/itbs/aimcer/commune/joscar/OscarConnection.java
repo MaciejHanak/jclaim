@@ -28,19 +28,13 @@ import com.itbs.util.GeneralUtils;
 import com.itbs.util.HeartBeat;
 import net.kano.joscar.ByteBlock;
 import net.kano.joscar.FileWritable;
-import net.kano.joscar.flapcmd.SnacCommand;
 import net.kano.joscar.rv.RvProcessor;
 import net.kano.joscar.rvcmd.DefaultRvCommandFactory;
 import net.kano.joscar.rvcmd.InvitationMessage;
 import net.kano.joscar.rvcmd.SegmentedFilename;
 import net.kano.joscar.snac.ClientSnacProcessor;
-import net.kano.joscar.snac.SnacRequest;
-import net.kano.joscar.snac.SnacRequestAdapter;
-import net.kano.joscar.snac.SnacResponseEvent;
 import net.kano.joscar.snaccmd.CapabilityBlock;
 import net.kano.joscar.snaccmd.FullUserInfo;
-import net.kano.joscar.snaccmd.ssi.*;
-import net.kano.joscar.ssiitem.BuddyItem;
 import net.kano.joustsim.Screenname;
 import net.kano.joustsim.oscar.*;
 import net.kano.joustsim.oscar.oscar.service.Service;
@@ -886,18 +880,20 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
      *
      * @param contact to remove
      * @param group to erase from
+     * @return true if removed properly
      */
     public boolean removeContact(final Nameable contact, final Group group) {
-//        if (contact instanceof ContactWrapper) {
-//            Group group = ((ContactWrapper) contact).get
-//        }
-//        net.kano.joustsim.oscar.oscar.service.ssi.Group aimGroup = findGroup(group);
-//        if (contact instanceof ContactWrapper) {
-//            Buddy buddy = findBuddy((Contact) contact);
-//            ((MutableGroup)aimGroup).re
-//            buddy.getBuddyList().
-//            connection.getSsiService().getBuddyList().
-//        }
+        net.kano.joustsim.oscar.oscar.service.ssi.Group aimGroup = findGroup(group);
+        if (aimGroup != null && aimGroup instanceof DeleteMutableGroup) { // only these groups are allowed to delete buddies.
+            for(Buddy buddy: aimGroup.getBuddiesCopy()) {
+                if (contact.getName().equalsIgnoreCase(buddy.getScreenname().getNormal())) {
+                    ((DeleteMutableGroup) aimGroup).deleteBuddy(buddy);
+                    return true;
+                }
+            }
+        }
+        return false;
+/*
 
 
         // add it for the server
@@ -951,6 +947,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             }
         }));
         return true; // SO FAKE! But we have moveContact implemented properly.
+*/
     } // removeContact
 
     /**
@@ -1256,7 +1253,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     public List<String> getUserInfo(Nameable user) {
         if (!isLoggedIn()) return null;
         List<String> result = new ArrayList<String>(10);
-        BuddyInfo binfo = connection.getBuddyInfoManager().getBuddyInfo(new Screenname(user.getName()));
+        BuddyInfo binfo = connection.getBuddyInfoManager().getBuddyInfo(new Screenname(user.getName()), false);
         result.add(binfo.getScreenname().getFormatted());
         result.add(binfo.getScreenname().getNormal());
         result.add(binfo.getAwayMessage());
