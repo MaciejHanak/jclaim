@@ -358,12 +358,12 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
         }
 
         public void inputExceptionThrown(SessionExceptionEvent ev) {
-            for (ConnectionEventListener eventHandler : eventHandlers) {
-                eventHandler.errorOccured("Input exception: " + ev.getMessage(), ev.getException());
-            }
             if (ev.getException() instanceof YMSG9BadFormatException) {
                 YMSG9BadFormatException ex = (YMSG9BadFormatException) ev.getException();
                 log.log(Level.SEVERE, "", ex.getCause());
+                for (ConnectionEventListener eventHandler : eventHandlers) {
+                    eventHandler.errorOccured("Input exception: " + ev.getMessage(), ev.getException());
+                }
             }
             if (!isLoggedIn()) {
                 disconnect(false);
