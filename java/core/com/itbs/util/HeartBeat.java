@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 public class HeartBeat extends Thread {
     private static final Logger log = Logger.getLogger(HeartBeat.class.getName());
     private ExecutorService executorService = Executors.newCachedThreadPool();
-    private static long TIMEOUT = 20*1000; // 20 seconds
+    public static long TIMEOUT = 20*1000; // 20 seconds
     private List <MonitoredItem> monitored = new CopyOnWriteArrayList<MonitoredItem>();
     private boolean shutDown = false;
     public static HeartBeat INSTANCE;
@@ -29,9 +29,12 @@ public class HeartBeat extends Thread {
     static public abstract class MonitoredItem {
         boolean running;
         long lastRun;
+        /** Convenience flag Can be used by implementation to keep track, for multithreading purposes.*/
+        public boolean fail;
 
         protected MonitoredItem() {
             update();
+            // fail is false by default
         }
 
         public abstract boolean testAlive();
@@ -41,7 +44,7 @@ public class HeartBeat extends Thread {
          * Implement to do something when action doesn't fail.
          * For debugging mostly.
          */
-        protected void actionSuccseed() {}
+        protected void actionSucceed() {}
 
         /** Updates time */
         void update() {
@@ -74,6 +77,7 @@ public class HeartBeat extends Thread {
     }
 
     public void startMonitoring(MonitoredItem monitoredItem) {
+        monitoredItem.fail = false; // reset that flag, safety set.
         if (!monitored.contains(monitoredItem)) {
             monitored.add(monitoredItem);
         }
@@ -114,7 +118,7 @@ public class HeartBeat extends Thread {
                         log.log(Level.INFO, "Failed alive test "+ monitoredItem, e);
                     }
                     if (result) {
-                        monitoredItem.actionSuccseed();
+                        monitoredItem.actionSucceed();
                     } else {
                         monitoredItem.actionFail();
                     }
