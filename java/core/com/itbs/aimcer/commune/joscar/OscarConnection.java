@@ -32,7 +32,7 @@ import net.kano.joscar.rv.RvProcessor;
 import net.kano.joscar.rvcmd.DefaultRvCommandFactory;
 import net.kano.joscar.rvcmd.InvitationMessage;
 import net.kano.joscar.rvcmd.SegmentedFilename;
-import net.kano.joscar.snac.ClientSnacProcessor;
+import net.kano.joscar.snac.*;
 import net.kano.joscar.snaccmd.CapabilityBlock;
 import net.kano.joscar.snaccmd.FullUserInfo;
 import net.kano.joustsim.Screenname;
@@ -77,10 +77,42 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     IcbmListener lastIcbmListener;
 
     HeartBeat heartbeat = HeartBeat.INSTANCE;
-    HeartBeat.MonitoredItem monitoredItem = new HeartBeat.MonitoredItem() {
+    final HeartBeat.MonitoredItem monitoredItem = new HeartBeat.MonitoredItem() {
         public boolean testAlive() {
-            getUserInfo(getUser());
-            return true;  
+//            getUserInfo(getUser());
+            final ClientSnacProcessor processor = connection.getBosService().getOscarConnection().getSnacProcessor();
+            monitoredItem.fail = false;
+            processor.sendSnac(
+//                    new SnacRequest(new SsiDataCheck(System.currentTimeMillis()+1000000, 1000), new SnacRequestAdapter() {
+                    new SnacRequest(new net.kano.joscar.snaccmd.ssi.BuddyAuthRequest(getUserName(), "self"), new SnacRequestAdapter() {
+                        public void handleResponse(SnacResponseEvent e) { // doesn't get called for most snacks
+                            synchronized(monitoredItem) {
+                                monitoredItem.notifyAll();
+                            }
+                        }
+
+                        public void handleSent(SnacRequestSentEvent e) { // sent - is good!
+                            synchronized(monitoredItem) {
+                                monitoredItem.notifyAll();
+                            }
+                        }
+
+                        public void handleTimeout(SnacRequestTimeoutEvent event) {  // doesn't get called for most snacks
+                            synchronized(monitoredItem) {
+                                monitoredItem.notifyAll();
+                            }
+                            monitoredItem.fail = true;
+                        }
+                    }));
+            // and wait for it to finish or die
+            synchronized(monitoredItem) {
+                try {
+                    monitoredItem.wait(HeartBeat.TIMEOUT);
+                } catch (InterruptedException e) {
+                    // no care
+                }
+            }
+            return !monitoredItem.fail;
         }
 
         public void actionFail() {
@@ -226,6 +258,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                 try {
                     if (State.ONLINE == event.getNewState()) {
                         fireAlmostConnected();
+                        heartbeat.startMonitoring(monitoredItem);
                         notifyConnectionEstablished();
                     } else if (State.FAILED == event.getNewState()) {
                         fireFailedToConnect();
@@ -247,7 +280,6 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                     public void removeCapabilityListener(CapabilityListener capabilityListener) {}
                 });
         connection.connect();
-        heartbeat.startMonitoring(monitoredItem);
     }
 
 /*
@@ -1253,7 +1285,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     public List<String> getUserInfo(Nameable user) {
         if (!isLoggedIn()) return null;
         List<String> result = new ArrayList<String>(10);
-        BuddyInfo binfo = connection.getBuddyInfoManager().getBuddyInfo(new Screenname(user.getName()), false);
+        BuddyInfo binfo = connection.getBuddyInfoManager().getBuddyInfo(new Screenname(user.getName()));
         result.add(binfo.getScreenname().getFormatted());
         result.add(binfo.getScreenname().getNormal());
         result.add(binfo.getAwayMessage());
