@@ -80,35 +80,46 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     final HeartBeat.MonitoredItem monitoredItem = new HeartBeat.MonitoredItem() {
         public boolean testAlive() {
 //            getUserInfo(getUser());
-            final ClientSnacProcessor processor = connection.getBosService().getOscarConnection().getSnacProcessor();
+            IcbmService service = connection.getIcbmService();
             monitoredItem.fail = false;
-            processor.sendSnac(
-//                    new SnacRequest(new SsiDataCheck(System.currentTimeMillis()+1000000, 1000), new SnacRequestAdapter() {
-                    new SnacRequest(new net.kano.joscar.snaccmd.ssi.BuddyAuthRequest(getUserName(), "self"), new SnacRequestAdapter() {
+            if (service == null) {
+                return false;
+            }
+            log.info("Sending request");
+            ((MutableIcbmService) service).sendIM(new Screenname(getSystemName()+"2"), "HeartBeat", false, new SnacRequestAdapter() {
                         public void handleResponse(SnacResponseEvent e) { // doesn't get called for most snacks
+                            log.info("Got server response1. "+getUserName());
                             synchronized(monitoredItem) {
                                 monitoredItem.notifyAll();
                             }
+                            log.info("Got server response2. "+getUserName());
                         }
 
                         public void handleSent(SnacRequestSentEvent e) { // sent - is good!
+/*
                             synchronized(monitoredItem) {
                                 monitoredItem.notifyAll();
+                                log.info("Sent");
                             }
+*/
                         }
 
                         public void handleTimeout(SnacRequestTimeoutEvent event) {  // doesn't get called for most snacks
+                            monitoredItem.fail = true;
                             synchronized(monitoredItem) {
                                 monitoredItem.notifyAll();
                             }
-                            monitoredItem.fail = true;
+                            log.warning("Got a timeout. "+getUserName());
                         }
-                    }));
+                    });
             // and wait for it to finish or die
             synchronized(monitoredItem) {
                 try {
+                    log.info("Waiting for response. "+getUserName());
                     monitoredItem.wait(HeartBeat.TIMEOUT);
+                    log.info("Stopped waiting. "+getUserName());
                 } catch (InterruptedException e) {
+                    log.warning("InterruptedException in OscarConnection. "+getUserName());
                     // no care
                 }
             }
@@ -1294,6 +1305,8 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         result.add(binfo.getLastAimExpression());
         if (binfo.getIdleSince()!=null) {
             result.add(binfo.getIdleSince().toString());
+        } else {
+            result.add("Not Available");
         }
         result.add(binfo.getOnlineSince()==null?"Not Available": binfo.getOnlineSince().toString());
         result.add(binfo.getStatusMessage());
