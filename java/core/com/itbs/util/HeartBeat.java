@@ -15,7 +15,8 @@ import java.util.logging.Logger;
 public class HeartBeat extends Thread {
     private static final Logger log = Logger.getLogger(HeartBeat.class.getName());
     private ExecutorService executorService = Executors.newCachedThreadPool();
-    public static long TIMEOUT = 30*1000; // 20 seconds
+    public static long TIMEOUT = 15*1000; // 15 seconds
+    public static long FREQUENCY = 30*1000; // 30 seconds
     private List <MonitoredItem> monitored = new CopyOnWriteArrayList<MonitoredItem>();
     private boolean shutDown = false;
     public static HeartBeat INSTANCE;
@@ -56,7 +57,7 @@ public class HeartBeat extends Thread {
         }
 
         boolean isTimeToGo() {
-            return !running && System.currentTimeMillis() - lastRun > TIMEOUT;
+            return !running && System.currentTimeMillis() - lastRun > FREQUENCY;
         }
 
         public String toString() {
@@ -99,7 +100,7 @@ public class HeartBeat extends Thread {
         while (!shutDown) {
             try {
                 synchronized(monitored) {
-                    monitored.wait(TIMEOUT+100);
+                    monitored.wait(FREQUENCY + 100);
                 }
             } catch (InterruptedException e) {
             }
