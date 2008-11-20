@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 public class HeartBeat extends Thread {
     private static final Logger log = Logger.getLogger(HeartBeat.class.getName());
     private ExecutorService executorService = Executors.newCachedThreadPool();
-    public static long TIMEOUT = 20*1000; // 20 seconds
+    public static long TIMEOUT = 30*1000; // 20 seconds
     private List <MonitoredItem> monitored = new CopyOnWriteArrayList<MonitoredItem>();
     private boolean shutDown = false;
     public static HeartBeat INSTANCE;
@@ -115,7 +115,7 @@ public class HeartBeat extends Thread {
                     try {
                         result = future.get(TIMEOUT, TimeUnit.MILLISECONDS);
                     } catch (Exception e) {
-                        log.log(Level.INFO, "Failed alive test "+ monitoredItem, e);
+                        log.log(Level.INFO, "Timed out on alive test "+ monitoredItem, e);
                     }
                     if (result) {
                         monitoredItem.actionSucceed();
