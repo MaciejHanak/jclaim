@@ -88,7 +88,15 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             log.info("Sending request");
             ((MutableIcbmService) service).sendIM(new Screenname(getSystemName()+"2"), "HeartBeat", false, new SnacRequestAdapter() {
                         public void handleResponse(SnacResponseEvent e) { // doesn't get called for most snacks
-                            log.info("Got server response1. "+getUserName());
+/*
+                             if (e.getSnacCommand() instanceof net.kano.joscar.snaccmd.error.SnacError) {
+                                 net.kano.joscar.snaccmd.error.SnacError error = (net.kano.joscar.snaccmd.error.SnacError) e.getSnacCommand();
+                                 log.warning("Got error response1. " +error.toString() + " for " + getUserName());
+                                 monitoredItem.fail = true;
+                             } else {
+                                 log.info("Got server response1. " + getUserName());
+                             }
+*/
                             synchronized(monitoredItem) {
                                 monitoredItem.notifyAll();
                             }
@@ -105,10 +113,10 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                         }
 
                         public void handleTimeout(SnacRequestTimeoutEvent event) {  // doesn't get called for most snacks
-                            monitoredItem.fail = true;
-                            synchronized(monitoredItem) {
-                                monitoredItem.notifyAll();
-                            }
+//                            monitoredItem.fail = true;
+//                            synchronized(monitoredItem) {
+//                                monitoredItem.notifyAll();
+//                            }
                             log.warning("Got a timeout. "+getUserName());
                         }
                     });
@@ -118,6 +126,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                     log.info("Waiting for response. "+getUserName());
                     monitoredItem.wait(HeartBeat.TIMEOUT);
                     log.info("Stopped waiting. "+getUserName());
+                    if (!monitoredItem.fail) { // if all is well - reset;
+                        failures = 0;
+                    }
                 } catch (InterruptedException e) {
                     log.warning("InterruptedException in OscarConnection. "+getUserName());
                     // no care
@@ -127,10 +138,20 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         }
 
         public void actionFail() {
-            disconnect(false);
+            synchronized(monitoredItem) {
+                monitoredItem.notifyAll(); // unlock.
+            }
+            failures++;
+            if (failures>=MAX_FAILURES) {
+                disconnect(false);
+            } else {
+                log.info("First failure - let it slide. "+getUserName());
+            }
         }
     };
-
+    int failures=0;
+    static int MAX_FAILURES = 3;
+    
     /**
      * Handle buddy alias changes.
      * Could be static, but for some implementation it may be a problem.  Leaving non-static
