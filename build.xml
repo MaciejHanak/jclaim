@@ -74,6 +74,9 @@
     <property name="file.openyahoo.o.jar" value="${dir.dist}/openymsg.jar"/>
     <property name="file.openyahoo.lib.jar" value="${dir.lib}/openymsg.jar"/>
 
+    <property name="file.log4j.o.jar" value="${dir.dist}/log4j.jar"/>
+    <property name="file.log4j.lib.jar" value="${dir.lib}/log4j.jar"/>
+
     <property name="file.nate.o.jar" value="${dir.dist}/natelib.jar"/>
     <property name="file.nate.lib.jar" value="${dir.lib}/natelib.jar"/>
 
@@ -155,6 +158,7 @@
         <delete file="${file.jdic.o.jar}"/>
         <delete file="${file.yahoo.o.jar}"/>
         <delete file="${file.openyahoo.o.jar}"/>
+        <delete file="${file.log4j.o.jar}"/>
         <delete file="${file.nate.o.jar}"/>
         <delete file="${file.msn.o.jar}"/>
         <delete file="${file.jml.o.jar}"/>
@@ -258,6 +262,9 @@
 
         <pack200 src="${file.openyahoo.lib.jar}" destfile="${file.openyahoo.o.jar}"	repack="true"/>
         <signjar jar="${file.openyahoo.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
+
+        <pack200 src="${file.log4j.lib.jar}" destfile="${file.log4j.o.jar}"	repack="true"/>
+        <signjar jar="${file.log4j.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.nate.lib.jar}" destfile="${file.nate.o.jar}"	repack="true"/>
         <signjar jar="${file.nate.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
