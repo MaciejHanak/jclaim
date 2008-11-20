@@ -51,14 +51,13 @@
     <all-permissions/> 
   </security> 
   <resources>     
-    <j2se version="1.5+" max-heap-size="42m"/>
+    <j2se version="1.5+" max-heap-size="45m"/>
     <jar href="jclaim.jar" main="true"/>  
     <jar href="cos.jar" />  
     <jar href="jaimlib.jar" />  
     <jar href="jazzy.jar" />  
     <jar href="jdic.jar" />  
-    <!--jar href="joscar.jar" />  
-    <jar href="oscar.jar" /-->  
+    <jar href="daim.jar" />  
     <jar href="joscar-common.jar" />  
     <jar href="joscar-protocol.jar" />  
     <jar href="joscar-client.jar" />  
@@ -71,6 +70,7 @@
     <jar href="smackx.jar" />  
     <jar href="ymsg.jar" />
     <jar href="openymsg.jar" />
+    <jar href="log4j.jar" />
     <jar href="natelib.jar" />
     <jar href="substance.jar" />
   </resources> 
@@ -88,11 +88,11 @@
    </resources>
    <resources os="SunOS" arch="x86">
       <jar        href="lib/sunos/jdic_stub.jar"/> 
-     <nativelib   href="lib/sunos/native.jar"/>
+     <nativelib   href="lib/sunos/nativex86.jar"/>
    </resources>
    <resources os="SunOS" arch="sparc">
       <jar        href="lib/sunos/jdic_stub.jar"/> 
-     <nativelib   href="lib/sunos/native.jar"/>
+     <nativelib   href="lib/sunos/nativesparc.jar"/>
    </resources>
 
   <application-desc main-class="com.itbs.aimcer.gui.Main">   
