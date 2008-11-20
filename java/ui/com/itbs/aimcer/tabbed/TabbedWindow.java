@@ -589,7 +589,7 @@ public class TabbedWindow {
         }
 
         public void connectionFailed(Connection connection, String message) {
-            notifyAllUsers("Lost has failed: " + connection.getServiceName(), connection);
+            notifyAllUsers("Connection has failed: " + connection.getServiceName(), connection);
             //TODO set tabs gray, but not disabled
         }
 
