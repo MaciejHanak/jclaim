@@ -85,7 +85,9 @@ public class GlobalEventHandler implements ConnectionEventListener {
     }
 
     public void connectionEstablished(final Connection connection) {
-        Main.setTitle(connection.getServiceName() + "- Online");
+        if (ClientProperties.INSTANCE.isNotifyDisconnects()) {
+           Main.setTitle(connection.getServiceName() + "- Online");
+        }
         connectionDone();
         connection.setAway(ClientProperties.INSTANCE.isIamAway());
         connection.resetDisconnectInfo();
@@ -105,7 +107,9 @@ public class GlobalEventHandler implements ConnectionEventListener {
 
     public void connectionLost(final Connection connection) {
         log.info("Connection to " + connection.getServiceName() + " lost " + connection.getDisconnectCount() + " time(s).");
-        Main.setTitle(connection.getServiceName() + " Offline");
+        if (ClientProperties.INSTANCE.isNotifyDisconnects()) {
+            Main.setTitle(connection.getServiceName() + " Offline");
+        }
         connectionDone();
         handleDisconnect(connection);
         // this takes care of reconnects.
