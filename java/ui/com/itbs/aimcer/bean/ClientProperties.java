@@ -117,6 +117,7 @@ public class ClientProperties implements ConnectionProperties {
     private boolean useTray = true;
     private boolean snapWindows = false;
     private boolean sortContactList = false;
+    private boolean notifyDisconnects = false;
     private Rectangle windowBounds;
     Map<String,ContactPreferences> buddyPreferences = new HashMap<String, ContactPreferences>();
     Map<String,GroupPreferences> groupPreferences = new HashMap<String, GroupPreferences>();
@@ -902,5 +903,14 @@ public class ClientProperties implements ConnectionProperties {
 
     public void setSendListVisible(boolean sendListVisible) {
         this.sendListVisible = sendListVisible;
+    }
+
+
+    public boolean isNotifyDisconnects() {
+        return notifyDisconnects;
+    }
+
+    public void setNotifyDisconnects(boolean notifyDisconnects) {
+        this.notifyDisconnects = notifyDisconnects;
     }
 }
