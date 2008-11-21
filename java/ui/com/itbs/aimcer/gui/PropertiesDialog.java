@@ -67,6 +67,7 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
     private final JTextComponent scrollBackSize = new BetterTextField(""+ClientProperties.INSTANCE.getDisplayBuffer());
     private final JTextComponent fontSize = new BetterTextField(""+ClientProperties.INSTANCE.getFontSize());
     private final JCheckBox showStatusbar = new JCheckBox("", ClientProperties.INSTANCE.isStatusbarAlwaysVisible());
+    private final JCheckBox notifyDisconnects = new JCheckBox("", ClientProperties.INSTANCE.isNotifyDisconnects());
     private final JCheckBox showWeather = new JCheckBox("", ClientProperties.INSTANCE.isShowWeather());
     private final JTextComponent weather = new BetterTextField(ClientProperties.INSTANCE.getWeatherZipCodes().trim());
     private final JCheckBox showOrderEntry = new JCheckBox("", ClientProperties.INSTANCE.isShowOrderEntry());
@@ -221,6 +222,8 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
         props.add(sortContactList);
         props.add(getLabel("Status Bar: ", "Makes status bar always visible", showStatusbar));
         props.add(showStatusbar);
+        props.add(getLabel("Connection alerts: ", "Display connection notifications on task bar", notifyDisconnects));
+        props.add(notifyDisconnects);
         props.add(getLabel("Show Weather: ", "Select if you want the weather to show", showWeather));
         props.add(showWeather);
         props.add(getLabel("Weather (Zip Codes): ", "List the zip codes you want the weather for (space separated).", weather));
@@ -452,6 +455,7 @@ final public class PropertiesDialog extends JDialog implements ActionListener {
             ClientProperties.INSTANCE.setIamAwayMessage(iamAwayMessage.getText());
             ClientProperties.INSTANCE.setWeatherZipCodes(weather.getText());
             ClientProperties.INSTANCE.setStatusbarAlwaysVisible(showStatusbar.isSelected());
+            ClientProperties.INSTANCE.setNotifyDisconnects(notifyDisconnects.isSelected());
             ClientProperties.INSTANCE.setShowWeather(showWeather.isSelected());
             ClientProperties.INSTANCE.setShowOrderEntry(showOrderEntry.isSelected());
             ClientProperties.INSTANCE.setSpellCheck(spellCheck.isSelected());
