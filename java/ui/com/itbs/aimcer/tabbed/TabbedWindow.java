@@ -816,6 +816,9 @@ public class TabbedWindow {
                 finalTab = tab;
                 tabbedPane.addTab(cw.getDisplayName(), tab);
                 tab.addTabComponent();
+                if (currentTab!=null) {
+                    finalTab.splitHistoryTextPane.setDividerLocation(currentTab.splitHistoryTextPane.getDividerLocation());
+                }
                 tab.setLabelFromStatus();
 
                 JLabel label;
