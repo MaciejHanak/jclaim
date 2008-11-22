@@ -116,11 +116,13 @@ public class HeartBeat extends Thread {
                     try {
                         result = future.get(TIMEOUT, TimeUnit.MILLISECONDS);
                     } catch (Exception e) {
-                        log.log(Level.INFO, "Timed out on alive test "+ monitoredItem, e);
+                        monitoredItem.fail = true;
+                        log.log(Level.FINE, "Timed out on alive test "+ monitoredItem, e);
                     }
                     if (result) {
                         monitoredItem.actionSucceed();
                     } else {
+                        monitoredItem.fail = true;
                         monitoredItem.actionFail();
                     }
                     monitoredItem.setRunning(false);
