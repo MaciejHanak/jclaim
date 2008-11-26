@@ -138,9 +138,44 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             }
         });
           //////////////////////
-         // Allow All to Add //
+        // Ask the user for individual requests //
         /////////////////////
-        connection.getRoster().setSubscriptionMode(Roster.SubscriptionMode.accept_all);
+        //connection.getRoster().setSubscriptionMode(Roster.SubscriptionMode.accept_all);
+        //connection.getRoster().setSubscriptionMode(Roster.SubscriptionMode.reject_all);
+        connection.getRoster().setSubscriptionMode(Roster.SubscriptionMode.manual);        
+        //~~~~~~~~~~~~~~~~~~~~~
+        // ! aa
+        
+        PacketFilter addedFiter = new org.jivesoftware.smack.filter.PacketTypeFilter(org.jivesoftware.smack.packet.Presence.class);
+        		      
+        // aa: create a packet listener for presence packets.
+        PacketListener subscribeRequestListener = new PacketListener() {
+                public void processPacket(Packet packet) {
+                	Presence pp = (Presence) packet;  //shouldn't be a problem since we are filtering for presence packets.
+                	// only listen to presence requests
+                	if (pp. getType() == Presence.Type.subscribe) { //Request subscription to recipient's presence.
+                        boolean accept = true;
+                        for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
+                            accept = eventHandler.contactRequestReceived(packet.getFrom(), SmackConnection.this);
+                            if (!accept) break;
+                        }    
+                        
+                        Presence response;
+                        if (accept)  
+                        	response = new Presence(Presence.Type.subscribed);
+                        else 
+                        	response  = new Presence(Presence.Type.unsubscribed);
+                        	                     
+                        response.setTo(pp.getFrom());
+                        connection.sendPacket(response);                           
+                	} //type subscribe         	
+                } // processPacket
+            };
+//         Register the subscribeRequestListener.
+        connection.addPacketListener(subscribeRequestListener, addedFiter);
+        
+        //~aa
+        //~~~~~~~~~~~~~~~~~~~~~
 
           ///////////////////
          // get user list //
@@ -201,28 +236,37 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
 
         connection.getRoster().addRosterListener(new RosterListener() {
             public void entriesAdded(Collection<String> addresses) {
-                // Ignore event for now
+/*            	for (String adr: addresses) {
+            		System.out.println("entriesAdded " + adr);            		
+            	}     */       	
             }
 
             public void entriesUpdated(Collection<String> addresses) {
-                // Ignore event for now
+/*            	for (String adr: addresses) {
+            		System.out.println("entriesUpdated " + adr);            		
+            	}            	*/
             }
 
             public void entriesDeleted(Collection<String> addresses) {
-                // Ignore event for now
+/*            	for (String adr: addresses) {
+            		System.out.println("entriesDeleted " + adr);            		
+            	}*/
             }
 
             public void presenceChanged(Presence presence) {
                 Contact contact = getContactFactory().create(normalizeName(presence.getFrom()), SmackConnection.this);
                 Status status = (Status) contact.getStatus().clone();
                 contact.getStatus().setOnline(presence.isAvailable());
-                contact.getStatus().setAway(presence.isAway());
+                //isAway also includes do not disturb (dnd), so we should not update in that case.
+                contact.getStatus().setAway(presence.isAway() && Presence.Mode.dnd != presence.getMode());
                 contact.getStatus().setIdleTime(0);
                 notifyStatusChanged(contact, status);
             }
 
         }); // class RosterListener
 
+        
+        
         // File transfers support:
         fileTransferManager = new FileTransferManager(connection);
         fileTransferManager.addFileTransferListener(new org.jivesoftware.smackx.filetransfer.FileTransferListener() {
