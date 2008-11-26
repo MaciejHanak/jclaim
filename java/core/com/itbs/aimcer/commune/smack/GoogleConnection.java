@@ -63,6 +63,11 @@ public class GoogleConnection extends SmackConnection {
         return name + "@gmail.com";
     }
 
+
+    public String getUserName() {
+        return fixUserName(super.getUserName()); 
+    }
+
     /**
      * Returns a short name for the service.
      * "AIM", "ICQ" etc.

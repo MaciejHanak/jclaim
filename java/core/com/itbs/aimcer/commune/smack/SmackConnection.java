@@ -85,6 +85,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             connection = getNewConnection();
 //            connection.loginAnonymously();
             connection.connect();
+            SASLAuthentication.supportSASLMechanism("PLAIN", 0);
             connection.login(getUserName(), getPassword());
             fireConnect();
         } catch (XMPPException e) {
