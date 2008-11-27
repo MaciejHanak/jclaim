@@ -161,6 +161,7 @@ public class GlobalEventHandler implements ConnectionEventListener {
                 }
             }
         }
+        Main.getPeoplePanel().update();
     } // handleDisconnect()
 
 
