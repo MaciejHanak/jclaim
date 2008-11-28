@@ -302,15 +302,15 @@
     </target>
 
     <target name="signnative" description="Signs native files" >
-        <signjar jar="${dir.dist}/lib/linux/jdic_stub.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
-        <signjar jar="${dir.dist}/lib/linux/native.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
-        <signjar jar="${dir.dist}/lib/win32/jdic_stub.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
-        <signjar jar="${dir.dist}/lib/win32/jdic_misc.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
-        <signjar jar="${dir.dist}/lib/win32/native.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
-        <signjar jar="${dir.dist}/lib/mac/jdic_misc.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
-        <signjar jar="${dir.dist}/lib/sunos/jdic_stub.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
-        <signjar jar="${dir.dist}/lib/sunos/nativex86.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
-        <signjar jar="${dir.dist}/lib/sunos/nativesparc.jar" alias="itbs" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/linux/jdic_stub.jar" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/linux/native.jar" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/win32/jdic_stub.jar" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/win32/jdic_misc.jar" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/win32/native.jar" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/mac/jdic_misc.jar" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/sunos/jdic_stub.jar" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/sunos/nativex86.jar" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <signjar jar="${dir.dist}/lib/sunos/nativesparc.jar" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
     </target>
 
     <!-- =====================   JAVADOC    =============================-->
