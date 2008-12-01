@@ -100,10 +100,10 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                             synchronized(monitoredItem) {
                                 monitoredItem.notifyAll();
                             }
-                            log.info("Got server response2. "+getUserName());
+                            log.info("Got server response. "+getUserName());
                         }
 
-                        public void handleSent(SnacRequestSentEvent e) { // sent - is good!
+                        public void handleSent(SnacRequestSentEvent e) { // sent - out of queue - means nothing.
 /*
                             synchronized(monitoredItem) {
                                 monitoredItem.notifyAll();
@@ -117,16 +117,16 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 //                            synchronized(monitoredItem) {
 //                                monitoredItem.notifyAll();
 //                            }
-                            log.warning("Got a timeout. "+getUserName());
+                            log.fine("Got a timeout. "+getUserName());
                         }
                     });
             // and wait for it to finish or die
             synchronized(monitoredItem) {
                 try {
-                    log.info("Waiting for response. "+getUserName());
-                    monitoredItem.wait(HeartBeat.TIMEOUT);
-                    log.info("Stopped waiting. "+getUserName());
-                    if (!monitoredItem.fail) { // if all is well - reset;
+                    log.fine("Waiting for response. "+getUserName());
+                    monitoredItem.wait(HeartBeat.TIMEOUT-100); // only waiting for so long - no risk of a lockup
+                    log.fine("Stopped waiting. "+getUserName());
+                    if (!monitoredItem.fail) { // if all is well - reset; //todo this is a problem!
                         failures = 0;
                     }
                 } catch (InterruptedException e) {
@@ -145,7 +145,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             if (failures>=MAX_FAILURES) {
                 disconnect(false);
             } else {
-                log.info("First failure - let it slide. "+getUserName());
+                log.info("Failure " + failures + " - let it slide. "+getUserName());
             }
         }
     };
@@ -258,6 +258,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         if (heartbeat!=null) {
             heartbeat.stopMonitoring(monitoredItem);
         }
+        failures = 0; // reset this puppy so it's not impacted for the heartbeat count.
         // todo create monitoring object.
 
         final Screenname screenName = new Screenname(getUserName());
@@ -765,6 +766,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     }
 
     public void disconnect(boolean intentional) {
+        if (intentional) {
+            failures = 0;
+        }
         if (heartbeat!=null) {
             heartbeat.stopMonitoring(monitoredItem);
         }

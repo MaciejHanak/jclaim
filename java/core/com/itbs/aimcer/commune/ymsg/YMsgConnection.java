@@ -525,12 +525,15 @@ public class YMsgConnection extends AbstractMessageConnection {// implements Cha
                 accept = eventHandler.contactRequestReceived(ev.getFrom(), YMsgConnection.this);
                 if (!accept) break;
             }
-            if (!accept)
-                try {
+            try {
+                if (accept) {
+                    session.acceptContact(ev, "Great");
+                } else {
                     session.rejectContact(ev, "Not now, thanks");
-                } catch (IOException e) {
-                    log.log(Level.SEVERE, "Failed to reject contact " + ev.getFrom(), e);
                 }
+            } catch (IOException e) {
+                log.log(Level.SEVERE, "Failed to reject contact " + ev.getFrom(), e);
+            }
 
         }
 

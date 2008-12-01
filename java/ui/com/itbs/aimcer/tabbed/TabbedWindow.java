@@ -578,7 +578,7 @@ public class TabbedWindow {
         }
     }
 
-    class TabbedConnectionEventListener implements ConnectionEventListener {
+    class TabbedConnectionEventListener extends ConnectionEventAdapter {
 
         public void connectionInitiated(Connection connection) {
             //TODO set tabs gray, but not disabled
@@ -734,14 +734,6 @@ public class TabbedWindow {
             } finally {
                 tabbedPane.unlock();
             }
-        }
-
-        public void errorOccured(String message, Exception exception) {
-
-        }
-
-        public boolean contactRequestReceived(final String user, final MessageSupport connection) {
-            return true;
         }
     }
 

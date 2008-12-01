@@ -20,8 +20,13 @@
 
 package com.itbs.aimcer.gui;
 
-import com.itbs.aimcer.bean.*;
-import com.itbs.aimcer.commune.*;
+import com.itbs.aimcer.bean.ClientProperties;
+import com.itbs.aimcer.bean.Contact;
+import com.itbs.aimcer.bean.Message;
+import com.itbs.aimcer.bean.Status;
+import com.itbs.aimcer.commune.Connection;
+import com.itbs.aimcer.commune.ConnectionEventAdapter;
+import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.gui.*;
 import com.itbs.util.GeneralUtils;
 
@@ -236,7 +241,7 @@ public final class LoginPanel extends JDialog implements ActionListener {
         autoLogin.setEnabled(value);
     }
 
-    class LoginMonitor implements ConnectionEventListener {
+    class LoginMonitor extends ConnectionEventAdapter {
         public boolean messageReceived(MessageSupport connection, Message message) {
             connectionLost(connection);
             return true;
@@ -278,45 +283,8 @@ public final class LoginPanel extends JDialog implements ActionListener {
             connection.removeEventListener(this);
         }
 
-        /**
-         * A previously requested icon has arrived.
-         * Icon will be a part of the contact.
-         *
-         * @param connection connection
-         * @param contact    contact
-         */
-        public void pictureReceived(IconSupport connection, Contact contact) {
-            connection.removeEventListener(this);
-        }
-
         public void statusChanged(Connection connection) {
             connection.removeEventListener(this);
         }
-
-        public boolean contactRequestReceived(final String user, final MessageSupport connection) {
-            connection.removeEventListener(this);
-            return true;
-        }
-
-        /**
-         * Gets called when an assynchronous error occurs.
-         *
-         * @param message   to display
-         * @param exception exception for tracing
-         */
-        public void errorOccured(String message, Exception exception) {
-            //don't care
-        }
-
-        /**
-         * Other side requested a file transfer.
-         * @param connection connection
-         * @param contact contact
-         * @param filename file name
-         * @param description of the file
-         * @param connectionInfo proprietary connection info that needs to be passed around.
-         */
-        public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) { }
-        public void typingNotificationReceived(MessageSupport connection, Nameable contact) { }
     } // class LoginMonitor
 }

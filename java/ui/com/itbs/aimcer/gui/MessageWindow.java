@@ -563,7 +563,7 @@ public class MessageWindow extends MessageWindowBase {
     /////////////////////////////////////////////////////////////////////
    // *******************  ConnectionEventListener   **************  //
   ///////////////////////////////////////////////////////////////////
-    static class MessageWindowConnectionEventListener implements ConnectionEventListener {
+    static class MessageWindowConnectionEventListener extends ConnectionEventAdapter {
         static SimpleAttributeSet ATT_ERROR;
 
         MessageWindowConnectionEventListener() {
@@ -619,9 +619,6 @@ public class MessageWindow extends MessageWindowBase {
             notifyAllUsers("Lost connection to " + connection.getServiceName(), connection);
         }
 
-        public void connectionInitiated(Connection connection) {
-        }
-
         public void connectionFailed(Connection connection, String message) {
             notifyAllUsers("Connection has failed: " + connection.getServiceName(), connection);
         }
@@ -662,23 +659,6 @@ public class MessageWindow extends MessageWindowBase {
             }
         }
 
-        /**
-         * Statuses for contacts that belong to this connection have changed.
-         *
-         * @param connection to use
-         */
-        public void statusChanged(Connection connection) {
-/*
-            for (MessageWindow messageWindow : messageWindows) {
-                if (messageWindow.contactWrapper.getConnection().equals(connection)) {
-                    messageWindow.appendHistoryText("\n"
-                            + messageWindow.contactWrapper.getDisplayName()
-                            + (messageWindow.contactWrapper.isOnline() ? " is now online." : " has disconnected."),
-                            ATT_ERROR);
-                }
-            }
-*/
-        }
 
         private void notifyUser(String message, Contact contact) {
             for (MessageWindow messageWindow : messageWindows) {
@@ -701,18 +681,6 @@ public class MessageWindow extends MessageWindowBase {
                     messageWindow.userIcon.setIcon(contact.getPicture());
                 }
             }
-        }
-
-        public boolean contactRequestReceived(final String user, final MessageSupport connection) {  return true; }
-
-        /**
-         * Gets called when an assynchronous error occurs.
-         *
-         * @param message   to display
-         * @param exception exception for tracing
-         */
-        public void errorOccured(String message, Exception exception) {
-            //don't care
         }
 
         /**

@@ -1,7 +1,9 @@
 package com.itbs.aimcer.gui;
 
 import com.itbs.aimcer.bean.*;
-import com.itbs.aimcer.commune.*;
+import com.itbs.aimcer.commune.Connection;
+import com.itbs.aimcer.commune.ConnectionEventAdapter;
+import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.tabbed.TabbedWindow;
 import com.itbs.util.SoundHelper;
 
@@ -112,7 +114,7 @@ public class WindowManager {
         protected Map <Contact, Long> map = new WeakHashMap<Contact, Long>(20);
         
         public void addConnection(MessageSupport connection) {
-            connection.addEventListener(new ConnectionEventListener() {
+            connection.addEventListener(new ConnectionEventAdapter() {
                 public void connectionInitiated(Connection connection) { }
                 public boolean messageReceived(MessageSupport connection, Message message) throws Exception {
                     boolean toBuddy = message.isOutgoing();
@@ -125,17 +127,6 @@ public class WindowManager {
                     map.put(message.getContact(), System.currentTimeMillis());
                     return false;
                 }
-                public boolean emailReceived(MessageSupport connection, Message message) throws Exception { return false; }
-                public void typingNotificationReceived(MessageSupport connection, Nameable contact) { }
-                public void connectionLost(Connection connection) { }
-                public void connectionFailed(Connection connection, String message) { }
-                public void connectionEstablished(Connection connection) { }
-                public void statusChanged(Connection connection, Contact contact, Status oldStatus) { }
-                public void statusChanged(Connection connection) { }
-                public void pictureReceived(IconSupport connection, Contact contact) { }
-                public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) { }
-                public void errorOccured(String message, Exception exception) { }
-                public boolean contactRequestReceived(final String user, final MessageSupport connection) { return true; }
             });
         }
 

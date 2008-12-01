@@ -235,7 +235,7 @@ public class MenuManager {
     /**
      * Monitors connection so it can turn menu items on and off.
      */
-    static class MenuEventListener implements ConnectionEventListener {
+    static class MenuEventListener extends ConnectionEventAdapter {
         List <JComponent> enabledWhenOn = new ArrayList<JComponent>();
         List <Boolean> enabledFlag = new ArrayList<Boolean>();
         JCheckBoxMenuItem away;
@@ -293,30 +293,9 @@ public class MenuManager {
             }
         }
 
-        public boolean messageReceived(MessageSupport connection, com.itbs.aimcer.bean.Message message) throws Exception {
-            return false;
-        }
-
-        public boolean emailReceived(MessageSupport connection, com.itbs.aimcer.bean.Message message) throws Exception {
-            return false;
-        }
-
-        public void typingNotificationReceived(MessageSupport connection, Nameable contact) { }
-        
-        public void statusChanged(Connection connection, Contact contact, Status status) {  }
 
         public void statusChanged(Connection connection) {
             away.setSelected(connection.isAway());
-        }
-        public boolean contactRequestReceived(final String user, final MessageSupport connection) {  return true; }
-
-        public void pictureReceived(IconSupport connection, Contact contact) {
-        }
-
-        public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) {
-        }
-
-        public void errorOccured(String message, Exception exception) {
         }
     }
     /**
@@ -516,7 +495,7 @@ public class MenuManager {
                                 }
                             }
                             dialog.getContentPane().add(new JScrollPane(innerds, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
-                            dialog.setSize(350, 300);
+                            dialog.setSize(360, 300);
                             GUIUtils.addCancelByEscape(dialog);
                             dialog.setVisible(true);
                         }

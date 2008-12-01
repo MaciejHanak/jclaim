@@ -1,13 +1,15 @@
 package com.itbs.aimcer.commune;
 
-import com.itbs.aimcer.bean.*;
+import com.itbs.aimcer.bean.Contact;
+import com.itbs.aimcer.bean.Message;
+import com.itbs.aimcer.bean.MessageImpl;
 
 /**
  * Provides ability to forward messages to another contact.
  * @author Alex Rass
  * @since Oct 29, 2007 10:41:17 PM
  */
-public class MessageForwarder implements ConnectionEventListener {
+public class MessageForwarder extends ConnectionEventAdapter {
     private Contact forwardContact;
     private static final int MAX_LEN = 125; // tons of characters are gone due to fillers.
 
@@ -17,9 +19,6 @@ public class MessageForwarder implements ConnectionEventListener {
 
     public Contact getForwardContact() {
         return forwardContact;
-    }
-
-    public void connectionInitiated(Connection connection) {
     }
 
     /**
@@ -51,33 +50,4 @@ public class MessageForwarder implements ConnectionEventListener {
         return false;
     } // func
 
-    public void typingNotificationReceived(MessageSupport connection, Nameable contact) {
-    }
-
-    public void connectionLost(Connection connection) {
-    }
-
-    public void connectionFailed(Connection connection, String message) {
-    }
-
-    public void connectionEstablished(Connection connection) {
-    }
-
-    public void statusChanged(Connection connection, Contact contact, Status status) { }
-
-    public void statusChanged(Connection connection) {
-    }
-
-    public void pictureReceived(IconSupport connection, Contact contact) {
-    }
-
-    public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) {
-    }
-
-    public void errorOccured(String message, Exception exception) {
-    }
-
-    public boolean contactRequestReceived(final String user, final MessageSupport connection) {
-        return true;
-    }
 }

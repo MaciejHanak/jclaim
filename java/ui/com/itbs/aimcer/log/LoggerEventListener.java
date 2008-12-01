@@ -20,8 +20,14 @@
 
 package com.itbs.aimcer.log;
 
-import com.itbs.aimcer.bean.*;
-import com.itbs.aimcer.commune.*;
+import com.itbs.aimcer.bean.ClientProperties;
+import com.itbs.aimcer.bean.Contact;
+import com.itbs.aimcer.bean.Message;
+import com.itbs.aimcer.bean.MessageImpl;
+import com.itbs.aimcer.commune.Connection;
+import com.itbs.aimcer.commune.ConnectionEventAdapter;
+import com.itbs.aimcer.commune.FileTransferSupport;
+import com.itbs.aimcer.commune.MessageSupport;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +49,7 @@ import java.util.logging.Logger;
  * @author Alex Rass
  * @since Sep 9, 2004
  */
-public class LoggerEventListener implements ConnectionEventListener {
+public class LoggerEventListener extends ConnectionEventAdapter {
     private static final Logger log = Logger.getLogger(LoggerEventListener.class.getName());
 
     File centralPath;
@@ -216,49 +222,6 @@ public class LoggerEventListener implements ConnectionEventListener {
         return messageReceived(connection, message);
     }
 
-    public void typingNotificationReceived(MessageSupport connection, Nameable contact) { }
-
-    public void connectionInitiated(Connection connection) {
-    }
-
-    public void connectionLost(com.itbs.aimcer.commune.Connection connection) {
-    }
-
-    public void connectionFailed(com.itbs.aimcer.commune.Connection connection, String message) {
-    }
-
-    public void connectionEstablished(com.itbs.aimcer.commune.Connection connection) {
-    }
-
-    public void statusChanged(com.itbs.aimcer.commune.Connection connection, Contact contact, Status oldStatus) { }
-
-    /**
-     * Statuses for contacts that belong to this connection have changed.
-     * @param connection connection
-     */
-    public void statusChanged(Connection connection) {
-    }
-
-    /**
-     * A previously requested icon has arrived.
-     * Icon will be a part of the contact.
-     *
-     * @param connection connection
-     * @param contact    contact
-     */
-    public void pictureReceived(IconSupport connection, Contact contact) {
-    }
-
-    /**
-     * Gets called when an assynchronous error occurs.
-     *
-     * @param message   to display
-     * @param exception exception for tracing
-     */
-    public void errorOccured(String message, Exception exception) {
-        //don't care
-    }
-
     /**
      * Other side requested a file transfer.
      * @param connection connection
@@ -276,7 +239,4 @@ public class LoggerEventListener implements ConnectionEventListener {
             log.log(Level.SEVERE, "Failed to log incoming file info!", e);
         }
     }
-
-    public boolean contactRequestReceived(final String user, final MessageSupport connection) {  return true; }
-
 }

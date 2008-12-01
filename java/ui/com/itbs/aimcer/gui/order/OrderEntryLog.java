@@ -20,8 +20,12 @@
 
 package com.itbs.aimcer.gui.order;
 
-import com.itbs.aimcer.bean.*;
-import com.itbs.aimcer.commune.*;
+import com.itbs.aimcer.bean.ClientProperties;
+import com.itbs.aimcer.bean.ContactWrapper;
+import com.itbs.aimcer.bean.Message;
+import com.itbs.aimcer.bean.MessageImpl;
+import com.itbs.aimcer.commune.ConnectionEventAdapter;
+import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.gui.Main;
 import com.itbs.gui.ActionAdapter;
 import com.itbs.gui.ErrorDialog;
@@ -50,7 +54,7 @@ import java.util.zip.GZIPOutputStream;
  *
  * @author Alex Rass on Nov 2, 2004
  */
-public class OrderEntryLog implements ConnectionEventListener {
+public class OrderEntryLog extends ConnectionEventAdapter {
     static OrderEntryLog instance = new OrderEntryLog();
     JFrame frame;
     JTable table;
@@ -468,48 +472,5 @@ public class OrderEntryLog implements ConnectionEventListener {
             e.printStackTrace();
         }
         return true;
-    }
-
-    public boolean emailReceived(MessageSupport connection, Message message) throws Exception {
-        return false;
-    }
-
-    public void typingNotificationReceived(MessageSupport connection, Nameable contact) { }
-    public void connectionInitiated(Connection connection) { }
-    public void connectionLost(Connection connection) { }
-    public void connectionFailed(Connection connection, String message) { }
-    public void connectionEstablished(Connection connection) { }
-    public void statusChanged(Connection connection, Contact contact, Status oldStatus) { }
-    public void statusChanged(Connection connection) { }
-    public boolean contactRequestReceived(final String user, final MessageSupport connection) {  return true; }
-
-    /**
-     * A previously requested icon has arrived.
-     * Icon will be a part of the contact.
-     *
-     * @param connection connection
-     * @param contact    contact
-     */
-    public void pictureReceived(IconSupport connection, Contact contact) { }
-    /**
-     * Gets called when an assynchronous error occurs.
-     *
-     * @param message   to display
-     * @param exception exception for tracing
-     */
-    public void errorOccured(String message, Exception exception) {
-        //don't care
-    }
-
-    /**
-     * Other side requested a file transfer.
-     @param connection connection
-      * @param contact
-     * @param filename
-     * @param description
-     * @param connectionInfo
-     */
-    public void fileReceiveRequested(FileTransferSupport connection, Contact contact, String filename, String description, Object connectionInfo) {
-        // don't care
     }
 }
