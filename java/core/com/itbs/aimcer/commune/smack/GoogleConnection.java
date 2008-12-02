@@ -59,7 +59,7 @@ public class GoogleConnection extends SmackConnection {
      * @return name, including server.
      */
     protected String fixUserName(String name) {
-        if (name.indexOf('@')>-1) return name;
+        if (name==null || name.indexOf('@')>-1) return name;
         return name + "@gmail.com";
     }
 
