@@ -39,13 +39,14 @@ public class GoogleConnection extends SmackConnection {
     }
 
     /**
-     * Adjusts the username for Googletalk using their rules.
-     * Removes the @* trailer.
+     * Previously removed the @* trailer.  Now just calls super. --aa
+     * Stop stripping @* part from username to allow logins other than @google to login.
      * @param userName to adjust/assign
      */
     public void setUserName(String userName) {
-        int index = userName==null?-1:userName.indexOf('@');
-        super.setUserName(index==-1?userName:userName.substring(0, index));
+        //int index = userName==null?-1:userName.indexOf('@');
+       // super.setUserName(index==-1?userName:userName.substring(0, index));
+        super.setUserName(userName);
     }
 
     public void addContact(Nameable contact, Group group) {
