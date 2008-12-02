@@ -1,6 +1,7 @@
 package com.itbs.aimcer.gui;
 
 import com.itbs.aimcer.bean.*;
+import com.itbs.aimcer.commune.AbstractMessageConnection;
 import com.itbs.aimcer.commune.Connection;
 import com.itbs.aimcer.commune.MessageSupport;
 import com.itbs.aimcer.gui.userlist.ContactLabel;
@@ -269,9 +270,15 @@ public class SaveFile {
 
     static private Connection findConnection(List<Connection> connections, ContactStub clientStub) {
         for (Connection connection : connections) {
+            String nonNullUserName = connection.getUser() == null?null: connection.getUser().getName();
+            if (nonNullUserName==null && connection instanceof AbstractMessageConnection) {
+                nonNullUserName = ((AbstractMessageConnection) connection).getUserName();
+            }
+            if (nonNullUserName==null) {
+                nonNullUserName = "";
+            }
             if (connection.getServiceName().equalsIgnoreCase(clientStub.getConnectionType())
-                    && connection.getUser().getName().equalsIgnoreCase(clientStub.getLoginAs())
-                    ) {
+                    && (nonNullUserName.equalsIgnoreCase(clientStub.getLoginAs()))) {
                 return connection;
             }
         }
