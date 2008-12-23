@@ -26,6 +26,7 @@ import com.itbs.aimcer.gui.order.OrderEntryLog;
 import com.itbs.aimcer.gui.userlist.ContactLabel;
 import com.itbs.aimcer.log.LogsPidgin;
 import com.itbs.gui.*;
+import com.itbs.newgrep.DustMeParser;
 import com.itbs.newgrep.Grep;
 import org.jdesktop.jdic.desktop.Desktop;
 import org.jdesktop.jdic.desktop.Message;
@@ -56,8 +57,10 @@ public class MenuManager {
     private static final String MENU_FILE   = "General";
     private static final String COMMAND_EXIT = "Exit";
     private static final String COMMAND_SETTINGS = "Settings...";
-    private static final String COMMAND_GREP = "Search...";
-    private static final String COMMAND_IMPORT = "Import Logs";
+    private static final String COMMAND_MENU_TOOLS = "Handy Tools";
+    private static final String COMMAND_TOOL_GREP = "Search...";
+    private static final String COMMAND_TOOL_IMPORT = "Import Logs";
+    private static final String COMMAND_TOOL_CLEANCSS = "Clean CSS"; // todo finish CSS stuff
     private static final String COMMAND_FILE_ORDERS = "Manage Orders";
 
     private static final String MENU_CONNECTION         = "Connection";
@@ -100,10 +103,14 @@ public class MenuManager {
         menu.setMnemonic('G');
         ActionListener eventHandler = new MenuHandler();
         menu.add(ActionAdapter.createMenuItem(COMMAND_SETTINGS, eventHandler, 's'));    //   Settings
-        menu.add(ActionAdapter.createMenuItem(COMMAND_GREP, eventHandler, 'p'));    //   Settings
-        menu.add(ActionAdapter.createMenuItem(COMMAND_IMPORT, eventHandler, 'i'));    //   Settings
-        if (ClientProperties.INSTANCE.isEnableOrderEntryInSystem())
-            menu.add(ActionAdapter.createMenuItem(COMMAND_FILE_ORDERS, eventHandler, 'm'));   //   Manage Orders
+        JMenu tools = new JMenu(COMMAND_MENU_TOOLS);
+        tools.add(ActionAdapter.createMenuItem(COMMAND_TOOL_GREP, eventHandler, 'p'));    //   Settings
+        tools.add(ActionAdapter.createMenuItem(COMMAND_TOOL_IMPORT, eventHandler, 'i'));    //   Settings
+        if (ClientProperties.INSTANCE.isEnableOrderEntryInSystem()) {
+            tools.add(ActionAdapter.createMenuItem(COMMAND_FILE_ORDERS, eventHandler, 'm'));   //   Manage Orders
+        }
+        tools.add(ActionAdapter.createMenuItem(COMMAND_TOOL_CLEANCSS, eventHandler, 'c'));    //   Clean CSS
+        menu.add(tools);    //   Settings
         menu.add(new JSeparator());                                       //   -------------
         menu.add(ActionAdapter.createMenuItem(COMMAND_EXIT, eventHandler,   'x'));      //   Exit
         menuBar.add(menu);                                              // File Menu
@@ -399,10 +406,12 @@ public class MenuManager {
                 }
             } else if (COMMAND_EXIT.equals(command)) {
                 Main.exit();
-            } else if (COMMAND_GREP.equals(command)) {
+            } else if (COMMAND_TOOL_GREP.equals(command)) {
                 new Grep();
-            } else if (COMMAND_IMPORT.equals(command)) {
+            } else if (COMMAND_TOOL_IMPORT.equals(command)) {
                 LogsPidgin.presentItself();
+            } else if (COMMAND_TOOL_CLEANCSS.equals(command)) {
+                DustMeParser.presentItself();
             } else if (COMMAND_SETTINGS.equals(command)) {
                 final JDialog properties = new PropertiesDialog(Main.getFrame());
                 properties.setVisible(true);
