@@ -85,6 +85,7 @@ public class FileChooserButton extends BetterButton
      * Constructs a new <code>DateButton</code> object with a given
      * date.
      *
+     * @param parent used to display file dialogs against some parents, for modality
      * @param name initial value
      **/
     public FileChooserButton(Component parent, final String name)
