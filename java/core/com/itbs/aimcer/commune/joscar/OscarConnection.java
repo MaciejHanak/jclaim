@@ -32,7 +32,7 @@ import net.kano.joscar.rv.RvProcessor;
 import net.kano.joscar.rvcmd.DefaultRvCommandFactory;
 import net.kano.joscar.rvcmd.InvitationMessage;
 import net.kano.joscar.rvcmd.SegmentedFilename;
-import net.kano.joscar.snac.*;
+import net.kano.joscar.snac.ClientSnacProcessor;
 import net.kano.joscar.snaccmd.CapabilityBlock;
 import net.kano.joscar.snaccmd.FullUserInfo;
 import net.kano.joustsim.Screenname;
@@ -73,92 +73,75 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     AimConnection connection;
     private AimConnectionProperties connectionProperties = new AimConnectionProperties(null, null); // use to hold on connection settings
     RvProcessor rvProcessor;
-    /** Conversation support */
+    /**
+     * Conversation support
+     */
     IcbmListener lastIcbmListener;
+    /**
+     * Used by the heartbeat to minimize on heartbeat frequency
+     */
+    long lastServerSideKick;
+    private static final String HEART_BEAT_BODY = "HeartBeat";
 
     HeartBeat heartbeat = HeartBeat.INSTANCE;
     final HeartBeat.MonitoredItem monitoredItem = new HeartBeat.MonitoredItem() {
         public boolean testAlive() {
-//            getUserInfo(getUser());
-            IcbmService service = connection.getIcbmService();
+            //            getUserInfo(getUser());
             monitoredItem.fail = false;
-            if (service == null) {
-                return false;
+            if (System.currentTimeMillis() - lastServerSideKick < HeartBeat.FREQUENCY) {
+                return true;
             }
             log.info("Sending request");
-            ((MutableIcbmService) service).sendIM(new Screenname(getSystemName()+"2"), "HeartBeat", false, new SnacRequestAdapter() {
-                        public void handleResponse(SnacResponseEvent e) { // doesn't get called for most snacks
-/*
-                             if (e.getSnacCommand() instanceof net.kano.joscar.snaccmd.error.SnacError) {
-                                 net.kano.joscar.snaccmd.error.SnacError error = (net.kano.joscar.snaccmd.error.SnacError) e.getSnacCommand();
-                                 log.warning("Got error response1. " +error.toString() + " for " + getUserName());
-                                 monitoredItem.fail = true;
-                             } else {
-                                 log.info("Got server response1. " + getUserName());
-                             }
-*/
-                            synchronized(monitoredItem) {
-                                monitoredItem.notifyAll();
-                            }
-                            log.info("Got server response. "+getUserName());
-                        }
+            if (isLoggedIn()) {
+                monitoredItem.fail = true;
+                connection.getIcbmService().sendAutomatically(
+                        new Screenname(getUserName()),
+                        new SimpleMessage(HEART_BEAT_BODY, false));
 
-                        public void handleSent(SnacRequestSentEvent e) { // sent - out of queue - means nothing.
-/*
-                            synchronized(monitoredItem) {
-                                monitoredItem.notifyAll();
-                                log.info("Sent");
-                            }
-*/
-                        }
-
-                        public void handleTimeout(SnacRequestTimeoutEvent event) {  // doesn't get called for most snacks
-//                            monitoredItem.fail = true;
-//                            synchronized(monitoredItem) {
-//                                monitoredItem.notifyAll();
-//                            }
-                            log.fine("Got a timeout. "+getUserName());
-                        }
-                    });
+//                processMessage(new MessageImpl(getContactFactory().create(getUserName(), OscarConnection.this), true, HEART_BEAT_BODY));
+            }
             // and wait for it to finish or die
-            synchronized(monitoredItem) {
+            synchronized (monitoredItem) {
                 try {
-                    log.fine("Waiting for response. "+getUserName());
-                    monitoredItem.wait(HeartBeat.TIMEOUT-100); // only waiting for so long - no risk of a lockup
-                    log.fine("Stopped waiting. "+getUserName());
-                    if (!monitoredItem.fail) { // if all is well - reset; //todo this is a problem!
-                        failures = 0;
-                    }
+                    log.fine("Waiting for response. " + getUserName());
+                    monitoredItem.wait(HeartBeat.TIMEOUT - 100); // only waiting for so long - no risk of a lockup
+                    log.fine("Stopped waiting. " + getUserName());
+                    //                       if (!monitoredItem.fail) { // if all is well - reset;
+                    //                           failures = 0;
+                    //                       }
                 } catch (InterruptedException e) {
-                    log.warning("InterruptedException in OscarConnection. "+getUserName());
+                    log.warning("InterruptedException in OscarConnection. " + getUserName());
                     // no care
                 }
             }
             return !monitoredItem.fail;
-        }
+        } // testAlive
 
+        /**
+         * Called/What to do if item has failed.
+         */
         public void actionFail() {
-            synchronized(monitoredItem) {
+            synchronized (monitoredItem) {
                 monitoredItem.notifyAll(); // unlock.
             }
-            failures++;
-            if (failures>=MAX_FAILURES) {
-                disconnect(false);
-            } else {
-                log.info("Failure " + failures + " - let it slide. "+getUserName());
-            }
-        }
+            //               failures++;
+            //               if (failures>=MAX_FAILURES) {
+            disconnect(false);
+            //               } else {
+            //                   log.info("Failure " + failures + " - let it slide. "+getUserName());
+            //               }
+        } // actionFail
     };
-    int failures=0;
+    int failures = 0;
     static int MAX_FAILURES = 3;
-    
+
     /**
      * Handle buddy alias changes.
      * Could be static, but for some implementation it may be a problem.  Leaving non-static
      */
     private AliasBuddyListener aliasBuddyListener = new AliasBuddyListener();
-//    BasicConnection iconConnection;
-//    Map<Contact,FullUserInfo> fullUserInfoCache = Collections.synchronizedMap(new HashMap<Contact, FullUserInfo>(50));
+    //    BasicConnection iconConnection;
+    //    Map<Contact,FullUserInfo> fullUserInfoCache = Collections.synchronizedMap(new HashMap<Contact, FullUserInfo>(50));
 
     public String getServiceName() {
         return "AIM";
@@ -166,6 +149,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
     /**
      * Fake system account. Used for heartbeat. And notifying users of duplicate logins.
+     *
      * @return name of the system account.
      */
     public String getSystemName() {
@@ -181,14 +165,14 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     }
 
     public boolean isAway() {
-        if (connection != null && connection.getInfoService()!=null)
+        if (connection != null && connection.getInfoService() != null)
             return connection.getInfoService().getLastSetAwayMessage() != null;
-//            return connection.getInfoService().getCurrentAwayMessage() != null;
+        //            return connection.getInfoService().getCurrentAwayMessage() != null;
         return super.isAway();
     }
 
     public void setAway(boolean away) {
-//        heartbeat.mark();
+        //        heartbeat.mark();
         if (connection != null && connection.getInfoService() != null)
             connection.getInfoService().setAwayMessage(away ? getProperties().getIamAwayMessage() : null);
         super.setAway(away);
@@ -220,7 +204,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                 return sb.toString();
             }
         });
-//        Level level = Level.parse(levelstr.toUpperCase());
+        //        Level level = Level.parse(levelstr.toUpperCase());
         handler.setLevel(Level.ALL);
         Logger logger = Logger.getLogger("net.kano.joscar");
         logger.addHandler(handler);
@@ -250,12 +234,12 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
     final public void connect() throws Exception {
         super.connect();
-//        turnOnLogging();
+        //        turnOnLogging();
         notifyConnectionInitiated();
         if (getUserName() == null || getPassword() == null) {
             throw new SecurityException("Login information was not available");
         }
-        if (heartbeat!=null) {
+        if (heartbeat != null) {
             heartbeat.stopMonitoring(monitoredItem);
         }
         failures = 0; // reset this puppy so it's not impacted for the heartbeat count.
@@ -266,9 +250,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             public AimSession openAimSession(Screenname sn) {
                 return new DefaultAimSession(this, sn) {
                     // todo finish off secure stuff
-//                    public TrustPreferences getTrustPreferences() {
-//                        return new PermanentSignerTrustManager(screenName);
-//                    }
+                    //                    public TrustPreferences getTrustPreferences() {
+                    //                        return new PermanentSignerTrustManager(screenName);
+                    //                    }
                 };
             }
         };
@@ -279,11 +263,11 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         connectionProperties.setLoginHost(System.getProperty("OSCAR_HOST", connectionProperties.getLoginHost()));
         connectionProperties.setLoginPort(Integer.getInteger("OSCAR_PORT", connectionProperties.getLoginPort()));
         connection = session.openConnection(connectionProperties);
-        if (getProperties() != null && getProperties().getProxyInfo(getServiceName()) !=null) {
+        if (getProperties() != null && getProperties().getProxyInfo(getServiceName()) != null) {
             ConnectionInfo connectionInfo = getProperties().getProxyInfo(getServiceName());
             connection.setProxy(AimProxyInfo.forSocks4(connectionInfo.getIp(), connectionInfo.getPort(),
                     getUserName())); // this is for all those pesky logging systems that don't know how to get the uid
-//                    System.getProperty("user.name")));
+            //                    System.getProperty("user.name")));
         }
         catchBuddyList();
         connection.addStateListener(new StateListener() {
@@ -305,41 +289,50 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         });
         connection.getCapabilityManager().setCapabilityHandler(
                 CapabilityBlock.BLOCK_FILE_SEND, new CapabilityHandler() {
-                    public boolean isEnabled() { return true; }
-                    public void handleAdded(CapabilityManager manager) { }
-                    public void handleRemoved(CapabilityManager manager) { }
+            public boolean isEnabled() {
+                return true;
+            }
 
-                    public void addCapabilityListener(CapabilityListener capabilityListener) {}
-                    public void removeCapabilityListener(CapabilityListener capabilityListener) {}
-                });
+            public void handleAdded(CapabilityManager manager) {
+            }
+
+            public void handleRemoved(CapabilityManager manager) {
+            }
+
+            public void addCapabilityListener(CapabilityListener capabilityListener) {
+            }
+
+            public void removeCapabilityListener(CapabilityListener capabilityListener) {
+            }
+        });
         connection.connect();
     }
 
-/*
-    /**
-     *Used for icon service
-     * /
-    private class OscarServiceFactory implements ServiceFactory {
-        public Service getService(net.kano.joustsim.oscar.oscar.OscarConnection conn, int family) {
-            if (family == ConnCommand.FAMILY_CONN) {
-                return new BosService(connection, conn){
+    /*
+/**
+*Used for icon service
+         * /
+        private class OscarServiceFactory implements ServiceFactory {
+            public Service getService(net.kano.joustsim.oscar.oscar.OscarConnection conn, int family) {
+                if (family == ConnCommand.FAMILY_CONN) {
+                    return new BosService(connection, conn){
 
-                };
-            } else if (family == IcbmCommand.FAMILY_ICBM) {
-                return new IcbmService(connection, conn);
-            } else if (family == BuddyCommand.FAMILY_BUDDY) {
-                return new BuddyService(connection, conn);
-            } else if (family == LocCommand.FAMILY_LOC) {
-                return new InfoService(connection, conn);
-            } else if (family == SsiCommand.FAMILY_SSI) {
-                return new SsiService(connection, conn);
-            } else {
-                log.fine("no service for family " + family);
-                return null;
+                    };
+                } else if (family == IcbmCommand.FAMILY_ICBM) {
+                    return new IcbmService(connection, conn);
+                } else if (family == BuddyCommand.FAMILY_BUDDY) {
+                    return new BuddyService(connection, conn);
+                } else if (family == LocCommand.FAMILY_LOC) {
+                    return new InfoService(connection, conn);
+                } else if (family == SsiCommand.FAMILY_SSI) {
+                    return new SsiService(connection, conn);
+                } else {
+                    log.fine("no service for family " + family);
+                    return null;
+                }
             }
         }
-    }
-*/
+    */
 
     /**
      * Manage a list of ppl.
@@ -351,11 +344,11 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             }
 
             public void openedServices(AimConnection conn, Collection<? extends Service> services) {
-                for (Service service:services) {
+                for (Service service : services) {
                     if (service instanceof SsiService) {
                         ((SsiService) service).getBuddyList().addRetroactiveLayoutListener(new BuddyListLayoutListener() {
                             public void groupsReordered(BuddyList list, List<? extends net.kano.joustsim.oscar.oscar.service.ssi.Group> oldOrder, List<? extends net.kano.joustsim.oscar.oscar.service.ssi.Group> newOrder) {
-                                for (net.kano.joustsim.oscar.oscar.service.ssi.Group group:newOrder) {
+                                for (net.kano.joustsim.oscar.oscar.service.ssi.Group group : newOrder) {
                                     Group bGroup = getGroupFactory().create(group.getName());
                                     getGroupList().remove(bGroup);
                                     getGroupList().add(bGroup);
@@ -387,9 +380,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                             public void buddyAdded(BuddyList list, net.kano.joustsim.oscar.oscar.service.ssi.Group group, List<? extends Buddy> oldItems, List<? extends Buddy> newItems, Buddy buddy) {
                                 Group bGroup = getGroupFactory().create(group.getName());
                                 Contact contact = getContactFactory().create(buddy.getScreenname().getNormal(), OscarConnection.this);
-//                                if (buddy.getAlias()==null) log.fine("!! Alias was null for " + buddy.getScreenname().getNormal() + " !!");
+                                //                                if (buddy.getAlias()==null) log.fine("!! Alias was null for " + buddy.getScreenname().getNormal() + " !!");
                                 // all offline ppl will have null aliases.
-                                contact.setDisplayName(buddy.getAlias()!=null?buddy.getAlias():buddy.getScreenname().getFormatted());
+                                contact.setDisplayName(buddy.getAlias() != null ? buddy.getAlias() : buddy.getScreenname().getFormatted());
                                 buddy.addBuddyListener(aliasBuddyListener);
                                 bGroup.add(contact);
                                 notifyListeners();
@@ -412,10 +405,10 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                             }
 
                             private void notifyListeners() {
+                                lastServerSideKick = System.currentTimeMillis();
                                 for (ConnectionEventListener eventHandler : eventHandlers) {
                                     eventHandler.statusChanged(OscarConnection.this);
                                 }
-
                             }
                         });
                     }
@@ -424,120 +417,121 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         });
     }
 
-/*
-    private void catchBuddyListOld() {
-        connection.addOpenedServiceListener(new OpenedServiceListener() {
-            public void closedServices(AimConnection aimConnection, Collection<? extends Service> collection) {
-                //Todo change
-            }
+    /*
+        private void catchBuddyListOld() {
+            connection.addOpenedServiceListener(new OpenedServiceListener() {
+                public void closedServices(AimConnection aimConnection, Collection<? extends Service> collection) {
+                    //Todo change
+                }
 
-            public void openedServices(AimConnection aimConnection, Collection<? extends Service> services) {
-                for (Service service:services) {
-                    if (service instanceof SsiService) {
-                        service.getOscarConnection().getSnacProcessor().addGlobalResponseListener(new SnacResponseListener() {
-                            public void handleResponse(SnacResponseEvent event) {
-                                SnacCommand snac = event.getSnacCommand();
-                                if (!(snac instanceof SsiDataCmd))
-                                    return;
-                                try {
-//                log.fine("DG: " + snac.getClass() + ":" + snac.getCommand() + ":" + snac.getFamily());
-                                    SsiDataCmd sdc = (SsiDataCmd) snac;
-//                log.fine("DG2: " + sdc.getItems().length);
-                                    int count=0;
-                                    SsiItem ssiItem;
-                                    Group lastGroup = null;
-                                    for (int i = 0; i < sdc.getItems().size(); i++) {
-                                        ssiItem = sdc.getItems().get(i);
-                                        if (ssiItem.getItemType() == SsiItem.TYPE_GROUP) {
-//                        log.fine(" g " + ssiItem.getName());
-                                            if (ssiItem.getName().length() == 0)
-                                                continue;
-                                            getGroupList().add(lastGroup = GroupWrapper.create(ssiItem.getName()));
-//                            lastGroup.clear(OscarConnection.this); // b/c of reconnect // we offline everyone.  so don't delete
-                                        } else if (ssiItem.getItemType() == SsiItem.TYPE_BUDDY) {
-                                            if (lastGroup != null) {
-                                                lastGroup.add(getContactFactory().create(ssiItem.getName(), OscarConnection.this));
-                                                count++;
-                                            } else
-                                                log.fine("Missing a group for " + ssiItem.getName());
-                                        } else if (ssiItem.getItemType() == SsiItem.TYPE_ICON_INFO) {
-                                            // todo handle icons?
-//                        Contact contact = getContactFactory().create(ssiItem.getName(), OscarConnection.this);
-//                        ImageIcon icon = new ImageIcon(ssiItem.getData().toByteArray());
-//                        contact.setIcon(icon);
-                                        } else {
-                                            log.fine("Ignoring: "+ ssiItem.getItemType() + ":" + ssiItem.getName());
+                public void openedServices(AimConnection aimConnection, Collection<? extends Service> services) {
+                    for (Service service:services) {
+                        if (service instanceof SsiService) {
+                            service.getOscarConnection().getSnacProcessor().addGlobalResponseListener(new SnacResponseListener() {
+                                public void handleResponse(SnacResponseEvent event) {
+                                    SnacCommand snac = event.getSnacCommand();
+                                    if (!(snac instanceof SsiDataCmd))
+                                        return;
+                                    try {
+    //                log.fine("DG: " + snac.getClass() + ":" + snac.getCommand() + ":" + snac.getFamily());
+                                        SsiDataCmd sdc = (SsiDataCmd) snac;
+    //                log.fine("DG2: " + sdc.getItems().length);
+                                        int count=0;
+                                        SsiItem ssiItem;
+                                        Group lastGroup = null;
+                                        for (int i = 0; i < sdc.getItems().size(); i++) {
+                                            ssiItem = sdc.getItems().get(i);
+                                            if (ssiItem.getItemType() == SsiItem.TYPE_GROUP) {
+    //                        log.fine(" g " + ssiItem.getName());
+                                                if (ssiItem.getName().length() == 0)
+                                                    continue;
+                                                getGroupList().add(lastGroup = GroupWrapper.create(ssiItem.getName()));
+    //                            lastGroup.clear(OscarConnection.this); // b/c of reconnect // we offline everyone.  so don't delete
+                                            } else if (ssiItem.getItemType() == SsiItem.TYPE_BUDDY) {
+                                                if (lastGroup != null) {
+                                                    lastGroup.add(getContactFactory().create(ssiItem.getName(), OscarConnection.this));
+                                                    count++;
+                                                } else
+                                                    log.fine("Missing a group for " + ssiItem.getName());
+                                            } else if (ssiItem.getItemType() == SsiItem.TYPE_ICON_INFO) {
+                                                // todo handle icons?
+    //                        Contact contact = getContactFactory().create(ssiItem.getName(), OscarConnection.this);
+    //                        ImageIcon icon = new ImageIcon(ssiItem.getData().toByteArray());
+    //                        contact.setIcon(icon);
+                                            } else {
+                                                log.fine("Ignoring: "+ ssiItem.getItemType() + ":" + ssiItem.getName());
+                                            }
+                                        } // for
+                                        log.fine("Added "+ count + " buddies.");
+                                        for (ConnectionEventListener eventHandler : eventHandlers) {
+                                            eventHandler.statusChanged(OscarConnection.this);
                                         }
-                                    } // for
-                                    log.fine("Added "+ count + " buddies.");
-                                    for (ConnectionEventListener eventHandler : eventHandlers) {
-                                        eventHandler.statusChanged(OscarConnection.this);
+                                    } catch (Exception e) {
+                                        log.log(Level.SEVERE, "",e);
+
                                     }
-                                } catch (Exception e) {
-                                    log.log(Level.SEVERE, "",e);
-                                    
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                 }
-            }
-        });
-    }
-*/
+            });
+        }
+    */
     /**
      * Called when a connection has been established.
      */
     private void fireAlmostConnected() {
+        lastServerSideKick = System.currentTimeMillis();
         // get the list
         ClientSnacProcessor processor = connection.getBosService().getOscarConnection().getSnacProcessor();
 
-          ///////////////////
-         // icon service //
+        ///////////////////
+        // icon service //
         //////////////////
 
-/*
-        try {
-            connection.getBosService().sendSnacRequest(new ServiceRequest(IconCommand.FAMILY_ICON), new SnacRequestAdapter() {
-                public void handleResponse(SnacResponseEvent e) {
-                    try {
-                        if (e.getSnacCommand() instanceof ServiceRedirect) {
-                            ServiceRedirect sr = (ServiceRedirect) e.getSnacCommand();
-                            iconConnection = new BasicConnection(sr.getRedirectHost(),
-                                    sr.getRedirectPort() > 0 ? sr.getRedirectPort() : connectionProperties.getLoginPort());
-                            iconConnection.setCookie(sr.getCookie());
-                            iconConnection.setServiceFactory(new OscarServiceFactory());
-                            iconConnection.getClientFlapConn().getFlapProcessor().addExceptionHandler(new ConnProcessorExceptionHandler() {
-                                public void handleException(ConnProcessorExceptionEvent event) {
-                                    event.getException().printStackTrace();
+        /*
+                try {
+                    connection.getBosService().sendSnacRequest(new ServiceRequest(IconCommand.FAMILY_ICON), new SnacRequestAdapter() {
+                        public void handleResponse(SnacResponseEvent e) {
+                            try {
+                                if (e.getSnacCommand() instanceof ServiceRedirect) {
+                                    ServiceRedirect sr = (ServiceRedirect) e.getSnacCommand();
+                                    iconConnection = new BasicConnection(sr.getRedirectHost(),
+                                            sr.getRedirectPort() > 0 ? sr.getRedirectPort() : connectionProperties.getLoginPort());
+                                    iconConnection.setCookie(sr.getCookie());
+                                    iconConnection.setServiceFactory(new OscarServiceFactory());
+                                    iconConnection.getClientFlapConn().getFlapProcessor().addExceptionHandler(new ConnProcessorExceptionHandler() {
+                                        public void handleException(ConnProcessorExceptionEvent event) {
+                                            event.getException().printStackTrace();
+                                        }
+                                    });
+                                    iconConnection.connect();
                                 }
-                            });
-                            iconConnection.connect();
+                            } catch (Exception e1) {
+                                log.log(Level.SEVERE, "",e1);
+                            }
                         }
-                    } catch (Exception e1) {
-                        log.log(Level.SEVERE, "",e1);
-                    }
+                    });
+                } catch (Exception e) {
+                    log.log(Level.SEVERE, "",e);
                 }
-            });
-        } catch (Exception e) {
-            log.log(Level.SEVERE, "",e);            
-        }
 
-*/
+        */
 
-
-          //////////////////////////////
-         //   setup the rvProcessor  //
+        //////////////////////////////
+        //   setup the rvProcessor  //
         /////////////////////////////
         rvProcessor = new RvProcessor(processor);
         rvProcessor.registerRvCmdFactory(new DefaultRvCommandFactory());
 
         //////////////////////////////////////
-       //   setup file transfer listener  //
-      /////////////////////////////////////
+        //   setup file transfer listener  //
+        /////////////////////////////////////
 
         connection.getIcbmService().getRvConnectionManager().addConnectionManagerListener(new RvConnectionManagerListener() {
             public void handleNewIncomingConnection(RvConnectionManager manager, IncomingRvConnection transfer) {
+                lastServerSideKick = System.currentTimeMillis();
                 if (transfer instanceof FileTransfer) {
                     FileTransfer fileTransfer = (FileTransfer) transfer;
                     for (ConnectionEventListener eventHandler : eventHandlers) {
@@ -556,105 +550,105 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             }
         });
 
-/*  Old Code
-        rvProcessor.addListener(new RvProcessorListener() {
-            public void handleNewSession(NewRvSessionEvent event) {
-                log.fine("new session.\n" +
-                        "  incoming:"+ NewRvSessionEvent.TYPE_INCOMING.equals(event.getSessionType()) +
-                        "  outgoing:"+ NewRvSessionEvent.TYPE_OUTGOING.equals(event.getSessionType()) +
-                        "\n  Event:" + event + "|" + event.getSession());
-                if (NewRvSessionEvent.TYPE_INCOMING.equals(event.getSessionType()))
-                    event.getSession().addListener(new RvSessionListener() {
-                        public void handleRv(RecvRvEvent event) {
-                            log.fine( "RvSessionListener.handleRv:  " + event + "|" + event.getRvCommand());
-                            // if it's a FileSendReqRvCmd, start the process
-                            if (event.getRvCommand() instanceof FileSendReqRvCmd) {
-                                // determine it's a file transfer, cast what's needed and extract file information
-                                FileSendReqRvCmd fileSendReqRvCmd = (FileSendReqRvCmd) event.getRvCommand();
-                                ConnectionInfo info = new ConnectionInfo(
-//                                        fileSendReqRvCmd.getConnInfo().getInternalIP(),
-                                        fileSendReqRvCmd.getConnInfo().getExternalIP(),
-                                        fileSendReqRvCmd.getConnInfo().getPort());
-                                for (ConnectionEventListener eventHandler : eventHandlers) {
-                                    try {
-                                        eventHandler.fileReceiveRequested(
-                                                OscarConnection.this,
-                                                getContactFactory().create(event.getRvSession().getScreenname(), OscarConnection.this),
-                                                fileSendReqRvCmd.getFileSendBlock().getFilename(), // file
-                                                fileSendReqRvCmd.getMessage().getMessage() == null ? "" :
-                                                        GeneralUtils.stripHTML(fileSendReqRvCmd.getMessage().getMessage()), // message
-                                                info);
-                                    } catch (Exception e) {
-                                        log.log(Level.SEVERE, "",e);
-                                    }
-                                }
-                            }
-                        }
+        /*  Old Code
+              rvProcessor.addListener(new RvProcessorListener() {
+                  public void handleNewSession(NewRvSessionEvent event) {
+                      log.fine("new session.\n" +
+                              "  incoming:"+ NewRvSessionEvent.TYPE_INCOMING.equals(event.getSessionType()) +
+                              "  outgoing:"+ NewRvSessionEvent.TYPE_OUTGOING.equals(event.getSessionType()) +
+                              "\n  Event:" + event + "|" + event.getSession());
+                      if (NewRvSessionEvent.TYPE_INCOMING.equals(event.getSessionType()))
+                          event.getSession().addListener(new RvSessionListener() {
+                              public void handleRv(RecvRvEvent event) {
+                                  log.fine( "RvSessionListener.handleRv:  " + event + "|" + event.getRvCommand());
+                                  // if it's a FileSendReqRvCmd, start the process
+                                  if (event.getRvCommand() instanceof FileSendReqRvCmd) {
+                                      // determine it's a file transfer, cast what's needed and extract file information
+                                      FileSendReqRvCmd fileSendReqRvCmd = (FileSendReqRvCmd) event.getRvCommand();
+                                      ConnectionInfo info = new ConnectionInfo(
+      //                                        fileSendReqRvCmd.getConnInfo().getInternalIP(),
+                                              fileSendReqRvCmd.getConnInfo().getExternalIP(),
+                                              fileSendReqRvCmd.getConnInfo().getPort());
+                                      for (ConnectionEventListener eventHandler : eventHandlers) {
+                                          try {
+                                              eventHandler.fileReceiveRequested(
+                                                      OscarConnection.this,
+                                                      getContactFactory().create(event.getRvSession().getScreenname(), OscarConnection.this),
+                                                      fileSendReqRvCmd.getFileSendBlock().getFilename(), // file
+                                                      fileSendReqRvCmd.getMessage().getMessage() == null ? "" :
+                                                              GeneralUtils.stripHTML(fileSendReqRvCmd.getMessage().getMessage()), // message
+                                                      info);
+                                          } catch (Exception e) {
+                                              log.log(Level.SEVERE, "",e);
+                                          }
+                                      }
+                                  }
+                              }
 
-                        public void handleSnacResponse(RvSnacResponseEvent event) {
-                            //no care
-                            log.fine("RvSessionListener.handleSnacResponse: incoming snac");
-                        }
-                    });
-            }
-        });
-  */
-          //////////////////////////////
-         //     get list of People  //
+                              public void handleSnacResponse(RvSnacResponseEvent event) {
+                                  //no care
+                                  log.fine("RvSessionListener.handleSnacResponse: incoming snac");
+                              }
+                          });
+                  }
+              });
+        */
+        //////////////////////////////
+        //     get list of People  //
         /////////////////////////////
 
-/*
-        processor.sendSnac(new SnacRequest(new SsiDataRequest(), new SnacRequestAdapter() {
-            public void handleResponse(SnacResponseEvent event) {
-                try {
-                    SnacCommand snac = event.getSnacCommand();
-//                log.fine("DG: " +
-//                        snac.getClass() +
-//                        ":" + snac.getCommand() +
-//                        ":" + snac.getFamily());
-                    SsiDataCmd sdc = (SsiDataCmd) snac;
-//                log.fine("DG2: " + sdc.getItems().length);
-                    int count=0;
-                    SsiItem ssiItem;
-                    Group lastGroup = null;
-                    for (int i = 0; i < sdc.getItems().length; i++) {
-                        ssiItem = sdc.getItems()[i];
-                        if (ssiItem.getItemType() == SsiItem.TYPE_GROUP) {
-//                        log.fine(" g " + ssiItem.getName());
-                            if (ssiItem.getName().length() == 0)
-                                continue;
-                            getGroupList().add(lastGroup = GroupWrapper.create(ssiItem.getName()));
-//                            lastGroup.clear(OscarConnection.this); // b/c of reconnect // we offline everyone.  so don't delete
-                        } else if (ssiItem.getItemType() == SsiItem.TYPE_BUDDY) {
-                            if (lastGroup != null) {
-                                lastGroup.add(getContactFactory().create(ssiItem.getName(), OscarConnection.this));
-                                count++;
-                            } else
-                                log.fine("Missing a group for " + ssiItem.getName());
-                        } else if (ssiItem.getItemType() == SsiItem.TYPE_ICON_INFO) {
-                            // todo handle icons?
-//                        Contact contact = getContactFactory().create(ssiItem.getName(), OscarConnection.this);
-//                        ImageIcon icon = new ImageIcon(ssiItem.getData().toByteArray());
-//                        contact.setIcon(icon);
-                        } else {
-                            log.fine("Ignoring: "+ ssiItem.getItemType() + ":" + ssiItem.getName());
+        /*
+                processor.sendSnac(new SnacRequest(new SsiDataRequest(), new SnacRequestAdapter() {
+                    public void handleResponse(SnacResponseEvent event) {
+                        try {
+                            SnacCommand snac = event.getSnacCommand();
+        //                log.fine("DG: " +
+        //                        snac.getClass() +
+        //                        ":" + snac.getCommand() +
+        //                        ":" + snac.getFamily());
+                            SsiDataCmd sdc = (SsiDataCmd) snac;
+        //                log.fine("DG2: " + sdc.getItems().length);
+                            int count=0;
+                            SsiItem ssiItem;
+                            Group lastGroup = null;
+                            for (int i = 0; i < sdc.getItems().length; i++) {
+                                ssiItem = sdc.getItems()[i];
+                                if (ssiItem.getItemType() == SsiItem.TYPE_GROUP) {
+        //                        log.fine(" g " + ssiItem.getName());
+                                    if (ssiItem.getName().length() == 0)
+                                        continue;
+                                    getGroupList().add(lastGroup = GroupWrapper.create(ssiItem.getName()));
+        //                            lastGroup.clear(OscarConnection.this); // b/c of reconnect // we offline everyone.  so don't delete
+                                } else if (ssiItem.getItemType() == SsiItem.TYPE_BUDDY) {
+                                    if (lastGroup != null) {
+                                        lastGroup.add(getContactFactory().create(ssiItem.getName(), OscarConnection.this));
+                                        count++;
+                                    } else
+                                        log.fine("Missing a group for " + ssiItem.getName());
+                                } else if (ssiItem.getItemType() == SsiItem.TYPE_ICON_INFO) {
+                                    // todo handle icons?
+        //                        Contact contact = getContactFactory().create(ssiItem.getName(), OscarConnection.this);
+        //                        ImageIcon icon = new ImageIcon(ssiItem.getData().toByteArray());
+        //                        contact.setIcon(icon);
+                                } else {
+                                    log.fine("Ignoring: "+ ssiItem.getItemType() + ":" + ssiItem.getName());
+                                }
+                            } // for
+                            log.fine("Added "+ count + " buddies.");
+                            for (int i = 0; i < eventHandlers.size(); i++) {
+                                ((ConnectionEventListener) eventHandlers.get(i)).statusChanged(OscarConnection.this);
+                            }
+                        } catch (Exception e) {
+                            log.log(Level.SEVERE, "",e);
+
                         }
-                    } // for
-                    log.fine("Added "+ count + " buddies.");
-                    for (int i = 0; i < eventHandlers.size(); i++) {
-                        ((ConnectionEventListener) eventHandlers.get(i)).statusChanged(OscarConnection.this);
                     }
-                } catch (Exception e) {
-                    log.log(Level.SEVERE, "",e);
 
-                }
-            }
-
-            public void handleTimeout(SnacRequestTimeoutEvent event) {
-                log.fine("Received a timeout for buddy list request. " + OscarConnection.this);
-            }
-        }));
-*/
+                    public void handleTimeout(SnacRequestTimeoutEvent event) {
+                        log.fine("Received a timeout for buddy list request. " + OscarConnection.this);
+                    }
+                }));
+        */
 
         { // setup conversation support
             IcbmService icbmService = connection.getIcbmService();
@@ -671,6 +665,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                 }
 
                 public void buddyInfoUpdated(IcbmService service, Screenname buddy, IcbmBuddyInfo info) {
+                    lastServerSideKick = System.currentTimeMillis();
                     // don't care yet
                     log.fine("Buddy Info Updated. - " + buddy.getNormal() + " " + info);
                 }
@@ -678,14 +673,15 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             icbmService.addIcbmListener(lastIcbmListener);
         } // setup conversation support
 
-//        final DelayedThread updateStatus = new DelayedThread(1000, new Runnable() {
-//
-//        });
+        //        final DelayedThread updateStatus = new DelayedThread(1000, new Runnable() {
+        //
+        //        });
 
         connection.getBuddyService().addBuddyListener(new BuddyServiceListener() {
             public void gotBuddyStatus(BuddyService service, Screenname buddy, FullUserInfo info) {
+                lastServerSideKick = System.currentTimeMillis();
                 try {
-//                log.fine("Buddy status update. " + buddy.getFormatted() + " " + buddy.getFormatted());
+                    //                log.fine("Buddy status update. " + buddy.getFormatted() + " " + buddy.getFormatted());
                     Contact contact = getContactFactory().create(buddy.getNormal(), OscarConnection.this);
                     // update to the latest
                     contact.setDisplayName(buddy.getFormatted());
@@ -694,8 +690,8 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
                     contact.getStatus().setOnline(true);
                     contact.getStatus().setAway(info.getAwayStatus());
                     contact.getStatus().setIdleTime(info.getIdleMins());
-//                    fullUserInfoCache.put(contact, info); // no longer using this. it's been tracked
-//                    requestPictureForUser(contact, info);
+                    //                    fullUserInfoCache.put(contact, info); // no longer using this. it's been tracked
+                    //                    requestPictureForUser(contact, info);
                     notifyStatusChanged(contact, oldStatus);
                 } catch (Exception e) {
                     log.log(Level.SEVERE, "Problem with buddy service", e);
@@ -703,7 +699,8 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             } // f-n
 
             public void buddyOffline(BuddyService service, Screenname buddy) {
-//                log.fine("Buddy went offline. " + buddy.getNormal() + " " + buddy.getFormatted());
+                lastServerSideKick = System.currentTimeMillis();
+                //                log.fine("Buddy went offline. " + buddy.getNormal() + " " + buddy.getFormatted());
                 Contact contact = getContactFactory().create(buddy.getFormatted(), OscarConnection.this);
                 Status oldStatus = (Status) contact.getStatus().clone();
                 contact.getStatus().setOnline(false);
@@ -713,32 +710,38 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     }
 
     class TypingAdapter extends ConversationAdapter implements TypingListener {
-            public void gotMessage(Conversation c, final MessageInfo minfo) {
-                String text  = minfo.getMessage().getMessageBody();
-                if (minfo.getMessage() instanceof DirectMessage) {
-                    log.info("Got a DIM message");
-                    DirectMessage directMessage = (DirectMessage) minfo.getMessage();
-                    String attachments="";
-                    for (Attachment attachment :directMessage.getAttachments()) {
-                        attachments += attachment.getId() + "  ";
-                    }
-                    if (attachments.length()>0) {
-                        text += "Attachments to the original message (all ignored): " + attachments;
-                    }
+        public void gotMessage(Conversation c, final MessageInfo minfo) {
+            lastServerSideKick = System.currentTimeMillis();
+            String text = minfo.getMessage().getMessageBody();
+            if (HEART_BEAT_BODY.equals(text) && minfo.getTo().equals(minfo.getFrom())) {
+                monitoredItem.fail = false;
+                return;
+            }
+            if (minfo.getMessage() instanceof DirectMessage) {
+                log.info("Got a DIM message");
+                DirectMessage directMessage = (DirectMessage) minfo.getMessage();
+                String attachments = "";
+                for (Attachment attachment : directMessage.getAttachments()) {
+                    attachments += attachment.getId() + "  ";
                 }
-                Message message = new MessageImpl(getContactFactory().create(minfo.getFrom().getFormatted(), OscarConnection.this),
-                        false, minfo.getMessage().isAutoResponse(), text);
-
-                for (ConnectionEventListener eventHandler : eventHandlers) {
-                    try {
-                        eventHandler.messageReceived(OscarConnection.this, message);
-                    } catch (Exception e) {
-                        notifyErrorOccured("Failure while receiving a message", e);
-                    }
+                if (attachments.length() > 0) {
+                    text += "Attachments to the original message (all ignored): " + attachments;
                 }
             }
+            Message message = new MessageImpl(getContactFactory().create(minfo.getFrom().getFormatted(), OscarConnection.this),
+                    false, minfo.getMessage().isAutoResponse(), text);
+
+            for (ConnectionEventListener eventHandler : eventHandlers) {
+                try {
+                    eventHandler.messageReceived(OscarConnection.this, message);
+                } catch (Exception e) {
+                    notifyErrorOccured("Failure while receiving a message", e);
+                }
+            }
+        }
 
         public void gotTypingState(Conversation conversation, TypingInfo typingInfo) {
+            lastServerSideKick = System.currentTimeMillis();
             if (typingInfo.getTypingState().equals(TypingState.TYPING))
                 for (ConnectionEventListener connectionEventListener : eventHandlers) {
                     connectionEventListener.typingNotificationReceived(OscarConnection.this,
@@ -761,7 +764,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             try {
                 connect();
             } catch (Exception e) {
-                log.log(Level.INFO, "Failed to reconnect" ,e); // no big deal, but lets see 
+                log.log(Level.INFO, "Failed to reconnect", e); // no big deal, but lets see
             }
     }
 
@@ -769,20 +772,20 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         if (intentional) {
             failures = 0;
         }
-        if (heartbeat!=null) {
+        if (heartbeat != null) {
             heartbeat.stopMonitoring(monitoredItem);
         }
-        if (connection!=null)
+        if (connection != null)
             connection.disconnect(intentional);
         super.disconnect(intentional);
     }
 
     public boolean isLoggedIn() {
-        return connection!=null && State.ONLINE == connection.getState();
+        return connection != null && State.ONLINE == connection.getState();
     }
 
     public void cancel() {
-        if (connection!=null)
+        if (connection != null)
             connection.disconnect();
     }
 
@@ -791,14 +794,14 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
     // todo when offline, getIcbmService will return null
     public void processMessage(Message message) {
-//        heartbeat.mark();
-//        Old way:
-//        Conversation conversation = connection.getIcbmService().getImConversation(new Screenname(message.getContact().getName()));
-//        conversation.sendMessage(new  SimpleMessage(GeneralUtils.makeHTML(message.getText()), message.isAutoResponse()));
-//        conversation.close(); // DON'T do that
+        //        heartbeat.mark();
+        //        Old way:
+        //        Conversation conversation = connection.getIcbmService().getImConversation(new Screenname(message.getContact().getName()));
+        //        conversation.sendMessage(new  SimpleMessage(GeneralUtils.makeHTML(message.getText()), message.isAutoResponse()));
+        //        conversation.close(); // DON'T do that
         connection.getIcbmService().sendAutomatically(
                 new Screenname(message.getContact().getName()),
-                new  SimpleMessage(GeneralUtils.makeHTML(message.getText()), message.isAutoResponse())
+                new SimpleMessage(GeneralUtils.makeHTML(message.getText()), message.isAutoResponse())
         ); // send message, use DC if needed.
     }
 
@@ -809,6 +812,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
     /**
      * Finds an Oscar group from Our Group.  Helper.
+     *
      * @param group to find
      * @return group or null
      */
@@ -826,7 +830,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         java.util.List<? extends net.kano.joustsim.oscar.oscar.service.ssi.Group> list = connection.getSsiService().getBuddyList().getGroups();
         for (net.kano.joustsim.oscar.oscar.service.ssi.Group aimGroup : list) {
             if (aimGroup instanceof MutableGroup) {
-                for(Buddy buddy: aimGroup.getBuddiesCopy()) {
+                for (Buddy buddy : aimGroup.getBuddiesCopy()) {
                     if (contact.getName().equalsIgnoreCase(buddy.getScreenname().getNormal()))
                         return buddy;
                 }
@@ -838,8 +842,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     /**
      * Finds a contact.
      * It's either matched to be in the group or not to be in the group.
+     *
      * @param contact to find
-     * @param group to search
+     * @param group   to search
      * @param inGroup only match those in the group or only not in group
      * @return buddy reference
      */
@@ -852,10 +857,10 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             boolean groupMatch = group.getName().equalsIgnoreCase(aimGroup.getName());
             // define type of search
             if (!inGroup)
-              groupMatch = !groupMatch;
+                groupMatch = !groupMatch;
             // if really a group and not smth else, and if we match/not, then search for buddy in it.
             if (aimGroup instanceof MutableGroup && groupMatch) {
-                for(Buddy buddy: aimGroup.getBuddiesCopy()) {
+                for (Buddy buddy : aimGroup.getBuddiesCopy()) {
                     if (contact.getName().equalsIgnoreCase(buddy.getScreenname().getNormal()))
                         return buddy;
                 }
@@ -871,7 +876,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
      * @param group   to add to
      */
     public void addContact(final Nameable contact, final Group group) {
-//        heartbeat.mark();
+        //        heartbeat.mark();
         net.kano.joustsim.oscar.oscar.service.ssi.Group aimGroup = findGroup(group);
         if (aimGroup == null) {
             addContactGroup(group);
@@ -891,69 +896,69 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             notifyErrorOccured("This is a special group. Can not add contacts.", null);
         }
         /*
-        // add it for the server
-        final ClientSnacProcessor processor = connection.getBosService().getOscarConnection().getSnacProcessor();
-        processor.sendSnac(new SnacRequest(new SsiDataRequest(), new SnacRequestAdapter() {
-            public void handleResponse(SnacResponseEvent event) {
-                SnacCommand snac = event.getSnacCommand();
-                SsiDataCmd sdc = (SsiDataCmd) snac;
-                SsiItem ssiItem = null;
-                for (int i = 0; i < sdc.getItems().size(); i++) {
-                    ssiItem = sdc.getItems().get(i);
-                    if (ssiItem.getItemType() == SsiItem.TYPE_GROUP) {
-//                        log.fine(" g " + ssiItem.getName());
-                        if (group.getName().equals(ssiItem.getName())) {
-                            break;
-                        }
-                    }
-                } // for
-                // and now that we have found the group:
-                if (ssiItem != null) {
-                    BuddyItem newContact = new BuddyItem(contact.getName(), ssiItem.getParentId(), (int)(Math.random() * 50 + 10));
-//                            new SsiItem(contact.getName(), ssiItem.getId(), ssiItem.getTotalSize()+1, SsiItem.TYPE_BUDDY, null);
-                    SsiItem inparam[] = new SsiItem[1];
-                    inparam[0] = newContact.toSsiItem();
-                    processor.sendSnac(new SnacRequest(new CreateItemsCmd(inparam), new SnacRequestAdapter() {
-                        public void handleResponse(SnacResponseEvent event) {
-                            // handle errors
-                            if (event.getSnacCommand() instanceof SsiDataModResponse) {
-                                SsiDataModResponse response = (SsiDataModResponse) event.getSnacCommand();
-                                if (response.getResults()[0] != SsiDataModResponse.RESULT_SUCCESS) {
-                                    log.fine("Problem creating a user: " + response.toString());
-                                } else {
-                                    group.add(contact);
-                                    for (int i = 0; i < eventHandlers.size(); i++) {
-                                        ((ConnectionEventListener) eventHandlers.get(i)).statusChanged(OscarConnection.this);
-                                    }
-                                } // everything went ok
-
+                // add it for the server
+                final ClientSnacProcessor processor = connection.getBosService().getOscarConnection().getSnacProcessor();
+                processor.sendSnac(new SnacRequest(new SsiDataRequest(), new SnacRequestAdapter() {
+                    public void handleResponse(SnacResponseEvent event) {
+                        SnacCommand snac = event.getSnacCommand();
+                        SsiDataCmd sdc = (SsiDataCmd) snac;
+                        SsiItem ssiItem = null;
+                        for (int i = 0; i < sdc.getItems().size(); i++) {
+                            ssiItem = sdc.getItems().get(i);
+                            if (ssiItem.getItemType() == SsiItem.TYPE_GROUP) {
+        //                        log.fine(" g " + ssiItem.getName());
+                                if (group.getName().equals(ssiItem.getName())) {
+                                    break;
+                                }
                             }
+                        } // for
+                        // and now that we have found the group:
+                        if (ssiItem != null) {
+                            BuddyItem newContact = new BuddyItem(contact.getName(), ssiItem.getParentId(), (int)(Math.random() * 50 + 10));
+        //                            new SsiItem(contact.getName(), ssiItem.getId(), ssiItem.getTotalSize()+1, SsiItem.TYPE_BUDDY, null);
+                            SsiItem inparam[] = new SsiItem[1];
+                            inparam[0] = newContact.toSsiItem();
+                            processor.sendSnac(new SnacRequest(new CreateItemsCmd(inparam), new SnacRequestAdapter() {
+                                public void handleResponse(SnacResponseEvent event) {
+                                    // handle errors
+                                    if (event.getSnacCommand() instanceof SsiDataModResponse) {
+                                        SsiDataModResponse response = (SsiDataModResponse) event.getSnacCommand();
+                                        if (response.getResults()[0] != SsiDataModResponse.RESULT_SUCCESS) {
+                                            log.fine("Problem creating a user: " + response.toString());
+                                        } else {
+                                            group.add(contact);
+                                            for (int i = 0; i < eventHandlers.size(); i++) {
+                                                ((ConnectionEventListener) eventHandlers.get(i)).statusChanged(OscarConnection.this);
+                                            }
+                                        } // everything went ok
 
+                                    }
+
+                                }
+                            }));
+                        } else { // ssItem == null
+                            log.fine("Problem: couldn't find any groups! " + ssiItem + " | " + group.getName());
+                            for (int i = 0; i < eventHandlers.size(); i++) {
+                                ((ConnectionEventListener) eventHandlers.get(i)).errorOccured("Could not find any groups!", null);
+                            }
                         }
-                    }));
-                } else { // ssItem == null
-                    log.fine("Problem: couldn't find any groups! " + ssiItem + " | " + group.getName());
-                    for (int i = 0; i < eventHandlers.size(); i++) {
-                        ((ConnectionEventListener) eventHandlers.get(i)).errorOccured("Could not find any groups!", null);
                     }
-                }
-            }
-        }));
+                }));
 
-*/
+        */
     } // addContact
 
     /**
      * Call to remove a contact you no longer want.
      *
      * @param contact to remove
-     * @param group to erase from
+     * @param group   to erase from
      * @return true if removed properly
      */
     public boolean removeContact(final Nameable contact, final Group group) {
         net.kano.joustsim.oscar.oscar.service.ssi.Group aimGroup = findGroup(group);
         if (aimGroup != null && aimGroup instanceof DeleteMutableGroup) { // only these groups are allowed to delete buddies.
-            for(Buddy buddy: aimGroup.getBuddiesCopy()) {
+            for (Buddy buddy : aimGroup.getBuddiesCopy()) {
                 if (contact.getName().equalsIgnoreCase(buddy.getScreenname().getNormal())) {
                     ((DeleteMutableGroup) aimGroup).deleteBuddy(buddy);
                     return true;
@@ -961,65 +966,66 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             }
         }
         return false;
-/*
+        /*
 
 
-        // add it for the server
-        final ClientSnacProcessor processor = connection.getBosService().getOscarConnection().getSnacProcessor();
+                // add it for the server
+                final ClientSnacProcessor processor = connection.getBosService().getOscarConnection().getSnacProcessor();
 
-        processor.sendSnac(new SnacRequest(new SsiDataRequest(), new SnacRequestAdapter() {
-            public void handleResponse(SnacResponseEvent event) {
-                SnacCommand snac = event.getSnacCommand();
-                SsiDataCmd sdc = (SsiDataCmd) snac;
-                SsiItem ssiItem;
-//                SsiItem rightGroup=null;
-                SsiItem rightContact = null;
-                for (int i = 0; i < sdc.getItems().size(); i++) {
-                    ssiItem = sdc.getItems().get(i);
-                    if (ssiItem.getItemType() == SsiItem.TYPE_BUDDY) {
-                        if (contact.getName().equalsIgnoreCase(ssiItem.getName())) {
-                            rightContact = ssiItem;
-                            break;
+                processor.sendSnac(new SnacRequest(new SsiDataRequest(), new SnacRequestAdapter() {
+                    public void handleResponse(SnacResponseEvent event) {
+                        SnacCommand snac = event.getSnacCommand();
+                        SsiDataCmd sdc = (SsiDataCmd) snac;
+                        SsiItem ssiItem;
+        //                SsiItem rightGroup=null;
+                        SsiItem rightContact = null;
+                        for (int i = 0; i < sdc.getItems().size(); i++) {
+                            ssiItem = sdc.getItems().get(i);
+                            if (ssiItem.getItemType() == SsiItem.TYPE_BUDDY) {
+                                if (contact.getName().equalsIgnoreCase(ssiItem.getName())) {
+                                    rightContact = ssiItem;
+                                    break;
+                                }
+                            }
+                        } // for
+
+                        if (rightContact != null) {
+                            BuddyItem newContact = new BuddyItem(rightContact);
+                            SsiItem inparam[] = new SsiItem[1];
+                            inparam[0] = newContact.toSsiItem();
+                            processor.sendSnac(new SnacRequest(new DeleteItemsCmd(inparam), new SnacRequestAdapter() {
+
+                                public void handleResponse(SnacResponseEvent event) {
+                                    // handle errors
+                                    if (event.getSnacCommand() instanceof SsiDataModResponse) {
+                                        SsiDataModResponse response = (SsiDataModResponse) event.getSnacCommand();
+                                        if (response.getResults()[0] != SsiDataModResponse.RESULT_SUCCESS) {
+                                            log.fine("Problem deleting a user: " + response.toString());
+                                        } else {
+                                            cleanGroup(group, contact);
+                                            for (ConnectionEventListener eventHandler : eventHandlers) {
+                                                eventHandler.statusChanged(OscarConnection.this);
+                                            }
+                                        }
+
+                                    }
+
+                                }
+                            }));
+
+                        } else {
+                            log.warning("Problem: couldn't find contact! " + contact.getName());
+                            // todo what to do if group isn't found
                         }
                     }
-                } // for
-
-                if (rightContact != null) {
-                    BuddyItem newContact = new BuddyItem(rightContact);
-                    SsiItem inparam[] = new SsiItem[1];
-                    inparam[0] = newContact.toSsiItem();
-                    processor.sendSnac(new SnacRequest(new DeleteItemsCmd(inparam), new SnacRequestAdapter() {
-
-                        public void handleResponse(SnacResponseEvent event) {
-                            // handle errors
-                            if (event.getSnacCommand() instanceof SsiDataModResponse) {
-                                SsiDataModResponse response = (SsiDataModResponse) event.getSnacCommand();
-                                if (response.getResults()[0] != SsiDataModResponse.RESULT_SUCCESS) {
-                                    log.fine("Problem deleting a user: " + response.toString());
-                                } else {
-                                    cleanGroup(group, contact);
-                                    for (ConnectionEventListener eventHandler : eventHandlers) {
-                                        eventHandler.statusChanged(OscarConnection.this);
-                                    }
-                                }
-
-                            }
-
-                        }
-                    }));
-
-                } else {
-                    log.warning("Problem: couldn't find contact! " + contact.getName());
-                    // todo what to do if group isn't found
-                }
-            }
-        }));
-        return true; // SO FAKE! But we have moveContact implemented properly.
-*/
+                }));
+                return true; // SO FAKE! But we have moveContact implemented properly.
+        */
     } // removeContact
 
     /**
      * Tells the protocol to add a group.
+     *
      * @param group to add
      */
     public void addContactGroup(Group group) {
@@ -1027,7 +1033,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     }
 
     public void removeContactGroup(Group group) {
-//        heartbeat.mark();
+        //        heartbeat.mark();
         net.kano.joustsim.oscar.oscar.service.ssi.Group aimGroup = findGroup(group);
         if (aimGroup != null && aimGroup instanceof MutableGroup) {
             connection.getSsiService().getBuddyList().deleteGroupAndBuddies(aimGroup);
@@ -1037,9 +1043,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     public void moveContact(Nameable contact, Group group) {
         moveContact(contact, findGroupViaBuddy(contact), group);
     }
-    
+
     public void moveContact(Nameable contact, Group oldGroup, Group newGroup) {
-//        heartbeat.mark();
+        //        heartbeat.mark();
         net.kano.joustsim.oscar.oscar.service.ssi.Group aimGroup = findGroup(newGroup);
         if (aimGroup == null) {
             addContactGroup(newGroup);
@@ -1054,26 +1060,26 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             return;
         }
 
-        List <Buddy> buddies = new ArrayList<Buddy>();
+        List<Buddy> buddies = new ArrayList<Buddy>();
         Buddy buddy;
-        if (oldGroup==null) {
+        if (oldGroup == null) {
             buddy = findBuddyViaGroup(contact, newGroup, false);
         } else { // better way
             buddy = findBuddyViaGroup(contact, oldGroup, true);
         }
-        
+
         if (buddy == null) {
             notifyErrorOccured("Failed to find buddy " + contact.getName() + " not in source group.  Try again.", null);
             return;
         }
         buddies.add(buddy);
         if (aimGroup instanceof MutableGroup) {
-            connection.getSsiService().getBuddyList().moveBuddies(buddies, (MutableGroup)aimGroup);
+            connection.getSsiService().getBuddyList().moveBuddies(buddies, (MutableGroup) aimGroup);
         }
     }
 
     public void initiateFileTransfer(final FileTransferListener ftl) throws IOException {
-//        heartbeat.mark();
+        //        heartbeat.mark();
         OutgoingFileTransfer oft = connection.getIcbmService().getRvConnectionManager().createOutgoingFileTransfer(new Screenname(ftl.getContactName()));
         oft.addEventListener(new FileTransferEventListener(ftl));
 
@@ -1082,59 +1088,59 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         oft.sendRequest(new InvitationMessage(ftl.getFileDescription()));
     }
 
-/*
-    public void initiateFileTransferOld(FileTransferListener ftl) {
-        Logger logger = Logger.getLogger("net.kano");
-        logger.setLevel(Level.ALL);
-        Handler h = new ConsoleHandler();
-        h.setLevel(Level.ALL);
-        logger.addHandler(h);
+    /*
+        public void initiateFileTransferOld(FileTransferListener ftl) {
+            Logger logger = Logger.getLogger("net.kano");
+            logger.setLevel(Level.ALL);
+            Handler h = new ConsoleHandler();
+            h.setLevel(Level.ALL);
+            logger.addHandler(h);
 
-        RvSession session = rvProcessor.createRvSession(ftl.getContactName());
+            RvSession session = rvProcessor.createRvSession(ftl.getContactName());
 
-        ServerSocket socket;
-        SendFileThread service;
-        try {
-            socket = new ServerSocket(4477);
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "",e);
-            ftl.notifyFail();
-            return;
-        }
-        service = new SendFileThread(ftl, socket);
-        ftl.setTransferService(service);
-        service.start();
-
-//        InetAddress localHost = socket.getInetAddress(); //InetAddress.getAllByName(InetAddress.getLocalHost().getHostName())
-        try {
-            int port = socket.getLocalPort();
-            InetAddress localHosts[] = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
-            session.addListener(new RvSessionListener() {
-                public void handleRv(RecvRvEvent event) {
-                    log.fine("hr: " + event);
-                }
-
-                public void handleSnacResponse(RvSnacResponseEvent event) {
-                    log.fine("hsr: " + event);
-                }
-            });
-
-            for (int i = 0; i < localHosts.length; i++) {
-                session.sendRv(new FileSendReqRvCmd(new InvitationMessage(ftl.getFileDescription()),
-                        RvConnectionInfo.createForOutgoingRequest(localHosts[i], port),
-                        new FileSendBlock(ftl.getFile().getName(), ftl.getFile().length())));
-
-                if (i + 1 < localHosts.length)
-                    Thread.sleep(30000);
+            ServerSocket socket;
+            SendFileThread service;
+            try {
+                socket = new ServerSocket(4477);
+            } catch (IOException e) {
+                log.log(Level.SEVERE, "",e);
+                ftl.notifyFail();
+                return;
             }
-        } catch (InterruptedException e) {
-            service.cancelTransfer();
-        } catch (UnknownHostException e) {
-            log.log(Level.SEVERE, "",e);
-            service.cancelTransfer();
-        }
-    } // initiateFileTransfer
-*/
+            service = new SendFileThread(ftl, socket);
+            ftl.setTransferService(service);
+            service.start();
+
+    //        InetAddress localHost = socket.getInetAddress(); //InetAddress.getAllByName(InetAddress.getLocalHost().getHostName())
+            try {
+                int port = socket.getLocalPort();
+                InetAddress localHosts[] = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
+                session.addListener(new RvSessionListener() {
+                    public void handleRv(RecvRvEvent event) {
+                        log.fine("hr: " + event);
+                    }
+
+                    public void handleSnacResponse(RvSnacResponseEvent event) {
+                        log.fine("hsr: " + event);
+                    }
+                });
+
+                for (int i = 0; i < localHosts.length; i++) {
+                    session.sendRv(new FileSendReqRvCmd(new InvitationMessage(ftl.getFileDescription()),
+                            RvConnectionInfo.createForOutgoingRequest(localHosts[i], port),
+                            new FileSendBlock(ftl.getFile().getName(), ftl.getFile().length())));
+
+                    if (i + 1 < localHosts.length)
+                        Thread.sleep(30000);
+                }
+            } catch (InterruptedException e) {
+                service.cancelTransfer();
+            } catch (UnknownHostException e) {
+                log.log(Level.SEVERE, "",e);
+                service.cancelTransfer();
+            }
+        } // initiateFileTransfer
+    */
     public void rejectFileTransfer(Object connectionInfo) {
         ((IncomingFileTransfer) connectionInfo).close();
     }
@@ -1144,31 +1150,32 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
      */
     static class FileTransferEventListener implements RvConnectionEventListener {
         FileTransferListener ftl;
+
         public FileTransferEventListener(FileTransferListener ftl) {
             this.ftl = ftl;
         }
 
         public void handleEventWithStateChange(final RvConnection transfer, RvConnectionState state, RvConnectionEvent event) {
             log.fine("handleEventWithStateChange " + event.getClass() + ": " + event);
-            if (state==FileTransferState.CONNECTING)
+            if (state == FileTransferState.CONNECTING)
                 ftl.notifyNegotiation();
-            else if (state==FileTransferState.FINISHED) {
+            else if (state == FileTransferState.FINISHED) {
                 ftl.notifyDone();
                 ftl.setProgress(100);
-            } else if (state==FileTransferState.FAILED)
+            } else if (state == FileTransferState.FAILED)
                 ftl.notifyFail();
-            else if (state==FileTransferState.TRANSFERRING) {
+            else if (state == FileTransferState.TRANSFERRING) {
                 ftl.notifyTransfer();
                 if (event instanceof TransferringFileEvent) {
-                    final ProgressStatusProvider psp = ((TransferringFileEvent)event).getProgressProvider();
+                    final ProgressStatusProvider psp = ((TransferringFileEvent) event).getProgressProvider();
                     log.fine("TFEWSC: Starting thread for file progress.");
                     new Thread("Transfer for " + transfer.getBuddyScreenname()) {
                         public void run() {
                             log.fine("TFEWSC: Starting with isOpen " + transfer.isOpen());
                             while (transfer.isOpen()) {
                                 int progress = (int) Math.min(
-                                    Math.abs((float)psp.getPosition() / (float)(psp.getLength() - psp.getStartPosition()) * 100),
-                                    100);
+                                        Math.abs((float) psp.getPosition() / (float) (psp.getLength() - psp.getStartPosition()) * 100),
+                                        100);
                                 log.fine("TFEWSC: " + progress + " Details:" + psp.getLength() + " " + psp.getStartPosition() + " " + psp.getPosition());
                                 ftl.setProgress(progress);
                                 GeneralUtils.sleep(700);
@@ -1201,89 +1208,89 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         transfer.addEventListener(new FileTransferEventListener(ftl));
         transfer.accept();
 
-/*        ReceiveFileThread service = null;
-        try {
-            service = new ReceiveFileThread(ftl, (ConnectionInfo) connectionInfo);
-            ftl.setTransferService(service);
-            service.start();
-        } catch (Exception e) {
-            log.log(Level.SEVERE, "",e);
-            ftl.notifyFail();
-            if (service != null)
-                service.cancelTransfer();
-            return;
-        }
+        /*        ReceiveFileThread service = null;
+                try {
+                    service = new ReceiveFileThread(ftl, (ConnectionInfo) connectionInfo);
+                    ftl.setTransferService(service);
+                    service.start();
+                } catch (Exception e) {
+                    log.log(Level.SEVERE, "",e);
+                    ftl.notifyFail();
+                    if (service != null)
+                        service.cancelTransfer();
+                    return;
+                }
 
-//        try {
-//            session.sendRv(new GetFileReqRvCmd(RvConnectionInfo.createForOutgoingRequest(InetAddress.getLocalHost(),
-//                    socket.getLocalPort())));
-//        } catch (UnknownHostException e) {
-//            log.log(Level.SEVERE, "",e);
-//        }
-*/
+        //        try {
+        //            session.sendRv(new GetFileReqRvCmd(RvConnectionInfo.createForOutgoingRequest(InetAddress.getLocalHost(),
+        //                    socket.getLocalPort())));
+        //        } catch (UnknownHostException e) {
+        //            log.log(Level.SEVERE, "",e);
+        //        }
+        */
     } // getFile
-/*
-    public void acceptFileTransfer(FileTransferListener ftl) {
-        RvSession session = rvProcessor.createRvSession(connection.getScreenname().getNormal());
+    /*
+public void acceptFileTransfer(FileTransferListener ftl) {
+            RvSession session = rvProcessor.createRvSession(connection.getScreenname().getNormal());
 
-        session.addListener(new RvSessionListener() {
-            public void handleRv(RecvRvEvent event) {
-                log.fine("aft: here 1");
+            session.addListener(new RvSessionListener() {
+                public void handleRv(RecvRvEvent event) {
+                    log.fine("aft: here 1");
+                }
+
+                public void handleSnacResponse(RvSnacResponseEvent event) {
+                    log.fine("aft: here 2");
+                }
+            });
+
+            ServerSocket socket;
+            try {
+                socket = new ServerSocket(0);
+                new GetFileThread(ftl, session, socket).start();
+            } catch (IOException e) {
+                log.log(Level.SEVERE, "",e);
+
+                return;
             }
 
-            public void handleSnacResponse(RvSnacResponseEvent event) {
-                log.fine("aft: here 2");
+            try {
+                session.sendRv(new GetFileReqRvCmd(RvConnectionInfo.createForOutgoingRequest(InetAddress.getLocalHost(),
+                        socket.getLocalPort())));
+            } catch (UnknownHostException e) {
+                log.log(Level.SEVERE, "",e);
             }
-        });
-
-        ServerSocket socket;
-        try {
-            socket = new ServerSocket(0);
-            new GetFileThread(ftl, session, socket).start();
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "",e);
-
-            return;
-        }
-
-        try {
-            session.sendRv(new GetFileReqRvCmd(RvConnectionInfo.createForOutgoingRequest(InetAddress.getLocalHost(),
-                    socket.getLocalPort())));
-        } catch (UnknownHostException e) {
-            log.log(Level.SEVERE, "",e);
-        }
-    } // getFile
-*/
+        } // getFile
+    */
 
     public void requestPictureForUser(final Contact contact) {
-/*
-        FullUserInfo fui = fullUserInfoCache.get(contact);
-        if (fui == null)
-            return;
-        if (fui.getExtraInfoBlocks() != null)
-            for (int i = 0; i < fui.getExtraInfoBlocks().size(); i++) {
-                ExtraInfoBlock extraInfoBlock = fui.getExtraInfoBlocks().get(i);
-                if (ExtraInfoBlock.TYPE_ICONHASH == extraInfoBlock.getType()) {
-                    if (iconConnection != null) {                                       //ExtraInfoData
-                        iconConnection.sendSnacRequest(new IconRequest(contact.getName(), extraInfoBlock.getExtraData()), new SnacRequestAdapter() {
-                            public void handleResponse(SnacResponseEvent e) {
-                                try {
-                                    if (e.getSnacCommand() instanceof IconDataCmd) {
-                                        IconDataCmd idc = (IconDataCmd) e.getSnacCommand();
-                                        contact.setPicture(new ImageIcon(idc.getIconData().toByteArray()));
-                                        for (ConnectionEventListener eventHandler : eventHandlers) {
-                                            eventHandler.pictureReceived(OscarConnection.this, contact);
+        /*
+                FullUserInfo fui = fullUserInfoCache.get(contact);
+                if (fui == null)
+                    return;
+                if (fui.getExtraInfoBlocks() != null)
+                    for (int i = 0; i < fui.getExtraInfoBlocks().size(); i++) {
+                        ExtraInfoBlock extraInfoBlock = fui.getExtraInfoBlocks().get(i);
+                        if (ExtraInfoBlock.TYPE_ICONHASH == extraInfoBlock.getType()) {
+                            if (iconConnection != null) {                                       //ExtraInfoData
+                                iconConnection.sendSnacRequest(new IconRequest(contact.getName(), extraInfoBlock.getExtraData()), new SnacRequestAdapter() {
+                                    public void handleResponse(SnacResponseEvent e) {
+                                        try {
+                                            if (e.getSnacCommand() instanceof IconDataCmd) {
+                                                IconDataCmd idc = (IconDataCmd) e.getSnacCommand();
+                                                contact.setPicture(new ImageIcon(idc.getIconData().toByteArray()));
+                                                for (ConnectionEventListener eventHandler : eventHandlers) {
+                                                    eventHandler.pictureReceived(OscarConnection.this, contact);
+                                                }
+                                            }
+                                        } catch (Exception e1) {
+                                            log.log(Level.SEVERE, "",e1);
                                         }
-                                    }
-                                } catch (Exception e1) {
-                                    log.log(Level.SEVERE, "",e1);
-                                }
-                            } // handleResponse
-                        });
-                    } // if
-                } // if
-            } // for
-*/
+                                    } // handleResponse
+                                });
+                            } // if
+                        } // if
+                    } // for
+        */
         if (!isLoggedIn()) return;
         BuddyInfo binfo = connection.getBuddyInfoManager().getBuddyInfo(new Screenname(contact.getName()));
         ByteBlock byteBlock = binfo.getIconData();
@@ -1317,7 +1324,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         result.add("Typing Notifications");
         return result;
     }
-    
+
     public List<String> getUserInfo(Nameable user) {
         if (!isLoggedIn()) return null;
         List<String> result = new ArrayList<String>(10);
@@ -1328,22 +1335,22 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         result.add(binfo.getCapabilities().toString());
         result.add(binfo.getItunesUrl());
         result.add(binfo.getLastAimExpression());
-        if (binfo.getIdleSince()!=null) {
+        if (binfo.getIdleSince() != null) {
             result.add(binfo.getIdleSince().toString());
         } else {
             result.add("Not Available");
         }
-        result.add(binfo.getOnlineSince()==null?"Not Available": binfo.getOnlineSince().toString());
+        result.add(binfo.getOnlineSince() == null ? "Not Available" : binfo.getOnlineSince().toString());
         result.add(binfo.getStatusMessage());
         result.add(binfo.getUserProfile());
-        result.add(binfo.getWarningLevel()+"");
-        result.add(""+binfo.isAolUser());
-        result.add(""+binfo.isAway());
-        result.add(""+binfo.isMobile());
-        result.add(""+binfo.isOnBuddyList());
-        result.add(""+binfo.isOnline());
-        result.add(""+binfo.isRobot());
-        result.add(""+binfo.supportsTypingNotifications());
+        result.add(binfo.getWarningLevel() + "");
+        result.add("" + binfo.isAolUser());
+        result.add("" + binfo.isAway());
+        result.add("" + binfo.isMobile());
+        result.add("" + binfo.isOnBuddyList());
+        result.add("" + binfo.isOnline());
+        result.add("" + binfo.isRobot());
+        result.add("" + binfo.supportsTypingNotifications());
         return result;
     }
 
@@ -1351,10 +1358,10 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
      * Will remove the picture.
      */
     public void clearPicture() {
-//           iconConnection.sendSnacRequest( new DeleteItemsCmd(new SsiItem[] {
-//                    new IconItem("", 0, null)
-//                        .toSsiItem()
-//                }));
+        //           iconConnection.sendSnacRequest( new DeleteItemsCmd(new SsiItem[] {
+        //                    new IconItem("", 0, null)
+        //                        .toSsiItem()
+        //                }));
         connection.getMyBuddyIconManager().requestClearIcon();
     }
 
@@ -1364,62 +1371,62 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
      * @param picture filename
      */
     public void uploadPicture(final File picture) {
-//        heartbeat.mark();
-/*
-        final SnacRequestListener listener = new SnacRequestListener() {
-                            public void handleResponse(SnacResponseEvent e) {
-                                e.getRequest(); // need to?
-                            }
+        //        heartbeat.mark();
+        /*
+                final SnacRequestListener listener = new SnacRequestListener() {
+                                    public void handleResponse(SnacResponseEvent e) {
+                                        e.getRequest(); // need to?
+                                    }
 
-                            public void handleSent(SnacRequestSentEvent e) {
-                                // great!
-                                e.getRequest(); // need to?
-                            }
+                                    public void handleSent(SnacRequestSentEvent e) {
+                                        // great!
+                                        e.getRequest(); // need to?
+                                    }
 
-                            public void handleTimeout(SnacRequestTimeoutEvent event) {
-                                for (ConnectionEventListener eventHandler : eventHandlers) {
-                                    eventHandler.errorOccured("Timed out trying to set an icon.", null);
-                                }
-                            }
-                        };
-        iconConnection.sendSnacRequest(new UploadIconCmd(ByteBlock.createByteBlock(
-                new FileWritable(picture.getAbsolutePath()))), listener);
-*/
+                                    public void handleTimeout(SnacRequestTimeoutEvent event) {
+                                        for (ConnectionEventListener eventHandler : eventHandlers) {
+                                            eventHandler.errorOccured("Timed out trying to set an icon.", null);
+                                        }
+                                    }
+                                };
+                iconConnection.sendSnacRequest(new UploadIconCmd(ByteBlock.createByteBlock(
+                        new FileWritable(picture.getAbsolutePath()))), listener);
+        */
         connection.getMyBuddyIconManager().requestSetIcon(ByteBlock.createByteBlock(
                 new FileWritable(picture.getAbsolutePath())));
     } // uploadPicture
 
-/*    private SnacRequest request(SnacCommand cmd, SnacRequestListener listener) {
-        SnacRequest req = new SnacRequest(cmd, listener);
-        handleRequest(req);
-        return req;
-    }
-    synchronized void handleRequest(SnacRequest request) {
-        int family = request.getCommand().getFamily();
-        if (snacMgr.isPending(family)) {
-            snacMgr.addRequest(request);
-            return;
-        }
+    /*    private SnacRequest request(SnacCommand cmd, SnacRequestListener listener) {
+          SnacRequest req = new SnacRequest(cmd, listener);
+          handleRequest(req);
+          return req;
+      }
+      synchronized void handleRequest(SnacRequest request) {
+          int family = request.getCommand().getFamily();
+          if (snacMgr.isPending(family)) {
+              snacMgr.addRequest(request);
+              return;
+          }
 
-        BasicConn conn = snacMgr.getConn(family);
+          BasicConn conn = snacMgr.getConn(family);
 
-        if (conn != null) {
-            conn.sendRequest(request);
-        } else {
-            // it's time to request a service
-            if (!(request.getCommand() instanceof ServiceRequest)) {
-                log.fine("requesting " + Integer.toHexString(family)
-                        + " service.");
-                snacMgr.setPending(family, true);
-                snacMgr.addRequest(request);
-                request(new ServiceRequest(family));
-            } else {
-                log.fine("eep! can't find a service redirector " +
-                        "server.");
-            }
-        }
-    }
-  */
+          if (conn != null) {
+              conn.sendRequest(request);
+          } else {
+              // it's time to request a service
+              if (!(request.getCommand() instanceof ServiceRequest)) {
+                  log.fine("requesting " + Integer.toHexString(family)
+                          + " service.");
+                  snacMgr.setPending(family, true);
+                  snacMgr.addRequest(request);
+                  request(new ServiceRequest(family));
+              } else {
+                  log.fine("eep! can't find a service redirector " +
+                          "server.");
+              }
+          }
+      }
+    */
     private class AliasBuddyListener implements BuddyListener {
         public void screennameChanged(Buddy buddy, Screenname oldScreenname, Screenname newScreenname) {
             // some day perhaps allow that.
@@ -1427,7 +1434,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
 
         public void aliasChanged(Buddy buddy, String oldAlias, String newAlias) {
             Contact contact = getContactFactory().get(oldAlias, OscarConnection.this);
-            if (contact!=null) {
+            if (contact != null) {
                 contact.setDisplayName(newAlias);
             }
         }
@@ -1452,7 +1459,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
     public String veryfySupport(String id) {
         if (!GeneralUtils.isNotEmpty(id))
             return "Number can't be empty";
-        return id.startsWith("+1")?null:"Must start with +1, like: +18005551234";
+        return id.startsWith("+1") ? null : "Must start with +1, like: +18005551234";
     }
 
     // todo To find maximums for stuff:
