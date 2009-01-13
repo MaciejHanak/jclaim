@@ -77,6 +77,7 @@ public class HeartBeat extends Thread {
         });
     }
 
+    /** Add an item to be monitored */
     public void startMonitoring(MonitoredItem monitoredItem) {
         monitoredItem.fail = false; // reset that flag, safety set.
         if (!monitored.contains(monitoredItem)) {
@@ -87,10 +88,12 @@ public class HeartBeat extends Thread {
         }
     }
 
+    /** Remove an item from beeing monitored */
     public void stopMonitoring(MonitoredItem monitoredItem) {
         monitored.remove(monitoredItem);
     }
 
+    /** Stop entire monitoring process. Call as a destructor. */
     public void stopHeartbeat() {
         shutDown = true;
         monitored.notifyAll();
@@ -114,7 +117,7 @@ public class HeartBeat extends Thread {
                     });
                     Boolean result = Boolean.FALSE;
                     try {
-                        result = future.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                        result = future.get(TIMEOUT+100, TimeUnit.MILLISECONDS);
                     } catch (Exception e) {
                         monitoredItem.fail = true;
                         log.log(Level.FINE, "Timed out on alive test "+ monitoredItem, e);
