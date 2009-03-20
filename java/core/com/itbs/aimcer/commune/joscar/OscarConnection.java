@@ -91,7 +91,7 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
             if (System.currentTimeMillis() - lastServerSideKick < HeartBeat.FREQUENCY) {
                 return true;
             }
-            log.info("Sending request");
+            log.fine("Sending request");
             if (isLoggedIn()) {
                 monitoredItem.fail = true;
                 connection.getIcbmService().sendAutomatically(
@@ -775,8 +775,9 @@ public class OscarConnection extends AbstractMessageConnection implements FileTr
         if (heartbeat != null) {
             heartbeat.stopMonitoring(monitoredItem);
         }
-        if (connection != null)
+        if (connection != null) {
             connection.disconnect(intentional);
+        }
         super.disconnect(intentional);
     }
 
