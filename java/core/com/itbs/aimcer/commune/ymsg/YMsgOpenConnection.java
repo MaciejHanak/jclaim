@@ -18,6 +18,9 @@ import java.util.logging.Logger;
 /**
  * Support for Yahoo medium.
  *
+ * List of servers:
+ * http://service1.symantec.com/SUPPORT/ent-gate.nsf/docid/2007645475208898
+ *
  * @author Alex Rass
  * @since Dec 12, 2007
  */
@@ -38,7 +41,8 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
     public int PREFERRED_MODE = DIRECT;
 
     public final static String SERVER_JAPAN = "cs.yahoo.co.jp";
-    public final static String SERVER_WORLD = "scs.msg.yahoo.com";
+    public final static String SERVER_WORLD = "scsa.msg.yahoo.com";
+//    public final static String SERVER_WORLD = "scs.msg.yahoo.com";
 
     private static final String ESCAPE = "\u001B[";
 
@@ -372,7 +376,6 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
 
         public void offlineMessageReceived(SessionEvent ev) {
             messageReceived(ev);
-//            decoder.decodeToText(ev.getMessage());
         }
 
         public void notifyReceived(SessionNotifyEvent sessionNotifyEvent) {
