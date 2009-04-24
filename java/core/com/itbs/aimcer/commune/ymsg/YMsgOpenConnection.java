@@ -56,7 +56,8 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
         // Doing it here allows us to overwrite it prior to use in connect().
         if (PREFERRED_MODE == DIRECT) {
             DirectConnectionHandler dch = new DirectConnectionHandler();
-            setServerName(dch.getHost());
+//            setServerName(dch.getHost()); // this works, but the world server works better. 
+            setServerName(SERVER_WORLD);
             setServerPort(dch.getPort());
         }
     }
