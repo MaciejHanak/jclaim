@@ -203,6 +203,7 @@ public class LoggerEventListener extends ConnectionEventAdapter {
             holdingHandle.raf.writeBytes(": ");
             holdingHandle.raf.writeBytes(message.isOutgoing()?message.getText():message.getPlainText());
             holdingHandle.raf.writeBytes(CR);
+            holdingHandle.raf.getFD().sync();
         }
         if (ClientProperties.INSTANCE.getDatabaseURL() != null) {
             try {
