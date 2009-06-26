@@ -204,30 +204,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
         // Next, create a packet listener. We use an anonymous inner class for brevity.
         PacketListener messageListener = new PacketListener() {
             public void processPacket(Packet packet) {
-                try { // try and not kill Smack!
-                    Message message;
-                    String from = normalizeName(packet.getFrom());
-                    if (packet instanceof org.jivesoftware.smack.packet.Message) {
-                        org.jivesoftware.smack.packet.Message smackMessage = (org.jivesoftware.smack.packet.Message) packet;
-                        message = new MessageImpl(getContactFactory().create(from, SmackConnection.this),
-                                false, false, smackMessage.getBody());
-                    } else
-                        message = new MessageImpl(getContactFactory().create(from, SmackConnection.this),
-                                false, false, (String)packet.getProperty("body"));
-                    for (int i = 0; i < eventHandlers.size(); i++) {
-                        try {
-                            (eventHandlers.get(i)).messageReceived(SmackConnection.this, message);
-                        } catch (Exception e) {
-                            for (ConnectionEventListener eventHandler : eventHandlers) {
-                                eventHandler.errorOccured(i + ": Failure while processing a received message.", e);
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    for (ConnectionEventListener eventHandler : eventHandlers) {
-                        eventHandler.errorOccured("Failure while receiving a message", e);
-                    }
-                }
+                processSmackPacket(packet);
             }
         };
 
@@ -286,6 +263,34 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
         // use itertors b/c the size will change
         notifyConnectionEstablished();
     } // fireConnect
+
+    protected void processSmackPacket(Packet packet) {
+        try { // try and not kill Smack!
+            Message message;
+            String from = normalizeName(packet.getFrom());
+            if (packet instanceof org.jivesoftware.smack.packet.Message) {
+                org.jivesoftware.smack.packet.Message smackMessage = (org.jivesoftware.smack.packet.Message) packet;
+                message = new MessageImpl(getContactFactory().create(from, this),
+                        false, false, smackMessage.getBody());
+            } else {
+                message = new MessageImpl(getContactFactory().create(from, this),
+                        false, false, (String) packet.getProperty("body"));
+            }
+            for (int i = 0; i < eventHandlers.size(); i++) {
+                try {
+                    (eventHandlers.get(i)).messageReceived(this, message);
+                } catch (Exception e) {
+                    for (ConnectionEventListener eventHandler : eventHandlers) {
+                        eventHandler.errorOccured(i + ": Failure while processing a received message.", e);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            for (ConnectionEventListener eventHandler : eventHandlers) {
+                eventHandler.errorOccured("Failure while receiving a message", e);
+            }
+        }
+    }
 
     private String normalizeName(String userName) {
         int index = userName.indexOf('/');

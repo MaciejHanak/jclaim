@@ -25,6 +25,7 @@ import com.itbs.aimcer.bean.Nameable;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Packet;
 
 /**
  * Provides implementation differences for GoogleTalk.
@@ -64,6 +65,22 @@ public class GoogleConnection extends SmackConnection {
         return name + "@gmail.com";
     }
 
+    @Override
+    /**
+     * Just calls the parent if there's content to the message. Otherwise - don't bother.
+     */
+    protected void processSmackPacket(Packet packet) {
+        boolean hasContent;
+        if (packet instanceof org.jivesoftware.smack.packet.Message) {
+            org.jivesoftware.smack.packet.Message smackMessage = (org.jivesoftware.smack.packet.Message) packet;
+            hasContent = smackMessage.getBody().length()>0;
+        } else {
+            hasContent = ((String) packet.getProperty("body")).length()>0;
+        }
+        if (hasContent) {
+            super.processSmackPacket(packet);
+        }
+    }
 
     public String getUserName() {
         return fixUserName(super.getUserName()); 
