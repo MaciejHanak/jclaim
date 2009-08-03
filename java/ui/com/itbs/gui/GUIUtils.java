@@ -21,6 +21,7 @@
 package com.itbs.gui;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -157,4 +158,15 @@ public class GUIUtils {
         comp.getInputMap().put(KeyStroke.getKeyStroke(keyCode, modifiers), action.getValue(Action.NAME));
         comp.getActionMap().put(action.getValue(Action.NAME), action);
     }
+
+    public static JComponent fixedWidget(final JComponent comp, String title) {
+//        Font font = new Font("Comic Sans MS", Font.PLAIN, 8);
+//        comp.setFont(font);
+        comp.setOpaque(false);
+        if (title!=null && !(comp instanceof JLabel)) { // &&!(comp instanceof JXDatePicker)
+            comp.setBorder(new TitledBorder(comp.getBorder(), title, TitledBorder.CENTER, TitledBorder.ABOVE_TOP)); // font
+        }
+        return comp;
+    }
+
 }
