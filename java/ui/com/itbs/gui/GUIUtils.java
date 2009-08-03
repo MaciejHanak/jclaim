@@ -33,6 +33,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Bunch of UI utilities together for convenience.
+ * 
  * @author Alex Rass on Jul 20, 2005
  */
 public class GUIUtils {
