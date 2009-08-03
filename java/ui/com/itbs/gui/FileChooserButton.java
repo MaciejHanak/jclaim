@@ -51,7 +51,7 @@ public class FileChooserButton extends BetterButton
     /** Parent component. */
     final Component parent;
 
-    private static FileFilter filter = new FileFilter() {
+    private static FileFilter filterFile = new FileFilter() {
         public boolean accept(File f) {
             return f.exists();
         }
@@ -60,6 +60,16 @@ public class FileChooserButton extends BetterButton
             return "Only Files";
         }
     };
+    private static FileFilter filterFolder = new FileFilter() {
+        public boolean accept(File f) {
+            return f.exists() && !f.isFile();
+        }
+
+        public String getDescription() {
+            return "Only Folders";
+        }
+    };
+
     /**
      * Called when the button is clicked, in order to fire an
      * <code>ActionEvent</code>. Displays the dialog to change the
@@ -73,9 +83,9 @@ public class FileChooserButton extends BetterButton
         int returnVal = chooser.showOpenDialog(parent);
         lastLocation = chooser.getCurrentDirectory().getAbsolutePath();
         if(returnVal == JFileChooser.APPROVE_OPTION) {
-           setFileName(chooser.getSelectedFile());
+            setFileName(chooser.getSelectedFile());
+            super.fireActionPerformed(e);
         }
-        super.fireActionPerformed(e);
     }
 
     public void setFileFilter(FileFilter filter) {
@@ -88,12 +98,15 @@ public class FileChooserButton extends BetterButton
      * @param parent used to display file dialogs against some parents, for modality
      * @param name initial value
      **/
-    public FileChooserButton(Component parent, final String name)
+    public FileChooserButton(Component parent, final String name, boolean folderSelector)
     {
-        this(parent);
-        if (name!=null)
+        super(EMPTY);
+        this.parent = parent;
+        if (name!=null) {
             setText(name);
-        this.file = new File(name);
+            this.file = new File(name);
+        }
+        setFolderSelector(folderSelector);
     }
 
     /**
@@ -102,10 +115,16 @@ public class FileChooserButton extends BetterButton
      **/
     public FileChooserButton(Component parent)
     {
-        super(EMPTY);
-        this.parent = parent;
-        chooser.setFileFilter(filter);
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        this(parent, null, false);
+    }
+
+    /**
+     * Allows folder selection.
+     * @param selectFolders folder selection. default is false causing file selection.
+     */
+    public void setFolderSelector(boolean selectFolders) {
+        chooser.setFileFilter(selectFolders?filterFolder:filterFile);
+        chooser.setFileSelectionMode(selectFolders?JFileChooser.DIRECTORIES_ONLY:JFileChooser.FILES_ONLY);
     }
 
     /**
@@ -171,7 +190,7 @@ public class FileChooserButton extends BetterButton
         {
 
             String startFile = table.getValueAt(row, column).toString();
-            button = new FileChooserButton(table, startFile);
+            button = new FileChooserButton(table, startFile, false);
             return button;
         }
     }
