@@ -652,56 +652,68 @@ public class TabbedWindow {
 //                tabbedPane.unlock();
 //            }
         }
-        private void notifyAllUsers(String message, Connection conn) {
-            tabbedPane.lock();
-            try {
-                Component[] components = tabbedPane.getComponents();
-                for (Component eachComponent : components) {
-                    if (eachComponent instanceof TabItself) {
-                        TabItself tab = (TabItself) eachComponent;
-                        if (tab.getContact()!=null && conn.equals(tab.getContact().getConnection())) {
-                            tab.appendHistoryText(new MessageImpl(tab.getContact(), false, true, message), false);
-                        }                            
-                    }
-                }
-            } finally {
-                tabbedPane.unlock();
-            }
-        }
-
-        public void statusChanged(Connection connection, Contact contact, Status oldStatus) {
-            tabbedPane.lock();
-            try {
-                if (contact.getStatus().isOnline() != oldStatus.isOnline()) {
-                    notifyUser("\n" + contact + (contact.getStatus().isOnline()?" is now online.":" has disconnected."), contact);
-                }
-                Component[] components = tabbedPane.getComponents();
-                for (Component eachComponent : components) {
-                    if (eachComponent instanceof TabItself) {
-                        TabItself tab = (TabItself) eachComponent;
-                        if (contact.equals(tab.getContact())) {
-                            tab.setLabelFromStatus();
+        private void notifyAllUsers(final String message, final Connection conn) {
+            GUIUtils.runOnAWT(new Runnable() {
+                public void run() {
+                    tabbedPane.lock();
+                    try {
+                        Component[] components = tabbedPane.getComponents();
+                        for (Component eachComponent : components) {
+                            if (eachComponent instanceof TabItself) {
+                                TabItself tab = (TabItself) eachComponent;
+                                if (tab.getContact()!=null && conn.equals(tab.getContact().getConnection())) {
+                                    tab.appendHistoryText(new MessageImpl(tab.getContact(), false, true, message), false);
+                                }
+                            }
                         }
+                    } finally {
+                        tabbedPane.unlock();
                     }
                 }
-            } finally {
-                tabbedPane.unlock();
-            }
+            });
         }
 
-        public void statusChanged(Connection connection) {
-            tabbedPane.lock();
-            try
-            {
-                Component[] components = tabbedPane.getComponents();
-                for (Component eachComponent : components) {
-                    if (eachComponent instanceof TabItself) {
-                        ((TabItself) eachComponent).setLabelFromStatus();
+        public void statusChanged(final Connection connection, final Contact contact, final Status oldStatus) {
+            GUIUtils.runOnAWT(new Runnable() {
+                public void run() {
+                    tabbedPane.lock();
+                    try {
+                        if (contact.getStatus().isOnline() != oldStatus.isOnline()) {
+                            notifyUser("\n" + contact + (contact.getStatus().isOnline()?" is now online.":" has disconnected."), contact);
+                        }
+                        Component[] components = tabbedPane.getComponents();
+                        for (Component eachComponent : components) {
+                            if (eachComponent instanceof TabItself) {
+                                TabItself tab = (TabItself) eachComponent;
+                                if (contact.equals(tab.getContact())) {
+                                    tab.setLabelFromStatus();
+                                }
+                            }
+                        }
+                    } finally {
+                        tabbedPane.unlock();
                     }
                 }
-            } finally {
-                tabbedPane.unlock();
-            }
+            });
+        }
+
+        public void statusChanged(final Connection connection) {
+            GUIUtils.runOnAWT(new Runnable() {
+                public void run() {
+                    tabbedPane.lock();
+                    try
+                    {
+                        Component[] components = tabbedPane.getComponents();
+                        for (Component eachComponent : components) {
+                            if (eachComponent instanceof TabItself) {
+                                ((TabItself) eachComponent).setLabelFromStatus();
+                            }
+                        }
+                    } finally {
+                        tabbedPane.unlock();
+                    }
+                }
+            });
         }
 
         public void pictureReceived(IconSupport connection, final Contact contact) {
