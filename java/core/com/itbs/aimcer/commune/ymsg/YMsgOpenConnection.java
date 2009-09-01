@@ -62,10 +62,19 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
         }
     }
 
+
     public void connect() throws Exception {
         super.connect();
         notifyConnectionInitiated();
         // -----Set the connection handler as per command line
+        new Thread() {
+            public void run() {
+                connectReal();
+            }
+        }.start();
+    }
+
+    public void connectReal() {
         if (PREFERRED_MODE == SOCKS) {
             session = new Session(new SOCKSConnectionHandler("autoproxy", 1080));
         } else if (PREFERRED_MODE == HTTP) {
@@ -87,14 +96,6 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
 
 //        todo see about this later
 //        session.addTypingNotification(inputTF,username);
-        new Thread() {
-            public void run() {
-                connectReal();
-            }
-        }.start();
-    }
-
-    public void connectReal() {
         try {
             session.login(getUserName(), getPassword());
             // tell everyone we are now running connected
