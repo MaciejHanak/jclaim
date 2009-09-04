@@ -68,8 +68,8 @@ public class DustMeParser implements Runnable {
         }
         private Component getTabbedPane() {
             JPanel panel = new JPanel();
-            fileCSS = new FileChooserButton(dialog, "CSS File");
-            fileCSV = new FileChooserButton(dialog, "CSV File");
+            fileCSS = new FileChooserButton(dialog, "CSS File", false);
+            fileCSV = new FileChooserButton(dialog, "CSV File", false);
             columnField = new BetterTextField(2);
             columnField.setDocument(new BetterTextField.NumberDocument());
             columnField.setToolTipText("Column overrided for CSV file. 0 is default.");

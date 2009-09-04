@@ -262,15 +262,23 @@ public class MenuManager {
          * @param connection itself
          */
         public void connectionLost(Connection connection) {
-            for (int i = 0; i < enabledWhenOn.size(); i++) {
-                enabledWhenOn.get(i).setEnabled(!enabledFlag.get(i));
-            }
+            GUIUtils.runOnAWT(new Runnable() {
+                public void run() {
+                    for (int i = 0; i < enabledWhenOn.size(); i++) {
+                        enabledWhenOn.get(i).setEnabled(!enabledFlag.get(i));
+                    }
+                }
+            });
         }
 
         public void connectionInitiated(Connection connection) {
-            for (JComponent aEnabledWhenOn : enabledWhenOn) {
-                aEnabledWhenOn.setEnabled(false);
-            }
+            GUIUtils.runOnAWT(new Runnable() {
+                public void run() {
+                    for (JComponent aEnabledWhenOn : enabledWhenOn) {
+                        aEnabledWhenOn.setEnabled(false);
+                    }
+                }
+            });
         }
 
         /**
@@ -280,9 +288,13 @@ public class MenuManager {
          * @param message to relay
          */
         public void connectionFailed(Connection connection, String message) {
-            for (int i = 0; i < enabledWhenOn.size(); i++) {
-                enabledWhenOn.get(i).setEnabled(!enabledFlag.get(i));
-            }
+            GUIUtils.runOnAWT(new Runnable() {
+                public void run() {
+                    for (int i = 0; i < enabledWhenOn.size(); i++) {
+                        enabledWhenOn.get(i).setEnabled(!enabledFlag.get(i));
+                    }
+                }
+            });
         }
 
         /**
@@ -292,19 +304,27 @@ public class MenuManager {
          * @param connection that has finished stabilizing
          */
         public void connectionEstablished(Connection connection) {
-            for (int i = 0; i < enabledWhenOn.size(); i++) {
-                JComponent comp = enabledWhenOn.get(i);
-                comp.setEnabled(enabledFlag.get(i));
-                if (comp instanceof JCheckBox)
-                    ((JCheckBox) comp).setSelected(false);
-            }
+            GUIUtils.runOnAWT(new Runnable() {
+                public void run() {
+                    for (int i = 0; i < enabledWhenOn.size(); i++) {
+                        JComponent comp = enabledWhenOn.get(i);
+                        comp.setEnabled(enabledFlag.get(i));
+                        if (comp instanceof JCheckBox)
+                            ((JCheckBox) comp).setSelected(false);
+                    }
+                }
+            });
         }
 
 
-        public void statusChanged(Connection connection) {
-            away.setSelected(connection.isAway());
+        public void statusChanged(final Connection connection) {
+            GUIUtils.runOnAWT(new Runnable() {
+                public void run() {
+                    away.setSelected(connection.isAway());
+                }
+            });
         }
-    }
+    } // class
     /**
      * Provides actions for each connection submenu.
      * Looked appropriate to separate this out.

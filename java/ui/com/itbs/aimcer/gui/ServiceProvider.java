@@ -49,7 +49,7 @@ public class ServiceProvider {
     static ServiceProvider[] providers = {
 //        new ServiceProvider(UTestFakeConnection.class, "Fake"),
         new ServiceProvider(OscarConnection.class,       "AIM - Oscar"   ),
-        new ServiceProvider(DaimConnection.class,        "DAIM - Oscar"  ),
+        new ServiceProvider(DaimConnection.class,        "AIM - Daim"  ),
         new ServiceProvider(ICQConnection.class,         "ICQ"           ),
 //        new ServiceProvider(AIMConnection.class,       "AIM - Oscar 2" ),
         new ServiceProvider(YMsgConnection.class,        "Yahoo!"        ),

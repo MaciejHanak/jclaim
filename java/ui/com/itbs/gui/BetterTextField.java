@@ -20,6 +20,7 @@
 
 package com.itbs.gui;
 
+import com.itbs.aimcer.bean.ClientProperties;
 import org.jdesktop.jdic.desktop.Desktop;
 
 import javax.swing.*;
@@ -64,6 +65,8 @@ public class BetterTextField extends JTextField {
         pmenu.add(menu);
         menu = ActionAdapter.createMenuItem("Google", new GoogleAction(), 'G');
         pmenu.add(menu);
+        menu = ActionAdapter.createMenuItem("Use as Away message", new SetAwayAction(), 'G');
+        pmenu.add(menu);
     }
 
     public BetterTextField(int columns) {
@@ -92,16 +95,20 @@ public class BetterTextField extends JTextField {
         typicalInit(this);
     }
 
-    public static class GoogleAction extends TextAction {
-        public static final String GOOGLE_URL = "http://www.google.com/custom?client=pub-3922476703716903&forid=1&ie=ISO-8859-1&oe=ISO-8859-1&cof=GALT%3A%23008000%3BGL%3A1%3BDIV%3A%23336699%3BVLC%3A663399%3BAH%3Acenter%3BBGC%3AFFFFFF%3BLBGC%3A336699%3BALC%3A0000FF%3BLC%3A0000FF%3BT%3A000000%3BGFNT%3A0000FF%3BGIMP%3A0000FF%3BFORID%3A1%3B&hl=en&q=";
+    public static class SetAwayAction extends BasicTextAction {
+        public SetAwayAction() {
+            super("Set as Away message");
+        }
 
-        /**
-         * Creates a new JTextAction object.
-         *
+        protected void doStuff(String selectedText) {
+            ClientProperties.INSTANCE.setIamAwayMessage(selectedText);
+        }
+    }
 
-         */
-        public GoogleAction() {
-            super("Google");
+    public static abstract class BasicTextAction extends TextAction {
+
+        protected BasicTextAction(String name) {
+            super(name);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -116,10 +123,24 @@ public class BetterTextField extends JTextField {
                 return; // nothing to google.
             }                                                       
             // if something is selected, google that
+            doStuff(c.getSelectedText().trim());
+        }
+
+        abstract protected void doStuff(String s);
+
+    }
+    public static class GoogleAction extends BasicTextAction {
+        public static final String GOOGLE_URL = "http://www.google.com/custom?client=pub-3922476703716903&forid=1&ie=ISO-8859-1&oe=ISO-8859-1&cof=GALT%3A%23008000%3BGL%3A1%3BDIV%3A%23336699%3BVLC%3A663399%3BAH%3Acenter%3BBGC%3AFFFFFF%3BLBGC%3A336699%3BALC%3A0000FF%3BLC%3A0000FF%3BT%3A000000%3BGFNT%3A0000FF%3BGIMP%3A0000FF%3BFORID%3A1%3B&hl=en&q=";
+
+        public GoogleAction() {
+            super("Google");
+        }
+
+        protected void doStuff(String selected) {
             try {
 //                Desktop.browse(new URL("http://www.google.com/search?q="+ URLEncoder.encode(c.getSelectedText().trim(), "UTF-8") + "&ie=utf-8&oe=utf-8"));
                 // Using a partner link instead or the regular one.
-                Desktop.browse(new URL(GOOGLE_URL + URLEncoder.encode(c.getSelectedText().trim(), "UTF-8") ));
+                Desktop.browse(new URL(GOOGLE_URL + URLEncoder.encode(selected, "UTF-8") ));
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Failed to lookup.", e);
             }
