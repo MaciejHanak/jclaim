@@ -112,26 +112,6 @@ public class YMsgConnection extends AbstractMessageConnection {// implements Cha
     public void connect() throws Exception {
         super.connect();
         notifyConnectionInitiated();
-        // -----Set the connection handler as per command line
-        if (PREFERRED_MODE == SOCKS) {
-            session = new Session(new SOCKSConnectionHandler("autoproxy", 1080));
-        } else if (PREFERRED_MODE == HTTP) {
-            session = new Session(new HTTPConnectionHandler("http.pager.yahoo.com", 80));
-//            session = new Session(new HTTPConnectionHandler("proxy", 8080));
-        } else if (PREFERRED_MODE == DIRECT) {
-            // The following line (while ugly) allows us to send japanese users to the right server,
-            // while perserving the ability to override servers for rest of the users.
-//            String serverName = (getUserName()!=null && getUserName().endsWith(".jp"))?SERVER_JAPAN:getServerName();
-//            DirectConnectionHandler dch = new DirectConnectionHandler(getServerName(), getServerPort(), getEncoding());
-            DirectConnectionHandler dch = new DirectConnectionHandler(getServerName(), getServerPort());
-            session = new Session(dch);
-            // ports 5050,23,25,80
-        } else {
-            session = new Session();
-        }
-        // -----Register a listener
-        session.addSessionListener(new SessionHandler());
-        log.fine(session.getConnectionHandler().toString());
 
 //        todo see about this later, it needs to be setup and removed each time. send back keyTyped to tell others.
 //        session.addTypingNotification(inputTF,username);
@@ -144,6 +124,28 @@ public class YMsgConnection extends AbstractMessageConnection {// implements Cha
 
     public void connectReal() {
         try {
+            // -----Set the connection handler as per command line
+            if (PREFERRED_MODE == SOCKS) {
+                session = new Session(new SOCKSConnectionHandler("autoproxy", 1080));
+            } else if (PREFERRED_MODE == HTTP) {
+                session = new Session(new HTTPConnectionHandler("http.pager.yahoo.com", 80));
+//            session = new Session(new HTTPConnectionHandler("proxy", 8080));
+            } else if (PREFERRED_MODE == DIRECT) {
+                // The following line (while ugly) allows us to send japanese users to the right server,
+                // while perserving the ability to override servers for rest of the users.
+//            String serverName = (getUserName()!=null && getUserName().endsWith(".jp"))?SERVER_JAPAN:getServerName();
+//            DirectConnectionHandler dch = new DirectConnectionHandler(getServerName(), getServerPort(), getEncoding());
+                DirectConnectionHandler dch = new DirectConnectionHandler(getServerName(), getServerPort());
+                session = new Session(dch);
+                // ports 5050,23,25,80
+            } else {
+                session = new Session();
+            }
+            // -----Register a listener
+            SessionHandler sessionHandler = new SessionHandler();
+            session.addSessionListener(sessionHandler);
+            log.fine(session.getConnectionHandler().toString());
+
             session.login(getUserName(), getPassword());
             // tell everyone we are now running connected
             // use itertors b/c the size will change
@@ -152,7 +154,8 @@ public class YMsgConnection extends AbstractMessageConnection {// implements Cha
             // -----Are we cooking with gas?
             if (session!=null && session.getSessionStatus()==StatusConstants.MESSAGING) {
                 // -----Update identities list
-
+                Thread.yield();
+                
                 YahooGroup[] yg = session.getGroups();
                 for (YahooGroup aYg : yg) {
                     Group group = getGroupFactory().create(aYg.getName());
