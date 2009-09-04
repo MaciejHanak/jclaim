@@ -36,8 +36,8 @@ public interface ContactFactory {
 
     /**
      * Just like create, but doesn't create it if it's not there.
-     * @param name
-     * @param connection
+     * @param name of the contact
+     * @param connection to go by
      * @return reference
      */
     Contact get(String name, Connection connection);
