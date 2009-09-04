@@ -122,7 +122,8 @@ public class YMsgConnection extends AbstractMessageConnection {// implements Cha
             // The following line (while ugly) allows us to send japanese users to the right server,
             // while perserving the ability to override servers for rest of the users.
 //            String serverName = (getUserName()!=null && getUserName().endsWith(".jp"))?SERVER_JAPAN:getServerName();
-            DirectConnectionHandler dch = new DirectConnectionHandler(getServerName(), getServerPort(), getEncoding());
+//            DirectConnectionHandler dch = new DirectConnectionHandler(getServerName(), getServerPort(), getEncoding());
+            DirectConnectionHandler dch = new DirectConnectionHandler(getServerName(), getServerPort());
             session = new Session(dch);
             // ports 5050,23,25,80
         } else {
@@ -461,7 +462,7 @@ public class YMsgConnection extends AbstractMessageConnection {// implements Cha
         }
 
         public void fileTransferReceived(SessionFileTransferEvent ev) {
-            String decodedMessage = "File: " + ev.getFilename();
+            String decodedMessage = "Files Received: " + ev.getFileNames() + "\nLocated here:" + ev.getLocation();
             if (ev.getLocation()!=null)
                 decodedMessage +=  " " + ev.getLocation().toString();
             Message message = new MessageImpl(getContactFactory().create(ev.getFrom(), YMsgConnection.this), false, decodedMessage);
@@ -527,7 +528,7 @@ public class YMsgConnection extends AbstractMessageConnection {// implements Cha
             }
             try {
                 if (accept) {
-                    session.acceptContact(ev, "Great");
+                    session.acceptFriendAuthorization((SessionAuthorizationEvent) ev, "Great");
                 } else {
                     session.rejectContact(ev, "Not now, thanks");
                 }

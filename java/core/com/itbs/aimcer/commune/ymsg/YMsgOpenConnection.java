@@ -91,7 +91,8 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
             session = new Session();
         }
         // -----Register a listener
-        session.addSessionListener(new YMsgOpenConnection.SessionHandler());
+        SessionHandler sessionHandler = new SessionHandler();
+        session.addSessionListener(sessionHandler);
         log.fine(session.getConnectionHandler().toString());
 
 //        todo see about this later
@@ -105,18 +106,11 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
             // -----Are we cooking with gas?
             if (session!=null && session.getSessionStatus()== SessionState.LOGGED_ON) {
                 // -----Update identities list
-
+                Thread.yield();
                 for (YahooUser yahooUser : session.getRoster()) {
-                    Contact contact = getContactFactory().create(yahooUser.getId(), YMsgOpenConnection.this);
-                    contact.getStatus().setOnline(yahooUser.isLoggedIn());
-                    contact.getStatus().setAway(isAway(yahooUser));
-                    Set<String> groupIDs = yahooUser.getGroupIds();
-                    for (String groupID : groupIDs) {
-                        Group group = getGroupFactory().create(groupID);
-                        group.add(contact);
-                        getGroupList().add(group);
-                    }
+                    sessionHandler.friendsUpdateReceived(yahooUser);
                 }
+
                 notifyConnectionEstablished();
             } else {
                 notifyConnectionFailed("Failed to login.");
@@ -429,14 +423,22 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
             friendsUpdateReceived(yahooUser);
         }
 
-        private void friendsUpdateReceived(YahooUser yahooUser) {
+        void friendsUpdateReceived(YahooUser yahooUser) {
 //          log.fine("Updated: " + yu[i].toString());
             if (yahooUser==null) return;
             Contact contact = getContactFactory().create(yahooUser.getId(), YMsgOpenConnection.this);
             com.itbs.aimcer.bean.Status oldStatus = (com.itbs.aimcer.bean.Status) contact.getStatus().clone();
+
             contact.getStatus().setOnline(yahooUser.isLoggedIn());
             contact.getStatus().setAway(isAway(yahooUser));
             contact.getStatus().setIdleTime(0);
+            
+            Set<String> groupIDs = yahooUser.getGroupIds();
+            for (String groupID : groupIDs) {
+                Group group = getGroupFactory().create(groupID);
+                group.add(contact);
+                getGroupList().add(group);
+            }
             // notify everyone
             notifyStatusChanged(contact, oldStatus);
         }
