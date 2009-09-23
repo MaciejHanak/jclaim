@@ -121,6 +121,14 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
                     msg = "Yahoo doesn't recognise that username.";
             } else if (e.getStatus() == AuthenticationState.BAD) {
                     msg = "Yahoo refused our connection.  Password incorrect?";
+            } else if (e.getStatus() == AuthenticationState.BAD2) {
+                    msg = "Yahoo refused our connection.  Password incorrect?";
+            } else if (e.getStatus() == AuthenticationState.BADUSERNAME) {
+                    msg = "Yahoo refused our connection.  Username incorrect.";
+            } else if (e.getStatus() == AuthenticationState.DUPLICATE_LOGIN) {
+                    msg = "Yahoo refused our connection.  Duplicate username";
+            } else if (e.getStatus() == AuthenticationState.UNKNOWN_52) {
+                    msg = "Yahoo refused our connection.  Not sure why.";
             } else if (e.getStatus() == AuthenticationState.LOCKED) {
                     msg = "Your account is locked";
                     AccountLockedException e2 = (AccountLockedException) e;
