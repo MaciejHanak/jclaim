@@ -48,7 +48,7 @@ import java.util.logging.Logger;
  */
 public class Main {
     static String TITLE = "JCLAIM";
-    public static String VERSION = "Version: 5.41";
+    public static String VERSION = "Version: 5.52";
     public static final String URL_FAQ = "http://www.itbsllc.com/jclaim/User%20Documentation.htm";
     public static final String EMAIL_SUPPORT = "support@itbsllc.com";
     private static final String LICENSE = System.getProperty("client");
@@ -233,9 +233,9 @@ public class Main {
                 weather.connect();
             ServerStarter.update(); // bring the web server up now, if enabled.
         }
-        connection.addEventListener(main.globalEventHandler);
         main.globalWindowHandler.addConnection(connection);
         connection.addEventListener(logger); // if logger is before MW, we see it log the incoming msg first
+        connection.addEventListener(main.globalEventHandler);
         connection.addEventListener(main.peopleScreen.getConnectionEventListener()); // is also self-added
         connection.addEventListener(OrderEntryLog.getInstance());
         if (ClientProperties.INSTANCE.isEnableOrderEntryInSystem())
