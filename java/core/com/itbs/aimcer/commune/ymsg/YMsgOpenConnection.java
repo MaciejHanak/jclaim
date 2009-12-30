@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2006, ITBS LLC. All Rights Reserved.
+ *
+ *     This file is part of JClaim.
+ *
+ *     JClaim is free software; you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation; version 2 of the License.
+ *
+ *     JClaim is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with JClaim; if not, find it at gnu.org or write to the Free Software
+ *     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ */
+
 package com.itbs.aimcer.commune.ymsg;
 
 import com.itbs.aimcer.bean.*;
@@ -17,6 +37,8 @@ import java.util.logging.Logger;
 
 /**
  * Support for Yahoo medium.
+ *
+ * Uses OpenYMSG project libraries.
  *
  * List of servers:
  * http://service1.symantec.com/SUPPORT/ent-gate.nsf/docid/2007645475208898
@@ -322,7 +344,7 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
                 session.saveFileTransferAs((SessionFileTransferEvent) connectionInfo, ftl.getFile().getAbsolutePath());
             } catch (IOException e) {
                 for (ConnectionEventListener eventHandler : eventHandlers) {
-                    eventHandler.errorOccured("ERROR while transfering file: " + e.getMessage(), e);
+                    eventHandler.errorOccured("ERROR while transferring file: " + e.getMessage(), e);
                 }
             }
         }
@@ -355,6 +377,7 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
         }
 
         public void errorPacketReceived(SessionErrorEvent ev) {
+            log.fine("errorPacketReceived()");
             if (ev.getService() != ServiceType.CONTACTIGNORE) {
                 for (ConnectionEventListener eventHandler : eventHandlers) {
                     eventHandler.errorOccured("ERROR received from yahoo network: " + ev.getMessage(), null);
@@ -366,6 +389,7 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
         }
 
         public void inputExceptionThrown(SessionExceptionEvent ev) {
+            log.fine("inputExceptionThrown()");
             if (ev.getException() instanceof YMSG9BadFormatException) {
                 YMSG9BadFormatException ex = (YMSG9BadFormatException) ev.getException();
                 log.log(Level.SEVERE, "", ex.getCause());
@@ -415,6 +439,7 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
         }
 
         public void connectionClosed(SessionEvent ev) {
+            log.fine("connectionClosed()");
             disconnect(false);
         }
 
