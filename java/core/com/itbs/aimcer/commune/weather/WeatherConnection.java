@@ -105,15 +105,16 @@ public class WeatherConnection extends AbstractConnection {
 
     class WeatherCom implements TokenProvider {
         public String getPlace() {
-            return "TODAY'S WEATHER for ";
+            return "<h1 class=\"wxH1\">";
         }
 
         public String getTemp() {
-            return " CLASS=obsTempTextA>";
+            return " class=\"ccTemp\">";
         }
 
         public String getIcon() {
-            return "http://image.weather.com/web/common/wxicons/";
+//            return "http://image.weather.com/web/common/wxicons/";
+            return "http://i.imwx.com/web/common/wxicons/130/";
         }
 
         public URL getHourlyURL(String zip) throws MalformedURLException {
@@ -151,35 +152,36 @@ public class WeatherConnection extends AbstractConnection {
     }
 
     private void updateList() {
-        try {
-            if (!updateLock.tryLock()) return;  // no need to go again if old one still hasn't timed out.
+        if (updateLock.tryLock()) { // no need to go again if old one still hasn't timed out.
+            try {
 //            updateLock.lockInterruptibly();
 
-            //grab weather for each contact (zip code) listed
-            for (int i = 0; i < weather.size(); i++) {
-                Contact zip = (Contact) weather.get(i);
-                String page;
-                String weather=null;
-                Icon icon = null;
-                try {
-                    page = WebHelper.getPage(currentProvider.getURL(zip.getName()));
-                    weather = getWeather(page);
-                    icon = getWeatherIcon(page);
-    //                log.info("Set " + zip.getName() + " to " + zip.getDisplayName() + " " + zip.oldToString());
-                } catch (Exception e) {
-                    logger.log(Level.SEVERE, "Failed to get a page", e);
+                //grab weather for each contact (zip code) listed
+                for (int i = 0; i < weather.size(); i++) {
+                    Contact zip = (Contact) weather.get(i);
+                    String page;
+                    String weather = null;
+                    Icon icon = null;
+                    try {
+                        page = WebHelper.getPage(currentProvider.getURL(zip.getName()).toString(), null);
+                        weather = getWeather(page);
+                        icon = getWeatherIcon(page);
+                        //                log.info("Set " + zip.getName() + " to " + zip.getDisplayName() + " " + zip.oldToString());
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, "Failed to get a page", e);
+                    }
+                    if (weather != null && weather.length() < 100)
+                        zip.setDisplayName(weather);
+                    if (icon != null && icon.getIconHeight() > 0 && icon.getIconWidth() > 0)
+                        zip.setIcon(icon);
+                    if ((weather == null || weather.length() >= 100 || icon == null) && (!zip.getDisplayName().startsWith(PREFIX_OLD))) {
+                        zip.setDisplayName(PREFIX_OLD + zip.getDisplayName());
+                    }
                 }
-                if (weather != null && weather.length() < 100)
-                    zip.setDisplayName(weather);
-                if (icon != null && icon.getIconHeight()>0 && icon.getIconWidth()>0)
-                    zip.setIcon(icon);
-                if ((weather == null || weather.length() >= 100 || icon == null) && (!zip.getDisplayName().startsWith(PREFIX_OLD))) {
-                    zip.setDisplayName(PREFIX_OLD + zip.getDisplayName());
-                }
+            } finally {
+                updateLock.unlock();
+                notifyStatusChanged();
             }
-        } finally {
-            updateLock.unlock();
-            notifyStatusChanged();
         }
     }
 
@@ -225,7 +227,7 @@ public class WeatherConnection extends AbstractConnection {
      */
     private static String getSection(int index, String page) {
         String result = "";
-        for (int i=index; index > 0 && i < page.length() && page.charAt(i) != '(' && page.charAt(i) != '<' && page.charAt(i) != '"'&& page.charAt(i) != '&'; i++) {
+        for (int i=index; index > 0 && i < page.length() && page.charAt(i) != '(' && page.charAt(i) != '<' && page.charAt(i) != '"' && page.charAt(i) != '\'' && page.charAt(i) != '&'; i++) {
             result += page.charAt(i);
         } // got the real name
         return result.trim();

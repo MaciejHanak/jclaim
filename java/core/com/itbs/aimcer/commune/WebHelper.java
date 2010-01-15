@@ -21,10 +21,10 @@
 package com.itbs.aimcer.commune;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
-import java.net.URLConnection;
 
 /**
  * Utility class to help with Web Sites.
@@ -118,12 +118,16 @@ public class WebHelper {
     }
 
     public static String getPage(String url, String post) throws IOException {
-        URLConnection connection = new URL(url).openConnection();
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         if (post!=null) {
+            connection.connect();
             connection.setDoOutput(true);
             PrintStream out = new PrintStream(connection.getOutputStream());
             out.println(post); // param=value
             out.close();
+        } else {
+            connection.setRequestMethod("GET");
+            connection.connect();
         }
         String response;
         BufferedReader source = new BufferedReader(new InputStreamReader(connection.getInputStream()));
