@@ -103,7 +103,7 @@ public class WebHelper {
         out.close();
         source.close();
         // to do this right, really need to cover a bunch more error codes, and only look at headers etc. (AR)
-        if (buf.indexOf("301 Moved Permanently")>0) { // found that a page has moved
+        if (buf.indexOf("301 Moved Permanently")>0 || buf.indexOf("302 Moved Temporarily")>0) { // found that a page has moved
             int indexOfLocation = buf.indexOf("\nLocation:");
             if (indexOfLocation>0) {
                 indexOfLocation += "\nLocation:".length();
@@ -126,6 +126,7 @@ public class WebHelper {
             out.println(post); // param=value
             out.close();
         } else {
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.0.13) Gecko/2009073021 Firefox/3.0.13");
             connection.setRequestMethod("GET");
             connection.connect();
         }
