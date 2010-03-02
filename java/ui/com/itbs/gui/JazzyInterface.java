@@ -60,7 +60,6 @@ public class JazzyInterface {
 //    private static final String englishPhonetic = "/phonet.en";
     private static final String wordsEnglish []= {
             "Alex",
-            "cancelled",
             "behavior",
             "Charlotte",
             "Chloe",
@@ -362,8 +361,7 @@ public class JazzyInterface {
                 menu.add(new ReplaceWordAction(parent, word.toString()));
             }
         }
-
-    }
+    } // SpecialPopupMenu
 
     /**
      * This version simply adds words straight to the JPopupMenu.
@@ -385,6 +383,5 @@ public class JazzyInterface {
                 super.show(invoker, x, y);
             }
         }
-
-    }
+    } // WordPopupMenu
 } // class JazzyInterface
