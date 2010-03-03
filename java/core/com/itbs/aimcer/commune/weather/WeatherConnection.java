@@ -170,7 +170,7 @@ public class WeatherConnection extends AbstractConnection {
                     } catch (Exception e) {
                         logger.log(Level.SEVERE, "Failed to get a page", e);
                     }
-                    if (weather != null && weather.length() < 100)
+                    if (weather != null && weather.length() > 0 && weather.length() < 100)
                         zip.setDisplayName(weather);
                     if (icon != null && icon.getIconHeight() > 0 && icon.getIconWidth() > 0)
                         zip.setIcon(icon);
