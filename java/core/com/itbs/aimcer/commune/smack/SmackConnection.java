@@ -86,7 +86,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             connection = getNewConnection();
 //            connection.loginAnonymously();
             connection.connect();
-            SASLAuthentication.supportSASLMechanism("PLAIN", 0);
+            setAuthenticationMethod();              
             connection.login(getUserName(), getPassword());
             fireConnect();
         } catch (XMPPException e) {
@@ -102,6 +102,14 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
         }
     }
 
+    /**
+     *  Set auth method in protected mode to allow subclasses to override it.
+     */
+    protected void setAuthenticationMethod()
+    {
+    	SASLAuthentication.supportSASLMechanism("PLAIN", 0);
+    }    
+    
     private void fireConnect() {
         connection.addConnectionListener(new ConnectionListener() {
             public void connectionClosed() {
@@ -196,6 +204,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             }
         } // while
 
+
         // Alejandro's patch: aa 20100303
         // add un-filed entries to the group list.
         if (connection.getRoster().getUnfiledEntryCount() > 0) {
@@ -250,6 +259,13 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
 
             public void presenceChanged(Presence presence) {
                 Contact contact = getContactFactory().create(normalizeName(presence.getFrom()), SmackConnection.this);
+                // 20100303 aa
+                // set display name to the roster entry display name
+/*              aa NOT FULLY TESTED YET!  
+                RosterEntry rentry = connection.getRoster().getEntry(presence.getFrom());
+                if (rentry != null) {
+                	contact.setDisplayName(rentry.getName());
+                }       */         
                 Status status = (Status) contact.getStatus().clone();
                 contact.getStatus().setOnline(presence.isAvailable());
                 //isAway also includes do not disturb (dnd), so we should not update in that case.
@@ -287,7 +303,15 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             String from = normalizeName(packet.getFrom());
             if (packet instanceof org.jivesoftware.smack.packet.Message) {
                 org.jivesoftware.smack.packet.Message smackMessage = (org.jivesoftware.smack.packet.Message) packet;
-                message = new MessageImpl(getContactFactory().create(from, this),
+                Contact contact = getContactFactory().create(from, this);
+                // aa 20100303
+                // get diplay name from roster
+                /* NOT FULLY TESTED YET!
+                RosterEntry entry = connection.getRoster().getEntry(from);
+                if (entry != null) {
+                    contact.setDisplayName(entry.getName());
+                }*/
+                message = new MessageImpl(contact, 
                         false, false, smackMessage.getBody());
             } else {
                 message = new MessageImpl(getContactFactory().create(from, this),
