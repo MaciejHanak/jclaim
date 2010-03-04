@@ -54,6 +54,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     XMPPConnection connection;
     FileTransferManager fileTransferManager;
     MultiUserChat multiUserChat;
+    private static final String GROUP_UNFILED = "UnFiled";
 
 
     public SmackConnection() {
@@ -194,6 +195,22 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
                 lastGroup.add(contact);
             }
         } // while
+
+        // Alejandro's patch: aa 20100303
+        // add un-filed entries to the group list.
+        if (connection.getRoster().getUnfiledEntryCount() > 0) {
+            getGroupList().add(lastGroup = getGroupFactory().create(GROUP_UNFILED));
+            for (RosterEntry rosterEntry : connection.getRoster().getUnfiledEntries()) {
+                contact = getContactFactory().get(rosterEntry.getUser(), this);
+                if (contact==null) { // if we don't have it already somewhere.
+                    contact = getContactFactory().create(rosterEntry.getUser(), this);
+                    if (rosterEntry.getName() != null) {
+                        contact.setDisplayName(rosterEntry.getName());
+                    }
+                    lastGroup.add(contact);
+                }
+            }
+        }
 
         /////////////////////
          // Handle Messages //
@@ -360,22 +377,37 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     }
 
     public boolean removeContact(Nameable contact, Group group) {
-        for (RosterGroup rosterGroup : connection.getRoster().getGroups()) {
-            if (group==null || rosterGroup.getName().equalsIgnoreCase(group.getName())) { // for the right group
-                for (RosterEntry rosterEntry : rosterGroup.getEntries()) {
-                    if (rosterEntry.getName().equals(contact.getName())) {
-                        try {
-                            rosterGroup.removeEntry(rosterEntry);
-                            cleanGroup(group, contact); // if you change code, make sure this executes once only!
-                        } catch (XMPPException e) {
-                            notifyErrorOccured("Found, but failed to remove the contact", e);
-                            return false;
+        if (group != null && group.getName().equals(GROUP_UNFILED)) {
+            for (RosterEntry rosterEntry : connection.getRoster().getUnfiledEntries()) {
+                if (rosterEntry!=null && rosterEntry.getUser()!=null && rosterEntry.getUser().equals(contact.getName())) {
+                    try {
+                        connection.getRoster().removeEntry(rosterEntry);
+                        cleanGroup(group, contact); // if you change code, make sure this executes once only!
+                    } catch (XMPPException e) {
+                        notifyErrorOccured("Found, but failed to remove the contact", e);
+                        return false;
+                    }
+                    return true;
+                } // match
+            } // for
+        } else {
+            for (RosterGroup rosterGroup : connection.getRoster().getGroups()) {
+                if (group == null || rosterGroup.getName().equalsIgnoreCase(group.getName())) { // for the right group
+                    for (RosterEntry rosterEntry : rosterGroup.getEntries()) {
+                        if (rosterEntry.getName().equals(contact.getName())) {
+                            try {
+                                rosterGroup.removeEntry(rosterEntry);
+                                cleanGroup(group, contact); // if you change code, make sure this executes once only!
+                            } catch (XMPPException e) {
+                                notifyErrorOccured("Found, but failed to remove the contact", e);
+                                return false;
+                            }
+                            return true;
                         }
-                        return true;
                     }
                 }
-            }
-        } // for
+            } // for
+        } // if a filed group
         return false;
     }
 
