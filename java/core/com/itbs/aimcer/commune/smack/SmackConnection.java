@@ -258,14 +258,15 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             }
 
             public void presenceChanged(Presence presence) {
-                Contact contact = getContactFactory().create(normalizeName(presence.getFrom()), SmackConnection.this);
+                String normalizedName = normalizeName(presence.getFrom());            	
+                Contact contact = getContactFactory().create(normalizedName, SmackConnection.this);
                 // 20100303 aa
                 // set display name to the roster entry display name
-/*              aa NOT FULLY TESTED YET!  
-                RosterEntry rentry = connection.getRoster().getEntry(presence.getFrom());
-                if (rentry != null) {
+
+                RosterEntry rentry = connection.getRoster().getEntry(normalizedName);
+                if (rentry != null && rentry.getName() != null)
                 	contact.setDisplayName(rentry.getName());
-                }       */         
+                
                 Status status = (Status) contact.getStatus().clone();
                 contact.getStatus().setOnline(presence.isAvailable());
                 //isAway also includes do not disturb (dnd), so we should not update in that case.
@@ -275,7 +276,6 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             }
 
         }); // class RosterListener
-
         
         
         // File transfers support:
@@ -306,11 +306,10 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
                 Contact contact = getContactFactory().create(from, this);
                 // aa 20100303
                 // get diplay name from roster
-                /* NOT FULLY TESTED YET!
                 RosterEntry entry = connection.getRoster().getEntry(from);
-                if (entry != null) {
-                    contact.setDisplayName(entry.getName());
-                }*/
+                if (entry != null && entry.getName() != null) 
+                    contact.setDisplayName(entry.getName());                
+                
                 message = new MessageImpl(contact, 
                         false, false, smackMessage.getBody());
             } else {
