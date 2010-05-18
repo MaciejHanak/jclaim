@@ -176,7 +176,8 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
         if (session != null) {
             // do it for the server
             try {
-                session.sendNewFriendRequest(contact.getName(), group.getName());
+                session.sendNewFriendRequest(contact.getName(), group.getName(), YahooProtocol.YAHOO);
+                session.sendNewFriendRequest(contact.getName(), group.getName(), YahooProtocol.MSN);
                 group.add(contact);
 //              Why was this done!?  Causes contacts to appear online when they are not! Testing, maybe?
 //                if (contact instanceof Contact) {
