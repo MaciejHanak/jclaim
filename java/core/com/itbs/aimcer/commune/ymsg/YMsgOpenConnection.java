@@ -228,7 +228,7 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
                 session.logout();
             }
         } catch (Exception e) {
-           // log.log(Level.SEVERE, "", e); //We really don't care
+           //We really don't care
         }
         session = null; // clear, gc
         super.disconnect(intentional);
@@ -493,19 +493,31 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
             log.fine("friendRemovedReceived " + ev.toString());
         }
 
-        public void contactRequestReceived(SessionEvent ev) {
+        public void contactRequestReceived(SessionAuthorizationEvent ev) {
             if (ev.getFrom() == null) return; // this is a bug in the library.
             boolean accept = true;
             for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
                 accept = eventHandler.contactRequestReceived(ev.getFrom(), YMsgOpenConnection.this);
                 if (!accept) break;
             }
-            if (!accept)
-                try {
+            try {
+                if (accept) {
+                    // accepting
+                    // first parameter is friend ym id
+                    // second parameter is your friend network (eg. Yahoo, MSN, Lotus, etc...)
+                    session.acceptFriendAuthorization(ev.getFrom(), ev.getProtocol());
+
+                    // if you like to act like official YM client
+                    // you can send contact request after you accept your friend request
+                    // second parameter is which group you want to put your friend in your contact list
+//                session.sendNewFriendRequest(e.getFrom(), "Friends", e.getProtocol());
+
+                } else {
                     session.rejectContact(ev, "Not now, thanks");
-                } catch (IOException e) {
-                    log.log(Level.SEVERE, "Failed to reject contact " + ev.getFrom(), e);
                 }
+            } catch (IOException e) {
+                log.log(Level.SEVERE, "Failed to reject contact " + ev.getFrom(), e);
+            }
 
         }
 
