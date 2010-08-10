@@ -74,6 +74,7 @@ public class WeatherConnection extends AbstractConnection {
         String getPlace();
         String getTemp();
         String getIcon();
+        String getIconLocation();
         /** Used to get hourly weather */
         URL getHourlyURL(String zip) throws MalformedURLException;
         /** Used to get current weather */
@@ -93,6 +94,9 @@ public class WeatherConnection extends AbstractConnection {
             return "http://vortex.accuweather.com/adc2004/common/images/wxicons/120x90/"; //images/icons/standard/wx/45x45/"; //33_31x31.gif
         }
 
+        public String getIconLocation() {
+            return "http://vortex.accuweather.com/adc2004/common/images/wxicons/120x90/"; //images/icons/standard/wx/45x45/"; //33_31x31.gif
+        }
 
         public URL getHourlyURL(String zip) throws MalformedURLException {
             return new URL(TOKEN_HOURLY+zip);
@@ -105,16 +109,23 @@ public class WeatherConnection extends AbstractConnection {
 
     class WeatherCom implements TokenProvider {
         public String getPlace() {
-            return "<h1 class=\"wxH1\">";
+//            return "<h1 class=\"wxH1\">";
+            return " pn=\"";
         }
 
         public String getTemp() {
-            return " class=\"ccTemp\">";
+//            return " class=\"ccTemp\">";
+            return "  realTemp: \"";
+        }
+
+        public String getIconLocation() {
+            return "http://i.imwx.com/web/common/wxicons/130/";
         }
 
         public String getIcon() {
 //            return "http://image.weather.com/web/common/wxicons/";
-            return "http://i.imwx.com/web/common/wxicons/130/";
+//            return "http://i.imwx.com/web/common/wxicons/130/";
+            return "/img/wxicon/130/";
         }
 
         public URL getHourlyURL(String zip) throws MalformedURLException {
@@ -194,7 +205,7 @@ public class WeatherConnection extends AbstractConnection {
         int index = page.indexOf(currentProvider.getIcon());
         String result = getSection(index + currentProvider.getIcon().length(), page);
         try {
-            final URL url = new URL(currentProvider.getIcon() + result);
+            final URL url = new URL(currentProvider.getIconLocation() + result);
 
             ImageIcon scaledInstance;
             scaledInstance = ImageCache.getImage(url.getFile());
@@ -214,7 +225,7 @@ public class WeatherConnection extends AbstractConnection {
         int index = page.indexOf(currentProvider.getPlace());
 //        int index = page.indexOf("Current Conditions for ");
         String result = getSection(index + currentProvider.getPlace().length(), page);
-        index = page.indexOf(currentProvider.getTemp(), index);
+        index = page.indexOf(currentProvider.getTemp());
         result += " - <b>"+(getSection(index+currentProvider.getTemp().length(), page))+"</b>";
         return "<HTML>"+ result.replaceAll("&nbsp;", " ").trim() + "</HTML>";
     }
