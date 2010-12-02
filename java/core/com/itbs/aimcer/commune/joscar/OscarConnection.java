@@ -71,7 +71,7 @@ import java.util.logging.Logger;
 public class OscarConnection extends AbstractMessageConnection implements FileTransferSupport, IconSupport, SMSSupport, InfoSupport {
     private static Logger log = Logger.getLogger(OscarConnection.class.getName());
     AimConnection connection;
-    private AimConnectionProperties connectionProperties = new AimConnectionProperties(null, null); // use to hold on connection settings
+    protected AimConnectionProperties connectionProperties = new AimConnectionProperties(null, null); // use to hold on connection settings
     RvProcessor rvProcessor;
     /**
      * Conversation support
