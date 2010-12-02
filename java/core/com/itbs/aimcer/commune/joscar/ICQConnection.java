@@ -30,6 +30,10 @@ import net.kano.joustsim.oscar.oscar.service.icbm.SimpleMessage;
  */
 public class ICQConnection extends OscarConnection {
 
+    {
+        connectionProperties.setLoginHost("login.icq.com");
+    }
+    
     public String getServiceName() {
         return "ICQ";
     }
