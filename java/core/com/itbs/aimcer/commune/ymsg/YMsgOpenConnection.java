@@ -524,7 +524,7 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
         public void conferenceInviteReceived(SessionConferenceEvent ev) {
             log.fine(ev.toString());
             try {
-                session.declineConferenceInvite(ev, "Sorry!");
+                session.declineConferenceInvite(ev.getRoom(), "Sorry!");
             } catch (IOException e) {
                 //
             }
