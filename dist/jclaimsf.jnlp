@@ -64,6 +64,7 @@
     <jar href="jsocks.jar" />  
     <jar href="msnm.jar" />  
     <jar href="jml.jar" />  
+    <jar href="httpcore.jar" />  
     <jar href="cindy.jar" />  
     <jar href="commons-logging.jar" />  
     <jar href="smack.jar" />  
