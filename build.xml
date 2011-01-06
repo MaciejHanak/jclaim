@@ -92,7 +92,7 @@
     <property name="file.cindy.lib.jar" value="${dir.lib}/cindy.jar"/>
     <property name="file.commons-logging.o.jar" value="${dir.dist}/commons-logging.jar"/>
     <property name="file.commons-logging.lib.jar" value="${dir.lib}/commons-logging.jar"/>
-    <property name="file.httpcore.o.jar" value="${dir.dist}/httpcore-4.1.jar"/>
+    <property name="file.httpcore.o.jar" value="${dir.dist}/httpcore.jar"/>
     <property name="file.httpcore.lib.jar" value="${dir.lib}/httpcore-4.1.jar"/>
 
     <property name="file.cos.o.jar" value="${dir.dist}/cos.jar"/>
