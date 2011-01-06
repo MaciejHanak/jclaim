@@ -92,6 +92,8 @@
     <property name="file.cindy.lib.jar" value="${dir.lib}/cindy.jar"/>
     <property name="file.commons-logging.o.jar" value="${dir.dist}/commons-logging.jar"/>
     <property name="file.commons-logging.lib.jar" value="${dir.lib}/commons-logging.jar"/>
+    <property name="file.httpcore.o.jar" value="${dir.dist}/httpcore-4.1.jar"/>
+    <property name="file.httpcore.lib.jar" value="${dir.lib}/httpcore-4.1.jar"/>
 
     <property name="file.cos.o.jar" value="${dir.dist}/cos.jar"/>
     <property name="file.cos.lib.jar" value="${dir.lib}/cos.jar"/>
@@ -164,6 +166,7 @@
         <delete file="${file.jml.o.jar}"/>
         <delete file="${file.cindy.o.jar}"/>
         <delete file="${file.commons-logging.o.jar}"/>
+        <delete file="${file.httpcore.o.jar}"/>
         <delete file="${file.cos.o.jar}"/>
         <delete file="${file.socks.o.jar}"/>
         <delete file="${file.substance.o.jar}"/>
@@ -281,6 +284,8 @@
         <signjar jar="${file.cindy.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
         <pack200 src="${file.commons-logging.lib.jar}" 	destfile="${file.commons-logging.o.jar}"	repack="true"/>
         <signjar jar="${file.commons-logging.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
+        <pack200 src="${file.httpcore.lib.jar}" 	destfile="${file.httpcore.o.jar}"	repack="true"/>
+        <signjar jar="${file.httpcore.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.cos.lib.jar}" destfile="${file.cos.o.jar}"	repack="true"/>
         <signjar jar="${file.cos.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
@@ -383,4 +388,3 @@
         </java>
     </target>
  </project>
-    
