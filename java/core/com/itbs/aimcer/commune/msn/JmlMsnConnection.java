@@ -51,7 +51,11 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 
 	class ConnectionListener extends MsnAdapter {
 		public void exceptionCaught(MsnMessenger messenger, Throwable throwable) {
-            notifyErrorOccured(messenger + throwable.toString(), new Exception(throwable));
+            if (throwable.getMessage().startsWith("Login Failed")) {
+                notifyConnectionFailed("Failed to login.");
+            } else {
+                notifyErrorOccured(messenger + throwable.toString(), new Exception(throwable));
+            }
             log.log(Level.SEVERE, messenger + throwable.toString(), throwable);
 		}
 
@@ -121,7 +125,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
         }
 
 		public void contactListInitCompleted(MsnMessenger messenger) {
-			log.fine(messenger + " contact list init completeted");
+			log.fine(messenger + " contact list init completed");
 			notifyConnectionEstablished();
 		}
 
