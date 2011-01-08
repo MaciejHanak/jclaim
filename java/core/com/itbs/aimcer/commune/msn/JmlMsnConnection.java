@@ -30,8 +30,10 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 	MsnMessenger connection = null;
 	Map <Email, MsnSwitchboard> sessions = new ConcurrentHashMap<Email, MsnSwitchboard>();
     private static final String SYSTEM = "System Message";
+    protected boolean loggedIn;
 
     public void connect() throws SecurityException, Exception {
+        loggedIn = false;
         log.setLevel(Level.ALL); // see them all by now.
         super.connect();
 		sessions.clear();
@@ -51,6 +53,8 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 
 	class ConnectionListener extends MsnAdapter {
 		public void exceptionCaught(MsnMessenger messenger, Throwable throwable) {
+            loggedIn = false;
+
             if (throwable.getMessage().startsWith("Login Failed")) {
                 notifyConnectionFailed("Failed to login.");
             } else {
@@ -65,6 +69,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 		}
 
 		public void logout(MsnMessenger messenger) {
+            loggedIn = false;
             notifyConnectionLost();
             log.fine(messenger + " logout");
         }
@@ -100,10 +105,8 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 
 		public void controlMessageReceived(MsnSwitchboard switchboard,
 				MsnControlMessage message, MsnContact contact) {
-			log.fine(switchboard + " recv control message from "
-					+ contact.getEmail());
-			message.setTypingUser(switchboard.getMessenger().getOwner()
-					.getEmail().getEmailAddress());
+			log.fine(switchboard + " recv control message from " + contact.getEmail());
+			message.setTypingUser(switchboard.getMessenger().getOwner().getEmail().getEmailAddress());
 			switchboard.sendMessage(message, false);
 		}
 
@@ -126,6 +129,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 
 		public void contactListInitCompleted(MsnMessenger messenger) {
 			log.fine(messenger + " contact list init completed");
+            loggedIn = true;
 			notifyConnectionEstablished();
 		}
 
@@ -293,7 +297,7 @@ public class JmlMsnConnection extends AbstractMessageConnection {
 	}
 
 	public boolean isLoggedIn() {
-		return connection != null && connection.getConnection() != null;
+		return connection != null && connection.getConnection() != null && loggedIn;
 	}
 
 
