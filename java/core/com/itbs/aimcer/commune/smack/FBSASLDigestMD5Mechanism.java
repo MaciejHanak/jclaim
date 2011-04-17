@@ -75,11 +75,11 @@ public class FBSASLDigestMD5Mechanism extends SASLMechanism {
 			}
 		}
 
-//		stanza.append("<response xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\">");
-//		stanza.append(authenticationText);
-//		stanza.append("</response>");
+/*		stanza.append("<response xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\">");
+		stanza.append(authenticationText);
+		stanza.append("</response>");*/
 
 		// Send the authentication to the server
-		getSASLAuthentication().send(new Response(stanza.toString()));
+		getSASLAuthentication().send(new Response(authenticationText));
 	}
 }

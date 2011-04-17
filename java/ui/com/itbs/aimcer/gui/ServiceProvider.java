@@ -28,6 +28,7 @@ import com.itbs.aimcer.commune.joscar.OscarConnection;
 import com.itbs.aimcer.commune.msn.JmlMsnConnection;
 import com.itbs.aimcer.commune.msn.MSNConnection;
 import com.itbs.aimcer.commune.nateon.NateConnection;
+import com.itbs.aimcer.commune.smack.FBJabberConnection;
 import com.itbs.aimcer.commune.smack.GoogleConnection;
 import com.itbs.aimcer.commune.smack.SecureSmackConnection;
 import com.itbs.aimcer.commune.smack.SmackConnection;
@@ -61,6 +62,7 @@ public class ServiceProvider {
         new ServiceProvider(SecureSmackConnection.class, "Secure Jabber" ),
         new ServiceProvider(JAIMConnection.class,        "AIM - TOC"     ),
         new ServiceProvider(NateConnection.class,        "Nate"          ),
+        new ServiceProvider(FBJabberConnection.class,    "Facebook Chat"),
     };
 
     ServiceProvider(Class provider, String name) {
