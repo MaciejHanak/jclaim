@@ -13,8 +13,11 @@ import org.jivesoftware.smack.sasl.SASLMechanism;
 import org.jivesoftware.smack.util.Base64;
 
 /**
- * Implementation of SASL DIGEST-MD5 to login to facebook 
+ * Implementation of SASL DIGEST-MD5 to login to Facebook
  * Based on a snippet on the smack forums.
+ *
+ * another suggestion can be found here:
+ * http://stackoverflow.com/questions/5317329/xmpp-with-java-smack-library-supporting-x-facebook-platform
  */
 public class FBSASLDigestMD5Mechanism extends SASLMechanism {
 
@@ -72,11 +75,11 @@ public class FBSASLDigestMD5Mechanism extends SASLMechanism {
 			}
 		}
 
-		stanza.append("<response xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\">");
-		stanza.append(authenticationText);
-		stanza.append("</response>");
+//		stanza.append("<response xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\">");
+//		stanza.append(authenticationText);
+//		stanza.append("</response>");
 
 		// Send the authentication to the server
-		getSASLAuthentication().send(stanza.toString());
+		getSASLAuthentication().send(new Response(stanza.toString()));
 	}
 }
