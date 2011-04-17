@@ -51,7 +51,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     private static final Logger log = Logger.getLogger(SmackConnection.class.getName());
     public static final int DEFAULT_PORT = 5222;
     public static final int DEFAULT_PORT_SSL = 5223;
-    XMPPConnection connection;
+    protected XMPPConnection connection;
     FileTransferManager fileTransferManager;
     MultiUserChat multiUserChat;
     private static final String GROUP_UNFILED = "UnFiled";
@@ -110,7 +110,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     	SASLAuthentication.supportSASLMechanism("PLAIN", 0);
     }    
     
-    private void fireConnect() {
+    protected void fireConnect() {
         connection.addConnectionListener(new ConnectionListener() {
             public void connectionClosed() {
                 notifyConnectionLost();
@@ -279,14 +279,14 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
         
         
         // File transfers support:
-        fileTransferManager = new FileTransferManager(connection);
+/*        fileTransferManager = new FileTransferManager(connection);
         fileTransferManager.addFileTransferListener(new org.jivesoftware.smackx.filetransfer.FileTransferListener() {
             public void fileTransferRequest(FileTransferRequest fileTransferRequest) {
                 for (ConnectionEventListener eventHandler : eventHandlers) {
                     eventHandler.fileReceiveRequested(SmackConnection.this, getContactFactory().create(fileTransferRequest.getRequestor(), SmackConnection.this), fileTransferRequest.getFileName(), fileTransferRequest.getDescription(), fileTransferRequest);
                 }
             }
-        });
+        });*/
 
         for (ConnectionEventListener eventHandler : eventHandlers) {
             eventHandler.statusChanged(this);
