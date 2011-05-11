@@ -29,6 +29,7 @@ import com.itbs.aimcer.commune.smack.GoogleConnection;
 import com.itbs.aimcer.commune.smack.SmackConnection;
 import com.itbs.aimcer.commune.ymsg.YMsgConnection;
 import com.itbs.aimcer.commune.ymsg.YMsgOpenConnection;
+import com.itbs.aimcer.commune.smack.FBJabberConnection;
 import com.itbs.gui.ErrorDialog;
 import com.itbs.util.ClassUtil;
 import com.itbs.util.ImageCache;
@@ -59,6 +60,8 @@ public class ImageCacheUI extends ImageCache {
     public static ImagePair ICON_WIRELESS, ICON_EMAIL, ICON_TYPE, ICON_HISTORY, ICON_INFO;
     
     public static ImagePair ICON_AD;
+    
+    public static ImagePair ICON_FACEBOOK;
 
     static {
         try {
@@ -81,6 +84,8 @@ public class ImageCacheUI extends ImageCache {
             ICON_GOOGLE = new ImagePair("google.gif", GoogleConnection.class);
             ICON_MSN = new ImagePair("msn.gif", MSNConnection.class);
                        new ImagePair("msn.gif", JmlMsnConnection.class);
+                       ICON_FACEBOOK = new ImagePair("f_logo.jpg", FBJabberConnection.class);                       
+                       
             ICON_WIRELESS = new ImagePair("wireless.gif");
             ICON_EMAIL = new ImagePair("email.gif");
             ICON_HISTORY = new ImagePair("history.gif");
@@ -93,6 +98,7 @@ public class ImageCacheUI extends ImageCache {
                 ICON_JC_ANIM = new ImagePair("jc_anim.gif");
             }
             ICON_TYPE = new ImagePair("typing.gif");
+                        
         } catch (IOException e) {
             ErrorDialog.displayError(null, "Could not load image resources", e);
         }
