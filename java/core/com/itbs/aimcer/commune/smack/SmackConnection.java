@@ -86,7 +86,9 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             connection = getNewConnection();
 //            connection.loginAnonymously();
             connection.connect();
-            setAuthenticationMethod();              
+    		System.out.println("SMACK VERSION: " + SmackConfiguration.getVersion());
+            setAuthenticationMethod();
+            addListeners();
             connection.login(getUserName(), getPassword());
             fireConnect();
         } catch (XMPPException e) {
@@ -103,6 +105,140 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     }
 
     /**
+     * Starting smack 3.2 we can add listeners before login.  
+     * 
+     * I'm moving all the listeners adding code here - Alejandro
+     */
+    private void addListeners() {
+        connection.getRoster().addRosterListener(new RosterListener() {
+            public void entriesAdded(Collection<String> addresses) {
+/*            	for (String adr: addresses) {
+            		System.out.println("entriesAdded " + adr);            		
+            	}     */       	
+            }
+
+            public void entriesUpdated(Collection<String> addresses) {
+/*            	for (String adr: addresses) {
+            		System.out.println("entriesUpdated " + adr);            		
+            	}            	*/
+            }
+
+            public void entriesDeleted(Collection<String> addresses) {
+/*            	for (String adr: addresses) {
+            		System.out.println("entriesDeleted " + adr);            		
+            	}*/
+            }
+
+            public void presenceChanged(Presence presence) {
+                String normalizedName = normalizeName(presence.getFrom());            	
+                Contact contact = getContactFactory().create(normalizedName, SmackConnection.this);
+                // 20100303 aa
+                // set display name to the roster entry display name
+
+                RosterEntry rentry = connection.getRoster().getEntry(normalizedName);
+                if (rentry != null && rentry.getName() != null)
+                	contact.setDisplayName(rentry.getName());
+                
+                Status status = (Status) contact.getStatus().clone();
+                contact.getStatus().setOnline(presence.isAvailable());
+                //log.log(Level.FINEST, String.format("Contact [%s] available [%b] away [%b] dnd [%b]", contact.getName(), presence.isAvailable(), presence.isAway(), Presence.Mode.dnd == presence.getMode()));
+                //log.log(Level.FINEST, "Changing status for: " + presence.getFrom() + "-" + presence.toString());
+                //isAway also includes do not disturb (dnd), so we should not update in that case.
+                contact.getStatus().setAway(presence.isAway()&& Presence.Mode.dnd != presence.getMode()); 
+                contact.getStatus().setIdleTime(0);
+                notifyStatusChanged(contact, status);
+            }
+
+        }); // class RosterListener
+		
+        
+        /////////////////////
+        // Handle Messages //
+       ////////////////////
+       // Create a packet filter to listen for new messages from a particular
+       // user. We use an AndFilter to combine two other filters.
+       PacketFilter filter = new MessageTypeFilter(org.jivesoftware.smack.packet.Message.Type.chat);
+       // Next, create a packet listener. We use an anonymous inner class for brevity.
+       PacketListener messageListener = new PacketListener() {
+           public void processPacket(Packet packet) {
+               processSmackPacket(packet);
+           }
+       };
+
+       // Register the listener.
+       connection.addPacketListener(messageListener, filter);
+       
+       connection.addConnectionListener(new ConnectionListener() {
+           public void connectionClosed() {
+               notifyConnectionLost();
+           }
+
+           public void connectionClosedOnError(Exception e) {
+               notifyConnectionLost();
+           }
+
+           /**
+            * The connection will retry to reconnect in the specified number of seconds.
+            *
+            * @param seconds remaining seconds before attempting a reconnection.
+            */
+           public void reconnectingIn(int seconds) {
+               //TODO Change
+           }
+
+           /**
+            * The connection has reconnected successfully to the server. Connections will
+            * reconnect to the server when the previous socket connection was abruptly closed.
+            */
+           public void reconnectionSuccessful() {
+               notifyConnectionEstablished();
+           }
+
+           /**
+            * An attempt to connect to the server has failed. The connection will keep trying
+            * reconnecting to the server in a moment.
+            *
+            * @param e the exception that caused the reconnection to fail.
+            */
+           public void reconnectionFailed(Exception e) {
+               notifyConnectionLost();
+           }
+       });
+
+       // aa: create a packet listener for presence packets.
+       PacketListener subscribeRequestListener = new PacketListener() {
+               public void processPacket(Packet packet) {
+               	Presence pp = (Presence) packet;  //shouldn't be a problem since we are filtering for presence packets.
+               	// only listen to presence requests
+               	if (pp. getType() == Presence.Type.subscribe) { //Request subscription to recipient's presence.
+                       boolean accept = true;
+                       for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
+                           accept = eventHandler.contactRequestReceived(packet.getFrom(), SmackConnection.this);
+                           if (!accept) break;
+                       }    
+                       
+                       Presence response;
+                       if (accept)  
+                       	response = new Presence(Presence.Type.subscribed);
+                       else 
+                       	response  = new Presence(Presence.Type.unsubscribed);
+                       	                     
+                       response.setTo(pp.getFrom());
+                       connection.sendPacket(response);                           
+               	} //type subscribe         	
+               } // processPacket
+           };
+//        Register the subscribeRequestListener.
+       PacketFilter addedFiter = new org.jivesoftware.smack.filter.PacketTypeFilter(org.jivesoftware.smack.packet.Presence.class);
+
+       connection.addPacketListener(subscribeRequestListener, addedFiter);
+       
+       //~aa
+       //~~~~~~~~~~~~~~~~~~~~~
+       
+	}
+
+	/**
      *  Set auth method in protected mode to allow subclasses to override it.
      */
     protected void setAuthenticationMethod()
@@ -111,43 +247,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     }    
     
     protected void fireConnect() {
-        connection.addConnectionListener(new ConnectionListener() {
-            public void connectionClosed() {
-                notifyConnectionLost();
-            }
-
-            public void connectionClosedOnError(Exception e) {
-                notifyConnectionLost();
-            }
-
-            /**
-             * The connection will retry to reconnect in the specified number of seconds.
-             *
-             * @param seconds remaining seconds before attempting a reconnection.
-             */
-            public void reconnectingIn(int seconds) {
-                //TODO Change
-            }
-
-            /**
-             * The connection has reconnected successfully to the server. Connections will
-             * reconnect to the server when the previous socket connection was abruptly closed.
-             */
-            public void reconnectionSuccessful() {
-                notifyConnectionEstablished();
-            }
-
-            /**
-             * An attempt to connect to the server has failed. The connection will keep trying
-             * reconnecting to the server in a moment.
-             *
-             * @param e the exception that caused the reconnection to fail.
-             */
-            public void reconnectionFailed(Exception e) {
-                notifyConnectionLost();
-            }
-        });
-          //////////////////////
+         //////////////////////
         // Ask the user for individual requests //
         /////////////////////
         //connection.getRoster().setSubscriptionMode(Roster.SubscriptionMode.accept_all);
@@ -155,37 +255,8 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
         connection.getRoster().setSubscriptionMode(Roster.SubscriptionMode.manual);        
         //~~~~~~~~~~~~~~~~~~~~~
         // ! aa
-        
-        PacketFilter addedFiter = new org.jivesoftware.smack.filter.PacketTypeFilter(org.jivesoftware.smack.packet.Presence.class);
-        		      
-        // aa: create a packet listener for presence packets.
-        PacketListener subscribeRequestListener = new PacketListener() {
-                public void processPacket(Packet packet) {
-                	Presence pp = (Presence) packet;  //shouldn't be a problem since we are filtering for presence packets.
-                	// only listen to presence requests
-                	if (pp. getType() == Presence.Type.subscribe) { //Request subscription to recipient's presence.
-                        boolean accept = true;
-                        for (ConnectionEventListener eventHandler : eventHandlers) { //online: info.getOnSince().getTime() > 0
-                            accept = eventHandler.contactRequestReceived(packet.getFrom(), SmackConnection.this);
-                            if (!accept) break;
-                        }    
-                        
-                        Presence response;
-                        if (accept)  
-                        	response = new Presence(Presence.Type.subscribed);
-                        else 
-                        	response  = new Presence(Presence.Type.unsubscribed);
-                        	                     
-                        response.setTo(pp.getFrom());
-                        connection.sendPacket(response);                           
-                	} //type subscribe         	
-                } // processPacket
-            };
-//         Register the subscribeRequestListener.
-        connection.addPacketListener(subscribeRequestListener, addedFiter);
-        
-        //~aa
-        //~~~~~~~~~~~~~~~~~~~~~
+                		      
+
 
           ///////////////////
          // get user list //
@@ -221,62 +292,6 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             }
         }
 
-        /////////////////////
-         // Handle Messages //
-        ////////////////////
-        // Create a packet filter to listen for new messages from a particular
-        // user. We use an AndFilter to combine two other filters.
-        PacketFilter filter = new MessageTypeFilter(org.jivesoftware.smack.packet.Message.Type.chat);
-        // Next, create a packet listener. We use an anonymous inner class for brevity.
-        PacketListener messageListener = new PacketListener() {
-            public void processPacket(Packet packet) {
-                processSmackPacket(packet);
-            }
-        };
-
-        // Register the listener.
-        connection.addPacketListener(messageListener, filter);
-
-
-        connection.getRoster().addRosterListener(new RosterListener() {
-            public void entriesAdded(Collection<String> addresses) {
-/*            	for (String adr: addresses) {
-            		System.out.println("entriesAdded " + adr);            		
-            	}     */       	
-            }
-
-            public void entriesUpdated(Collection<String> addresses) {
-/*            	for (String adr: addresses) {
-            		System.out.println("entriesUpdated " + adr);            		
-            	}            	*/
-            }
-
-            public void entriesDeleted(Collection<String> addresses) {
-/*            	for (String adr: addresses) {
-            		System.out.println("entriesDeleted " + adr);            		
-            	}*/
-            }
-
-            public void presenceChanged(Presence presence) {
-                String normalizedName = normalizeName(presence.getFrom());            	
-                Contact contact = getContactFactory().create(normalizedName, SmackConnection.this);
-                // 20100303 aa
-                // set display name to the roster entry display name
-
-                RosterEntry rentry = connection.getRoster().getEntry(normalizedName);
-                if (rentry != null && rentry.getName() != null)
-                	contact.setDisplayName(rentry.getName());
-                
-                Status status = (Status) contact.getStatus().clone();
-                contact.getStatus().setOnline(presence.isAvailable());
-                //isAway also includes do not disturb (dnd), so we should not update in that case.
-                contact.getStatus().setAway(presence.isAway() && Presence.Mode.dnd != presence.getMode());
-                contact.getStatus().setIdleTime(0);
-                notifyStatusChanged(contact, status);
-            }
-
-        }); // class RosterListener
-        
         
         // File transfers support:
 /*        fileTransferManager = new FileTransferManager(connection);
