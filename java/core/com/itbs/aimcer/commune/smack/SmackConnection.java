@@ -315,10 +315,13 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     protected void processSmackPacket(Packet packet) {
         try { // try and not kill Smack!
             Message message;
+            Contact contact = null;
+        	boolean typingNotification = false;
+        	
             String from = normalizeName(packet.getFrom());
             if (packet instanceof org.jivesoftware.smack.packet.Message) {
                 org.jivesoftware.smack.packet.Message smackMessage = (org.jivesoftware.smack.packet.Message) packet;
-                Contact contact = getContactFactory().create(from, this);
+                contact = getContactFactory().create(from, this);
                 // aa 20100303
                 // get diplay name from roster
                 RosterEntry entry = connection.getRoster().getEntry(from);
@@ -327,13 +330,22 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
                 
                 message = new MessageImpl(contact, 
                         false, false, smackMessage.getBody());
+                
+                // facebook sends an empty message for typing notification.
+                if (smackMessage.getBody() == null || smackMessage.getBody().length() == 0)
+                	typingNotification = true;
             } else {
                 message = new MessageImpl(getContactFactory().create(from, this),
                         false, false, (String) packet.getProperty("body"));
             }
             for (int i = 0; i < eventHandlers.size(); i++) {
                 try {
-                    (eventHandlers.get(i)).messageReceived(this, message);
+
+					if (typingNotification) {
+                        (eventHandlers.get(i)).typingNotificationReceived(this, contact);                		
+                	} else
+                		(eventHandlers.get(i)).messageReceived(this, message);
+
                 } catch (Exception e) {
                     for (ConnectionEventListener eventHandler : eventHandlers) {
                         eventHandler.errorOccured(i + ": Failure while processing a received message.", e);
