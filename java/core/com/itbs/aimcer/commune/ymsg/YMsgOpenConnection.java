@@ -106,7 +106,7 @@ public class YMsgOpenConnection extends AbstractMessageConnection implements Fil
             // The following line (while ugly) allows us to send japanese users to the right server,
             // while perserving the ability to override servers for rest of the users.
 //            String serverName = (getUserName()!=null && getUserName().endsWith(".jp"))?SERVER_JAPAN:getServerName();
-            DirectConnectionHandler dch = new DirectConnectionHandler(getServerName(), getServerPort());
+            DirectConnectionHandler dch = new DirectConnectionHandler(getServerName(), getServerPort(), null);
             session = new Session(dch);
             // ports 5050,23,25,80
         } else {
