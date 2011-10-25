@@ -36,6 +36,7 @@ import org.jivesoftware.smack.packet.Packet;
 public class GoogleConnection extends SmackConnection {
     protected XMPPConnection getNewConnection() throws XMPPException {
         ConnectionConfiguration configuration = new ConnectionConfiguration("talk.google.com", 5222, "gmail.com");
+        configuration.setReconnectionAllowed(false);
         return new XMPPConnection(configuration);
     }
 

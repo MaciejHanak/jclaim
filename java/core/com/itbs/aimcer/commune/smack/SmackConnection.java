@@ -323,7 +323,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
                 org.jivesoftware.smack.packet.Message smackMessage = (org.jivesoftware.smack.packet.Message) packet;
                 contact = getContactFactory().create(from, this);
                 // aa 20100303
-                // get diplay name from roster
+                // get display name from roster
                 RosterEntry entry = connection.getRoster().getEntry(from);
                 if (entry != null && entry.getName() != null) 
                     contact.setDisplayName(entry.getName());                
