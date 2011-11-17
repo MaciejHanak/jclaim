@@ -200,6 +200,23 @@ public class TwitterConnection extends AbstractMessageConnection {
     public void setAway(boolean away) {
     }
 
+    public void setStatus(String message) {
+        try {
+            connection.updateStatus(message);
+        } catch (TwitterException e) {
+            notifyErrorOccured("Failed to update status", e);
+        }
+        notifyStatusChanged();
+    }
+
+    public void reportSpam(String message) {
+        try {
+            connection.reportSpam(message);
+        } catch (TwitterException e) {
+            notifyErrorOccured("Failed to update status", e);
+        }
+    }
+
     /**
      * Overide this message with code that sends the message out.
      *
