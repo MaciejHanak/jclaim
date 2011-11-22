@@ -86,6 +86,9 @@
     <property name="file.msn.o.jar" value="${dir.dist}/msnm.jar"/>
     <property name="file.msn.lib.jar" value="${dir.lib}/msnm.jar"/>
 
+    <property name="file.twitter.o.jar" value="${dir.dist}/twitter4j.jar"/>
+    <property name="file.twitter.lib.jar" value="${dir.lib}/twitter4j-core-2.2.5.jar"/>
+
     <property name="file.jml.o.jar" value="${dir.dist}/jml.jar"/>
     <property name="file.jml.lib.jar" value="${dir.lib}/jml.jar"/>
     <property name="file.cindy.o.jar" value="${dir.dist}/cindy.jar"/>
@@ -164,6 +167,7 @@
         <delete file="${file.log4j.o.jar}"/>
         <delete file="${file.nate.o.jar}"/>
         <delete file="${file.msn.o.jar}"/>
+        <delete file="${file.twitter.o.jar}"/>
         <delete file="${file.jml.o.jar}"/>
         <delete file="${file.cindy.o.jar}"/>
         <delete file="${file.commons-logging.o.jar}"/>
@@ -278,6 +282,9 @@
 
         <pack200 src="${file.msn.lib.jar}" 	destfile="${file.msn.o.jar}"	repack="true"/>
         <signjar jar="${file.msn.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
+
+        <pack200 src="${file.twitter.lib.jar}" 	destfile="${file.twitter.o.jar}"	repack="true"/>
+        <signjar jar="${file.twitter.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
 
         <pack200 src="${file.jml.lib.jar}" 	destfile="${file.jml.o.jar}"	repack="true"/>
         <signjar jar="${file.jml.o.jar}" alias="${alias}" keystore="${file.keystore}"  storepass="${storepar}"/>
