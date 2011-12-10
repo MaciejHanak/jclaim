@@ -25,10 +25,12 @@ import com.itbs.aimcer.bean.Group;
 import com.itbs.aimcer.bean.Message;
 import com.itbs.aimcer.bean.Nameable;
 import com.itbs.aimcer.commune.AbstractMessageConnection;
+import com.itbs.aimcer.commune.Connection;
 import com.itbs.aimcer.commune.ConnectionEventListener;
 import twitter4j.*;
 import twitter4j.auth.BasicAuthorization;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -242,6 +244,48 @@ public class TwitterConnection extends AbstractMessageConnection {
         processMessage(message);
     }
 
+    class TwitterContact implements Contact {
+        User user;
+
+        TwitterContact(User user) {
+            this.user = user;
+        }
+
+        public void statusChanged() {
+        }
+
+        public Icon getIcon() { return null; }
+
+        public void setIcon(Icon icon) { }
+
+        public Icon getPicture() { return null; }
+
+        public void setPicture(Icon icon) { }
+
+        public String getDisplayName() { return user.getScreenName(); }
+
+        public void setDisplayName(String name) { }
+
+        public com.itbs.aimcer.bean.Status getStatus() {
+            return null;
+        }
+
+        public Connection getConnection() {
+            return TwitterConnection.this;
+        }
+
+        public String getName() {
+            return user.getName();
+        }
+
+        public User getUnderlyingUser() {
+            return user;
+        }
+    }
+
+    public Contact getUserInfo(String name) throws Exception {
+        return new TwitterContact(connection.showUser(name));
+    }
 
     public String getDefaultIconName() {
         return "twitter.gif";
