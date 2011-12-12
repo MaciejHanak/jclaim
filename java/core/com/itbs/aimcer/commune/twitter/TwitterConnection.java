@@ -244,7 +244,7 @@ public class TwitterConnection extends AbstractMessageConnection {
         processMessage(message);
     }
 
-    class TwitterContact implements Contact {
+    public class TwitterContact implements Contact {
         User user;
 
         TwitterContact(User user) {
