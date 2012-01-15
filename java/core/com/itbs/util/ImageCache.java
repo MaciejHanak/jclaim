@@ -21,17 +21,18 @@
 package com.itbs.util;
 
 import javax.swing.*;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 /**
  * @author Alex Rass
  * @since Feb 12, 2006
  */
 public class ImageCache {
-    private static Map<Object,ImageIcon> imageCache = Collections.synchronizedMap(new HashMap<Object, ImageIcon>());
-    private static Map<Object,String> imageNames = Collections.synchronizedMap(new HashMap<Object, String>());
+    private static Map<Object,ImageIcon> imageCache = new ConcurrentHashMap<Object, ImageIcon>();
+    private static Map<Object,String> imageNames = new ConcurrentHashMap<Object, String>();
+    private static transient final Logger log = Logger.getLogger(ImageCache.class.getName());
 
     public static void addImageName(Object key, String name) {
         if (key!=null && name!=null)
@@ -48,7 +49,11 @@ public class ImageCache {
     }
 
     public static ImageIcon getImage(Object key) {
-        return imageCache.get(key);
+        ImageIcon imageIcon = imageCache.get(key);
+        if (imageIcon == null) {
+            log.info("Failed to find an icon for "+ key);
+        }
+        return imageIcon;
     }
 
 }
