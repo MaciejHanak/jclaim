@@ -84,7 +84,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     public void connectReal(){
         try {
             connection = getNewConnection();
-//            connection.loginAnonymously();
+//          connection.loginAnonymously();
             connection.connect();
     		System.out.println("SMACK VERSION: " + SmackConfiguration.getVersion());
             setAuthenticationMethod();
@@ -98,7 +98,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
             error = error == null ? "" : error;
             notifyConnectionFailed("Connection Failed. " + error);
         } catch (RuntimeException e) { // Lets see if we see this with Google.
-            log.log(Level.SEVERE, "UNCOUGHT EXCEPTION! PLEASE FIX!", e);
+            log.log(Level.SEVERE, "UNCAUGHT EXCEPTION! PLEASE FIX!", e);
             disconnect(false);
             notifyConnectionFailed("Connection Failed. UNUSUAL TERMINATION!" + e.getMessage());
         }
