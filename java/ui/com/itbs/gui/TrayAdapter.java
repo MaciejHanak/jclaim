@@ -21,8 +21,6 @@
 package com.itbs.gui;
 
 import org.jdesktop.jdic.misc.Alerter;
-import org.jdesktop.jdic.tray.SystemTray;
-import org.jdesktop.jdic.tray.TrayIcon;
 
 import javax.swing.*;
 import java.awt.*;
@@ -73,9 +71,9 @@ public class TrayAdapter {
      * @param icon to use
      * @param caption to display in tray.
      */
-    public static void create(final boolean useTray, final Frame frame, Icon icon, String caption) {
+    public static void create(final boolean useTray, final Frame frame, ImageIcon icon, String caption) {
         try {
-            trayIcon = new TrayIcon(icon, caption);
+            trayIcon = new TrayIcon(icon.getImage(), caption);
             trayIcon.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     frame.setVisible(!frame.isVisible());
@@ -117,14 +115,17 @@ public class TrayAdapter {
     public static void updateTrayIcon(boolean useTray) {
         if (isAvailable() && lastState != useTray) {
             try {
-                SystemTray tray = SystemTray.getDefaultSystemTray();
+                SystemTray tray = SystemTray.getSystemTray();
                 if (useTray) {
-                    tray.addTrayIcon(trayIcon);
+                    tray.add(trayIcon);
                 } else {
-                    tray.removeTrayIcon(trayIcon);
+                    tray.remove(trayIcon);
                 }
                 lastState = useTray;
             } catch (UnsatisfiedLinkError e) {
+                log.log(Level.SEVERE, "", e);
+                trayIcon = null;
+            } catch (AWTException e) {
                 log.log(Level.SEVERE, "", e);
                 trayIcon = null;
             }
@@ -142,7 +143,7 @@ public class TrayAdapter {
     public static void showBubble(String caption, String text) {
         if (isAvailable() && lastState) {
             try {
-                trayIcon.displayMessage(caption, text, TrayIcon.INFO_MESSAGE_TYPE);
+                trayIcon.displayMessage(caption, text, TrayIcon.MessageType.INFO);
             } catch (NullPointerException e) {
                 // both strings are null
             } catch (UnsatisfiedLinkError e) {

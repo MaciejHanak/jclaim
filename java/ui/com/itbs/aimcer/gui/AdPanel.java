@@ -1,12 +1,10 @@
 package com.itbs.aimcer.gui;
 
-import org.jdesktop.jdic.desktop.Desktop;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.URL;
+import java.net.URI;
 
 /**
  *
@@ -27,7 +25,7 @@ public class AdPanel extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 if (lastClick + 5000 < System.currentTimeMillis()) { // if they haven't clicked in 2 seconds, go!
                     try {
-                        Desktop.browse(new URL(url));
+                        Desktop.getDesktop().browse(new URI(url));
                     } catch (Exception e1) {
                         // noone cares
                     }

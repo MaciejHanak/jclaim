@@ -29,8 +29,6 @@ import com.itbs.aimcer.gui.order.OrderEntryPanel;
 import com.itbs.gui.*;
 import com.itbs.util.DelayedThread;
 import com.itbs.util.GeneralUtils;
-import org.jdesktop.jdic.desktop.Desktop;
-import org.jdesktop.jdic.desktop.DesktopException;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -46,7 +44,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -162,12 +159,7 @@ public class MessageWindow extends MessageWindowBase {
                     new Thread() {
                         public void run() {
                             try {
-                                final org.jdesktop.jdic.desktop.Message msg = new org.jdesktop.jdic.desktop.Message();
-                                java.util.List<String> list  = new ArrayList<String>();
-                                list.add(contactWrapper.getPreferences().getEmailAddress());
-                                msg.setToAddrs(list);
-                                msg.setBody(textPane.getText());
-                                Desktop.mail(msg);
+                                Desktop.getDesktop().mail(com.itbs.aimcer.commune.desktop.Message.getURI(contactWrapper.getPreferences().getEmailAddress(), "Email", textPane.getText()));
                             } catch (Throwable ex) {
                                 Main.complain("Failed to create an email", ex);
                             }
@@ -202,8 +194,8 @@ public class MessageWindow extends MessageWindowBase {
                 else {
                     // start default editor
                     try {
-                        Desktop.open(file);
-                    } catch (DesktopException exc) {
+                        Desktop.getDesktop().open(file);
+                    } catch (IOException exc) {
                         ErrorDialog.displayError(frame, "Failed to launch " + file.getAbsolutePath() + "\n", exc);
                     } catch (UnsatisfiedLinkError exc) {
                         ErrorDialog.displayError(frame, "Failed to locate native libraries.", exc);

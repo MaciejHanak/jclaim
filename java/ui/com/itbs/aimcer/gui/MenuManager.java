@@ -28,8 +28,6 @@ import com.itbs.aimcer.log.LogsPidgin;
 import com.itbs.gui.*;
 import com.itbs.newgrep.DustMeParser;
 import com.itbs.newgrep.Grep;
-import org.jdesktop.jdic.desktop.Desktop;
-import org.jdesktop.jdic.desktop.Message;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
@@ -38,7 +36,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -622,7 +620,7 @@ public class MenuManager {
                 }
             } else if (COMMAND_HELP_FAQ.equals(command)) {
                 try {
-                    Desktop.browse(new URL(Main.URL_FAQ));
+                    Desktop.getDesktop().browse(new URI(Main.URL_FAQ));
                 } catch (Exception exc) {
                     ErrorDialog.displayError(Main.getFrame(), "Failed to launch url" + Main.URL_FAQ + "\n", exc);
                 } catch (UnsatisfiedLinkError exc) {
@@ -631,24 +629,17 @@ public class MenuManager {
 
             } else if (COMMAND_HELP_FEATURE.equals(command)) {
                 try {
-                    final Message msg = new Message();
-                    java.util.List <String> list  = new ArrayList<String> ();
-                    list.add(Main.EMAIL_SUPPORT);
-                    msg.setToAddrs(list);
-                    msg.setSubject("Feature Request");
-                    Desktop.mail(msg);
+                    Desktop.getDesktop().mail(new com.itbs.aimcer.commune.desktop.Message(Main.EMAIL_SUPPORT).getURI());
                 } catch (Throwable e1) {
                     JOptionPane.showMessageDialog(Main.getFrame(), Main.ABOUT_MESSAGE, "About:", JOptionPane.INFORMATION_MESSAGE);
                 }
             } else if (COMMAND_HELP_REQUEST.equals(command)) {
                 try {
-                    final Message msg = new Message();
-                    java.util.List <String> list  = new ArrayList<String>();
-                    list.add(Main.EMAIL_SUPPORT);
-                    msg.setToAddrs(list);
-                    msg.setSubject("JClaim support");
-                    msg.setBody("To speed up processing, please include your username (do not include password) and medium (AOL, Yahoo etc).\n" + Main.DEBUG_INFO);
-                    Desktop.mail(msg);
+                    Desktop.getDesktop().mail(com.itbs.aimcer.commune.desktop.Message.getURI(
+                            Main.EMAIL_SUPPORT,
+                            "JClaim support",
+                            "To speed up processing, please include your username (do not include password) and medium (AOL, Yahoo etc).\n" + Main.DEBUG_INFO
+                    ));
                 } catch (Throwable e1) {
                     JOptionPane.showMessageDialog(Main.getFrame(), Main.ABOUT_MESSAGE, "About:", JOptionPane.INFORMATION_MESSAGE);
                 }
