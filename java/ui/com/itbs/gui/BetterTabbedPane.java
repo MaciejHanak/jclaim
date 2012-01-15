@@ -32,7 +32,7 @@ public class BetterTabbedPane extends JTabbedPane {
     }
     public boolean tryLock() {
         try {
-            return lock.tryLock() || lock.tryLock(1000, TimeUnit.MILLISECONDS);
+            return lock.tryLock() || lock.tryLock(1, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             return false;
         }
@@ -167,7 +167,10 @@ public class BetterTabbedPane extends JTabbedPane {
 //        lock();
 //        try {
             FindIndex finder = new FindIndex(component);
-            GUIUtils.runOnAWTAndWait(finder); // so that we know that swing didn't mess with it
+            synchronized (getTreeLock()) {
+//                GUIUtils.runOnAWTAndWait(finder); // so that we know that swing didn't mess with it
+                finder.run();
+            }
             return finder.index;
 //        } finally {
 //            unlock();
