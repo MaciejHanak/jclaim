@@ -129,8 +129,15 @@ public class SaveFile {
             out.close();
             Thread.yield();
             // save, rename to old.
-            if (!CONFIG_FILE.delete()) { log.severe("Failed to delete " + CONFIG_FILE);  Main.complain("Failed to delete old config file."); }
-            if (!CONFIG_FILE_SAV.renameTo(CONFIG_FILE)) { log.severe("Failed to rename " + CONFIG_FILE_SAV + " to " + CONFIG_FILE); Main.complain("Failed to rename config file."); }
+            if (!CONFIG_FILE.delete()) {   // if no old - it may be ok.
+                log.severe("Failed to delete " + CONFIG_FILE);  Main.complain("Failed to delete old config file.");
+            }
+            if (CONFIG_FILE_SAV.length()==0) { // something went wrong earlier.
+                return;
+            }
+            if (!CONFIG_FILE_SAV.renameTo(CONFIG_FILE)) {
+                log.severe("Failed to rename " + CONFIG_FILE_SAV + " to " + CONFIG_FILE); Main.complain("Failed to rename config file.");
+            }
         } catch (Exception ex) {
             Main.complain("Failed to save config file.", ex);
         } finally {
