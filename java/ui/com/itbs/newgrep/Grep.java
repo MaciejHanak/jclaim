@@ -23,7 +23,6 @@ package com.itbs.newgrep;
 import com.itbs.aimcer.bean.ClientProperties;
 import com.itbs.aimcer.gui.ComponentFactory;
 import com.itbs.gui.*;
-import org.jdesktop.jdic.desktop.Desktop;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -37,7 +36,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
-import java.net.URL;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -233,7 +232,7 @@ public class Grep {
                     url = URLEncoder.encode(string.getText().trim(), "UTF-8");
                     url = BetterTextField.GoogleAction.GOOGLE_URL + url;
                     try {
-                        Desktop.browse(new URL(url));
+                        Desktop.getDesktop().browse(new URI(url));
                     } catch (Exception exc) {
                         ErrorDialog.displayError(motherFrame, "Failed to launch url " + url, exc);
                     } catch (UnsatisfiedLinkError exc) {

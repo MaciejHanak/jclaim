@@ -21,7 +21,6 @@
 package com.itbs.gui;
 
 import com.itbs.aimcer.bean.ClientProperties;
-import org.jdesktop.jdic.desktop.Desktop;
 
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
@@ -35,7 +34,7 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.Serializable;
-import java.net.URL;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -140,7 +139,7 @@ public class BetterTextField extends JTextField {
             try {
 //                Desktop.browse(new URL("http://www.google.com/search?q="+ URLEncoder.encode(c.getSelectedText().trim(), "UTF-8") + "&ie=utf-8&oe=utf-8"));
                 // Using a partner link instead or the regular one.
-                Desktop.browse(new URL(GOOGLE_URL + URLEncoder.encode(selected, "UTF-8") ));
+                Desktop.getDesktop().browse(new URI(GOOGLE_URL + URLEncoder.encode(selected, "UTF-8")));
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Failed to lookup.", e);
             }

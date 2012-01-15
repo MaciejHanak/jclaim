@@ -20,16 +20,14 @@
 
 package com.itbs.gui;
 
+import com.itbs.aimcer.commune.desktop.Message;
 import com.itbs.aimcer.gui.Main;
-import org.jdesktop.jdic.desktop.Desktop;
-import org.jdesktop.jdic.desktop.Message;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -82,14 +80,16 @@ public class ErrorDialog {
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Message", getDisplayTextArea(defaultMessage) );
-        tabbedPane.add("Details", getDisplayTextArea(detailedMessage));
+        if (detailedMessage!=null) {
+            tabbedPane.add("Details", getDisplayTextArea(detailedMessage));
+        }
 
 //        JOptionPane optionPane = new JOptionPane(tabbedPane, JOptionPane.ERROR_MESSAGE);
 //        final JDialog dialog = optionPane.createDialog(tip, "Error");
         final JDialog dialog = new JDialog(JOptionPane.getFrameForComponent(tip), "Error:", true);
         dialog.getContentPane().setLayout(new BorderLayout());
         dialog.getContentPane().add(tabbedPane);
-        dialog.getContentPane().add(getButtonPane(dialog, detailedMessage), BorderLayout.SOUTH);
+        dialog.getContentPane().add(getButtonPane(dialog, defaultMessage+detailedMessage), BorderLayout.SOUTH);
 //        dialog.setModal(true);
         dialog.pack();
         dialog.setVisible(true);
@@ -106,18 +106,10 @@ public class ErrorDialog {
         panel.add(button);
         button = new JButton(new ActionAdapter("Email Support", (String)null, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                final Message msg = new Message();
-                java.util.List <String> list  = new ArrayList<String>();
-                list.add(Main.EMAIL_SUPPORT); // todo must fix this!
-                msg.setToAddrs(list);
-                msg.setSubject("Error report");
-                msg.setBody(Main.DEBUG_INFO   // todo must fix this!
-                         + "\nError:" + detailedMessage
-                );
                 new Thread() {
                     public void run() {
                         try {
-                            Desktop.mail(msg);
+                            Desktop.getDesktop().mail(Message.getURI(Main.EMAIL_SUPPORT, "Error report", Main.DEBUG_INFO + "\nError:" + detailedMessage));
                         } catch (Throwable e1) {
                             log.log(Level.SEVERE, "", e1);
                             JOptionPane.showMessageDialog(dialog, "Failed to create an email.", "Error:", JOptionPane.ERROR_MESSAGE);

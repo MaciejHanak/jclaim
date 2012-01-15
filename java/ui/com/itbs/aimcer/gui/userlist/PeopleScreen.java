@@ -30,14 +30,13 @@ import com.itbs.gui.AbstractFileTransferHandler;
 import com.itbs.gui.ActionAdapter;
 import com.itbs.gui.EditableJList;
 import com.itbs.gui.TypingFilter;
-import org.jdesktop.jdic.desktop.Desktop;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -66,7 +65,7 @@ final public class PeopleScreen extends JPanel implements UserList {
                 PeopleScreen.this.requestFocus();
             }
         });
-    } // Constr
+    } // Constructor
 
     /**
      * Common handler
@@ -78,7 +77,7 @@ final public class PeopleScreen extends JPanel implements UserList {
                 Main.globalWindowHandler.openWindow(((ContactLabel)item).getContact(), true);
             } else if (((ContactLabel)item).getContact().getConnection() instanceof WeatherConnection) {
                 try {
-                    Desktop.browse(new URL(WeatherConnection.TOKEN_HOURLY + (((ContactLabel)item).getContact()).getName()));
+                    Desktop.getDesktop().browse(new URI(WeatherConnection.TOKEN_HOURLY + (((ContactLabel) item).getContact()).getName()));
                 } catch (Exception exc) {
                     Main.complain("Failed to launch url " + WeatherConnection.TOKEN_HOURLY  + ((ContactWrapper)item).getName() + "\n", exc);
                 } catch (UnsatisfiedLinkError exc) {
