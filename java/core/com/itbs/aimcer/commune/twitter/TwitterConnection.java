@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, ITBS LLC. All Rights Reserved.
+ * Copyright (c) 2012, ITBS LLC. All Rights Reserved.
  *
  *     This file is part of JClaim.
  *
@@ -20,14 +20,12 @@
 
 package com.itbs.aimcer.commune.twitter;
 
-import com.itbs.aimcer.bean.Contact;
-import com.itbs.aimcer.bean.Group;
-import com.itbs.aimcer.bean.Message;
-import com.itbs.aimcer.bean.Nameable;
+import com.itbs.aimcer.bean.*;
 import com.itbs.aimcer.commune.AbstractMessageConnection;
 import com.itbs.aimcer.commune.Connection;
 import com.itbs.aimcer.commune.ConnectionEventListener;
 import twitter4j.*;
+import twitter4j.Status;
 import twitter4j.auth.BasicAuthorization;
 
 import javax.swing.*;
@@ -36,10 +34,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Provides connection to Jabber.
+ * Provides connection to Twitter.
+ *
+ * Examples for using the API:
+ * http://twitter4j.org/en/code-examples.html
  *
  * @author Alex Rass
- * @since Dec 24, 2004
+ * @since Dec 24, 2011
  */
 public class TwitterConnection extends AbstractMessageConnection {
     private static final Logger log = Logger.getLogger(TwitterConnection.class.getName());
@@ -66,7 +67,7 @@ public class TwitterConnection extends AbstractMessageConnection {
             getList();
             fireConnect();
         } catch (Exception e) { // Lets see if we see this with Google.
-            log.log(Level.SEVERE, "UNCOUGHT EXCEPTION! PLEASE FIX!", e);
+            log.log(Level.SEVERE, "UNCAUGHT EXCEPTION! PLEASE FIX!", e);
             disconnect(false);
             notifyConnectionFailed("Connection Failed. UNUSUAL TERMINATION!" + e.getMessage());
         }
@@ -234,6 +235,11 @@ public class TwitterConnection extends AbstractMessageConnection {
         }
     }
 
+//    Iterable<ExternalMessage> getMessages()
+    public ResponseList<Status> getMentions(Paging paging) throws TwitterException {
+        return connection.getMentions(paging);
+    }
+
     /**
      * Overide this message with code that sends the message out.
      *
@@ -246,13 +252,15 @@ public class TwitterConnection extends AbstractMessageConnection {
 
     public class TwitterContact implements Contact {
         User user;
+        StatusImpl status;
 
         TwitterContact(User user) {
             this.user = user;
+            status = new StatusImpl(this);
+            status.setOnline(true);
         }
 
-        public void statusChanged() {
-        }
+        public void statusChanged() { }
 
         public Icon getIcon() { return null; }
 
@@ -267,7 +275,7 @@ public class TwitterConnection extends AbstractMessageConnection {
         public void setDisplayName(String name) { }
 
         public com.itbs.aimcer.bean.Status getStatus() {
-            return null;
+            return status;
         }
 
         public Connection getConnection() {
@@ -288,6 +296,6 @@ public class TwitterConnection extends AbstractMessageConnection {
     }
 
     public String getDefaultIconName() {
-        return "twitter.gif";
+        return "twitter.png";
     }
 } // class SmackConnection
