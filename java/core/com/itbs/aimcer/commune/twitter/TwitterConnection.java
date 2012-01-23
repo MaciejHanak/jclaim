@@ -26,7 +26,6 @@ import com.itbs.aimcer.commune.Connection;
 import com.itbs.aimcer.commune.ConnectionEventListener;
 import twitter4j.*;
 import twitter4j.Status;
-import twitter4j.auth.BasicAuthorization;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -62,8 +61,10 @@ public class TwitterConnection extends AbstractMessageConnection {
 
     public void connectReal(){
         try {
-            connection = new TwitterFactory().getInstance(new BasicAuthorization(getUserName(), getPassword()));
-
+            connection = new TwitterFactory().getInstance();
+            if (getUserName()!=null && getUserName().length()>0) {
+                connection.setOAuthConsumer(getUserName(), getPassword());
+            }
             getList();
             fireConnect();
         } catch (Exception e) { // Lets see if we see this with Google.
@@ -203,13 +204,46 @@ public class TwitterConnection extends AbstractMessageConnection {
     public void setAway(boolean away) {
     }
 
-    public void setStatus(String message) {
+    /**
+     * Update twitter
+     * @param message to update with
+     * @return id of the message for a re-tweet
+     */
+    public long setStatus(String message) {
+        long result=0;
         try {
-            connection.updateStatus(message);
+            Status status = connection.updateStatus(message);
+            if (status!=null) {
+                result = status.getId();
+            }
         } catch (TwitterException e) {
             notifyErrorOccured("Failed to update status", e);
         }
         notifyStatusChanged();
+        return result;
+    }
+
+    public Twitter getOfficialConnection() {
+        return connection;
+    }
+
+    /**
+     * Update twitter
+     * @param message to update with
+     * @return id of the message for a re-tweet
+     */
+    public long retweetStatus(long message) {
+        long result=0;
+        try {
+            Status status = connection.retweetStatus(message);
+            if (status!=null) {
+                result = status.getId();
+            }
+        } catch (TwitterException e) {
+            notifyErrorOccured("Failed to update status", e);
+        }
+        notifyStatusChanged();
+        return result;
     }
 
     public void reportSpam(String message) {
