@@ -223,7 +223,7 @@ public class TwitterConnection extends AbstractMessageConnection {
         return result;
     }
 
-    public Twitter getOfficialConnection() {
+    public Twitter getUnderlyingConnection() {
         return connection;
     }
 
@@ -327,6 +327,10 @@ public class TwitterConnection extends AbstractMessageConnection {
 
     public Contact getUserInfo(String name) throws Exception {
         return new TwitterContact(connection.showUser(name));
+    }
+
+    public QueryResult search(Query query) throws Exception {
+        return connection.search(query);
     }
 
     public String getDefaultIconName() {
