@@ -110,7 +110,8 @@ public class WeatherConnection extends AbstractConnection {
     class WeatherCom implements TokenProvider {
         public String getPlace() {
 //            return "<h1 class=\"wxH1\">";
-            return " pn=\"";
+//            return " pn=\"";
+            return "locName: \"";
         }
 
         public String getTemp() {
