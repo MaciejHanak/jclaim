@@ -55,8 +55,10 @@ public class WeatherConnection extends AbstractConnection {
     private final Lock updateLock = new ReentrantLock();
 
     TokenProvider currentProvider = new WeatherCom();
-    public static final String TOKEN_HOURLY = "http://www.weather.com/weather/hourbyhour/"; // + zip
+    public static final String TOKEN_HOURLY = "http://www.weather.com/weather/today/"; // + zip
 //http://www.weather.com/outlook/travel/businesstraveler/hourbyhour/08837
+    // new:
+    //www.weather.com/weather/right-now/07302
 
     /** Used to prefix the display string when updates fail */
     private static final String PREFIX_OLD = "<HTML>Old: ";
@@ -111,12 +113,12 @@ public class WeatherConnection extends AbstractConnection {
         public String getPlace() {
 //            return "<h1 class=\"wxH1\">";
 //            return " pn=\"";
-            return "locName: \"";
+            return "\"locname\":\"";
         }
 
         public String getTemp() {
 //            return " class=\"ccTemp\">";
-            return "  realTemp: \"";
+            return "\"realTemp\":";
         }
 
         public String getIconLocation() {
@@ -126,7 +128,8 @@ public class WeatherConnection extends AbstractConnection {
         public String getIcon() {
 //            return "http://image.weather.com/web/common/wxicons/";
 //            return "http://i.imwx.com/web/common/wxicons/130/";
-            return "/img/wxicon/130/";
+//            http://s.imwx.com/v.20120328.084208//img/wxicon/120/26.png
+            return "/img/wxicon/120/";
         }
 
         public URL getHourlyURL(String zip) throws MalformedURLException {
@@ -134,7 +137,7 @@ public class WeatherConnection extends AbstractConnection {
         }
 
         public URL getURL(String zip) throws MalformedURLException {
-            return new URL("http://www.weather.com/weather/local/"+zip);
+            return new URL("http://www.weather.com/weather/right-now/"+zip);
         }
     }
 
@@ -228,7 +231,7 @@ public class WeatherConnection extends AbstractConnection {
         String result = getSection(index + currentProvider.getPlace().length(), page);
         index = page.indexOf(currentProvider.getTemp());
         result += " - <b>"+(getSection(index+currentProvider.getTemp().length(), page))+"</b>";
-        return "<HTML>"+ result.replaceAll("&nbsp;", " ").trim() + "</HTML>";
+        return "<HTML>"+ result.replaceAll("&nbsp;", " ").replaceAll(",", " ").trim() + "</HTML>";
     }
 
     /**
