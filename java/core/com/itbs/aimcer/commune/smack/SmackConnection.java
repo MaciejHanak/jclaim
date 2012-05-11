@@ -83,7 +83,12 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
 
     public void connectReal(){
         try {
-            connection = getNewConnection();
+            synchronized (this) {
+                if (connection!=null && connection.isConnected()) {
+                    connection.disconnect();
+                }
+                connection = getNewConnection();
+            }
 //          connection.loginAnonymously();
             connection.connect();
     		System.out.println("SMACK VERSION: " + SmackConfiguration.getVersion());
@@ -218,10 +223,11 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
                        }    
                        
                        Presence response;
-                       if (accept)  
-                       	response = new Presence(Presence.Type.subscribed);
-                       else 
-                       	response  = new Presence(Presence.Type.unsubscribed);
+                       if (accept) {
+                           response = new Presence(Presence.Type.subscribed);
+                       } else {
+                           response = new Presence(Presence.Type.unsubscribed);
+                       }
                        	                     
                        response.setTo(pp.getFrom());
                        connection.sendPacket(response);                           
@@ -343,8 +349,9 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
 
 					if (typingNotification) {
                         (eventHandlers.get(i)).typingNotificationReceived(this, contact);                		
-                	} else
-                		(eventHandlers.get(i)).messageReceived(this, message);
+                	} else {
+                        (eventHandlers.get(i)).messageReceived(this, message);
+                    }
 
                 } catch (Exception e) {
                     for (ConnectionEventListener eventHandler : eventHandlers) {
@@ -395,8 +402,9 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
      * Cancel login.
      */
     public void cancel() {
-        if (!isLoggedIn())
+        if (!isLoggedIn()) {
             connection.disconnect();
+        }
     }
 
     public void setTimeout(int timeout) {
@@ -516,7 +524,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     }
 
     /**
-     * Overide this message with code that sends the message out.
+     * Override this message with code that sends the message out.
      *
      * @param message to send
      * @throws java.io.IOException problems
@@ -532,7 +540,7 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
     }
 
     /**
-     * Overide this message with code that sends the message out.
+     * Override this message with code that sends the message out.
      *
      * @param message to send
      * @throws java.io.IOException problems
@@ -615,11 +623,13 @@ public class SmackConnection extends AbstractMessageConnection implements FileTr
 
             // Discover information about the room roomName@conference.myserver
             RoomInfo info = MultiUserChat.getRoomInfo(connection, room);
-            if (info.getOccupantsCount() != -1)
+            if (info.getOccupantsCount() != -1) {
                 listener.serverNotification("Number of occupants: " + info.getOccupantsCount());
+            }
 //                addHistoryText("Number of occupants: " + info.getOccupantsCount(), ATT_BLUE);
-            if (GeneralUtils.isNotEmpty(info.getSubject()))
+            if (GeneralUtils.isNotEmpty(info.getSubject())) {
                 listener.serverNotification("Room Subject: " + info.getSubject());
+            }
             // listen for subject change and update
             multiUserChat.addSubjectUpdatedListener(new SubjectUpdatedListener() {
                 public void subjectUpdated(String subject, String from) {
