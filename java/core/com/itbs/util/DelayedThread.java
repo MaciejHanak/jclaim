@@ -20,6 +20,7 @@
 
 package com.itbs.util;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
@@ -67,12 +68,12 @@ public class DelayedThread extends Thread {
      *
      * In other words: is the final block allowed to run yet? T/F
      */
-    private SyncBoolean flag = new SyncBoolean(false);
+    private AtomicBoolean flag = new AtomicBoolean(false);
     /**
      * Determines if we want run block to be executed each time someone hits mark
      */
     private boolean runStartEachMark = false;
-    
+
     private final long delay;
     /** Object on which to sync. */
     protected final Object notifyObject = new Object();
@@ -101,7 +102,7 @@ public class DelayedThread extends Thread {
          */
         boolean isAlive();
     }
-    
+
     /**
      * Constructor.
      * @param threadName      Name of the thread
@@ -143,11 +144,11 @@ public class DelayedThread extends Thread {
         clock = System.currentTimeMillis(); // make sure it d/n start w/o us running first code
         lock.lock(); // make sure we don't run/lock from multiple callers.
         try {
-            if (runThisFirst != null && (!flag.isValue() || runStartEachMark)) {
+            if (runThisFirst != null && (!flag.get() || runStartEachMark)) {
                 runThisFirst.run();
             }
 //            runThisFirst = null; // done
-            flag.setValue(true);
+            flag.set(true);
             clock = System.currentTimeMillis();
             synchronized(notifyObject) { // wake it up
                 notifyObject.notify();
@@ -179,7 +180,7 @@ public class DelayedThread extends Thread {
         try {
 //            sleep(delay); // this way the window gets created.
             while (internalCheck && (stillAliveMonitor==null || stillAliveMonitor.isAlive())) {
-                if (!flag.value) { // if nothing to do - then wait for notify
+                if (!flag.get()) { // if nothing to do - then wait for notify
                     logger.finest("Waiting indefinitely.");
                     synchronized(notifyObject) { // wake it up
                         notifyObject.wait();
@@ -189,15 +190,15 @@ public class DelayedThread extends Thread {
                 Thread.sleep(newDelay>0?newDelay:100); // negative - we are cycling through
                 logger.finest("Waited for " + newDelay);
                 //    no one stopped us && first one ran && (old clock + del < now)
-                    if (internalCheck && flag.isValue() && (clock + delay <= System.currentTimeMillis())) {
-                        flag.setValue(false); // setting so no one will enter here again
-                        runThisLast.run();
-                    } else {
-                        logger.finest("No run for now. flag:" + flag
-                                + " clock: " + (clock + delay < System.currentTimeMillis())
-                                + " clock details: " + clock + " " + delay + " " + System.currentTimeMillis());
-                    }
-                } // while
+                if (internalCheck && flag.get() && (clock + delay <= System.currentTimeMillis())) {
+                    flag.set(false); // setting so no one will enter here again
+                    runThisLast.run();
+                } else {
+                    logger.finest("No run for now. flag:" + flag
+                            + " clock: " + (clock + delay < System.currentTimeMillis())
+                            + " clock details: " + clock + " " + delay + " " + System.currentTimeMillis());
+                }
+            } // while
         } catch (InterruptedException e) {
             // don't care
         }
